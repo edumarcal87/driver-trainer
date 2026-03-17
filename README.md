@@ -1,4 +1,4 @@
-# 🏎️ Brake Trainer
+# 🏎️ Driver Trainer
 
 Ferramenta de treino de **freio, acelerador, embreagem, volante e exercícios combinados** para sim racing, com suporte ao **Logitech G29** e importação de telemetria real.
 
