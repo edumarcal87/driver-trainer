@@ -1,7 +1,7 @@
 import React from 'react';
 import { TOLERANCE } from '../data/exercises';
 
-const USER_COLORS = { brake: '#ff4757', throttle: '#2ed573', clutch: '#ffa502', steering: '#3b82f6' };
+const USER_COLORS = { brake: '#e74c3c', throttle: '#27ae60', clutch: '#f39c12', steering: '#2980b9', combined: '#8e44ad' };
 
 export default function Chart({ targetPts, userPts, currentInput, progress, running, score, pedalType = 'brake' }) {
   const W = 700, H = 240;
@@ -19,45 +19,37 @@ export default function Chart({ targetPts, userPts, currentInput, progress, runn
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block' }}>
       <defs>
-        <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
-        <linearGradient id="tolFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#45e6b0" stopOpacity=".08" /><stop offset="100%" stopColor="#45e6b0" stopOpacity=".02" /></linearGradient>
+        <linearGradient id="tolFillL" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#27ae60" stopOpacity=".1" />
+          <stop offset="100%" stopColor="#27ae60" stopOpacity=".03" />
+        </linearGradient>
       </defs>
 
-      {/* Grid */}
       {[0, .25, .5, .75, 1].map(v => (
         <g key={v}>
-          <line x1={P.l} y1={ty(v)} x2={W - P.r} y2={ty(v)} stroke="#252a38" strokeWidth=".5" />
-          <text x={P.l - 6} y={ty(v) + 3.5} textAnchor="end" fill="#4a5068" fontSize="9" fontFamily="Oxanium, monospace">{Math.round(v * 100)}</text>
+          <line x1={P.l} y1={ty(v)} x2={W - P.r} y2={ty(v)} stroke="#e0dfd8" strokeWidth=".5" />
+          <text x={P.l - 6} y={ty(v) + 3.5} textAnchor="end" fill="#9a9a90" fontSize="9" fontFamily="Oxanium, monospace">{Math.round(v * 100)}</text>
         </g>
       ))}
 
-      {/* Tolerance band */}
-      <path d={`${tolU} ${tolL} Z`} fill="url(#tolFill)" />
+      <path d={`${tolU} ${tolL} Z`} fill="url(#tolFillL)" />
+      <path d={tPath} fill="none" stroke="#27ae60" strokeWidth="2.5" strokeLinecap="round" opacity=".7" />
 
-      {/* Target curve */}
-      <path d={tPath} fill="none" stroke="#45e6b0" strokeWidth="2" strokeLinecap="round" opacity=".85" />
+      {uPath && (
+        <path d={uPath} fill="none" stroke={userColor} strokeWidth="2" strokeLinecap="round" />
+      )}
 
-      {/* User curve with glow */}
-      {uPath && <>
-        <path d={uPath} fill="none" stroke={userColor} strokeWidth="3" strokeLinecap="round" opacity=".3" filter="url(#glow)" />
-        <path d={uPath} fill="none" stroke={userColor} strokeWidth="1.5" strokeLinecap="round" />
-      </>}
-
-      {/* Playhead */}
       {running && <>
-        <line x1={tx(progress)} y1={P.t} x2={tx(progress)} y2={H - P.b} stroke="#7a8194" strokeWidth=".5" strokeDasharray="3,4" />
-        <circle cx={tx(progress)} cy={ty(currentInput)} r="4" fill={userColor} opacity=".3" filter="url(#glow)" />
-        <circle cx={tx(progress)} cy={ty(currentInput)} r="3.5" fill={userColor} stroke="#0a0c10" strokeWidth="1.5" />
+        <line x1={tx(progress)} y1={P.t} x2={tx(progress)} y2={H - P.b} stroke="#9a9a90" strokeWidth=".5" strokeDasharray="3,4" />
+        <circle cx={tx(progress)} cy={ty(currentInput)} r="5" fill={userColor} stroke="#fff" strokeWidth="2" />
       </>}
 
-      {/* Axis */}
-      <text x={W / 2} y={H - 3} textAnchor="middle" fill="#4a5068" fontSize="9" fontFamily="Oxanium, monospace">TEMPO →</text>
+      <text x={W / 2} y={H - 3} textAnchor="middle" fill="#9a9a90" fontSize="9" fontFamily="Oxanium, monospace">TEMPO →</text>
 
-      {/* Score */}
       {score !== null && !running && (
         <text x={W - P.r} y={P.t + 14} textAnchor="end"
-          fill={score >= 80 ? '#2ed573' : score >= 50 ? '#ffa502' : '#ff4757'}
-          fontSize="18" fontWeight="600" fontFamily="Oxanium, monospace">{score}%</text>
+          fill={score >= 80 ? '#27ae60' : score >= 50 ? '#f39c12' : '#e74c3c'}
+          fontSize="18" fontWeight="700" fontFamily="Oxanium, monospace">{score}%</text>
       )}
     </svg>
   );

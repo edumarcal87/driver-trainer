@@ -134,6 +134,34 @@ export const COMBINED_EXERCISES = [
       },
     },
     duration: 4000, diff: 3 },
+  { id:'x_corner_exit', name:'Saída de curva completa', desc:'Volante endireita + acelerador progressivo', icon:'↗️',
+    pedal:'combined',
+    curves: {
+      steering: t => (t<.05?.8:t<.6?.8-((t-.05)/.55)*.3:t<.9?.5:t<1?.5:0.5),
+      throttle: t => (t<.2?0:t<.7?Math.pow((t-.2)/.5,1.1):t<.9?1:1),
+    },
+    duration: 4000, diff: 2 },
+  { id:'x_chicane_throttle', name:'Chicane com aceleração', desc:'Volante esq-dir + dosagem de acelerador entre curvas', icon:'🔀⚡',
+    pedal:'combined',
+    curves: {
+      steering: t => {
+        if(t<.05)return .5;if(t<.2)return .5-((t-.05)/.15)*.35;if(t<.35)return .15+((t-.2)/.15)*.7;
+        if(t<.55)return .85;if(t<.7)return .85-((t-.55)/.15)*.35;return .5;
+      },
+      throttle: t => {
+        if(t<.1)return .6;if(t<.2)return .6-((t-.1)/.1)*.4;if(t<.35)return .2+((t-.2)/.15)*.3;
+        if(t<.45)return .5-((t-.35)/.1)*.3;if(t<.55)return .2;if(t<.7)return .2+((t-.55)/.15)*.8;return 1;
+      },
+    },
+    duration: 5000, diff: 3 },
+  { id:'x_full_corner', name:'Curva completa', desc:'Freio + volante + acelerador — a curva perfeita', icon:'🏆',
+    pedal:'combined',
+    curves: {
+      brake: t => (t<.05?t/.05:t<.35?1-(t-.05)/.3:0),
+      steering: t => (t<.1?.5:t<.4?.5+((t-.1)/.3)*.35:t<.7?.85:t<.9?.85-((t-.7)/.2)*.35:.5),
+      throttle: t => (t<.4?0:t<.9?Math.pow((t-.4)/.5,1.3):1),
+    },
+    duration: 5000, diff: 3 },
 ];
 
 export const ALL_EXERCISES = [...BRAKE_EXERCISES, ...THROTTLE_EXERCISES, ...CLUTCH_EXERCISES, ...STEERING_EXERCISES, ...COMBINED_EXERCISES];

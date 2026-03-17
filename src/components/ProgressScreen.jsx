@@ -7,7 +7,7 @@ const btn = { padding: '6px 14px', fontSize: 12, borderRadius: 8, border: '1px s
 const card = { padding: '16px 18px', background: 'var(--bg-panel)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', marginBottom: 12 };
 
 const PEDAL_LABELS = { brake: 'Freio', throttle: 'Acelerador', clutch: 'Embreagem', steering: 'Volante' };
-const PEDAL_HEX = { brake: '#ff4757', throttle: '#2ed573', clutch: '#ffa502', steering: '#3b82f6' };
+const PEDAL_HEX = { brake: '#e74c3c', throttle: '#27ae60', clutch: '#f39c12', steering: '#2980b9' };
 
 const INPUT_TYPES = [
   { key: 'all', label: 'GERAL' },
@@ -52,7 +52,7 @@ function SessionScoreChart({ allScores, colorOverride }) {
   const ty = v => P.t + (1 - v / 100) * ch;
   const pts = scores.map((s, i) => `${tx(i).toFixed(1)},${ty(s).toFixed(1)}`);
   const areaPath = `M${P.l},${H - P.b} L${pts.join(' L')} L${tx(scores.length - 1).toFixed(1)},${H - P.b} Z`;
-  const lineColor = colorOverride || '#3b82f6';
+  const lineColor = colorOverride || '#2980b9';
   const ma = scores.map((_, i) => {
     const slice = scores.slice(Math.max(0, i - 1), Math.min(scores.length, i + 2));
     return Math.round(slice.reduce((s, v) => s + v, 0) / slice.length);
@@ -61,12 +61,12 @@ function SessionScoreChart({ allScores, colorOverride }) {
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block' }}>
       <defs><linearGradient id="scoreGradP" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={lineColor} stopOpacity=".15" /><stop offset="100%" stopColor={lineColor} stopOpacity=".02" /></linearGradient></defs>
-      {[0, 25, 50, 75, 100].map(v => (<g key={v}><line x1={P.l} y1={ty(v)} x2={W - P.r} y2={ty(v)} stroke="#252a38" strokeWidth=".5" /><text x={P.l - 6} y={ty(v) + 3.5} textAnchor="end" fill="#4a5068" fontSize="9" fontFamily="Oxanium, monospace">{v}</text></g>))}
+      {[0, 25, 50, 75, 100].map(v => (<g key={v}><line x1={P.l} y1={ty(v)} x2={W - P.r} y2={ty(v)} stroke="#e0dfd8" strokeWidth=".5" /><text x={P.l - 6} y={ty(v) + 3.5} textAnchor="end" fill="#9a9a90" fontSize="9" fontFamily="Oxanium, monospace">{v}</text></g>))}
       <path d={areaPath} fill="url(#scoreGradP)" />
       <polyline points={pts.join(' ')} fill="none" stroke={lineColor + '80'} strokeWidth="1" strokeLinecap="round" />
       <polyline points={maPts.join(' ')} fill="none" stroke={lineColor} strokeWidth="2" strokeLinecap="round" />
-      {scores.map((s, i) => (<circle key={i} cx={tx(i)} cy={ty(s)} r="3" fill={s >= 80 ? '#2ed573' : s >= 50 ? '#ffa502' : '#ff4757'} stroke="#0a0c10" strokeWidth="1.5" />))}
-      <text x={W / 2} y={H - 3} textAnchor="middle" fill="#4a5068" fontSize="9" fontFamily="Oxanium, monospace">TENTATIVAS →</text>
+      {scores.map((s, i) => (<circle key={i} cx={tx(i)} cy={ty(s)} r="3" fill={s >= 80 ? '#27ae60' : s >= 50 ? '#f39c12' : '#e74c3c'} stroke="#ffffff" strokeWidth="1.5" />))}
+      <text x={W / 2} y={H - 3} textAnchor="middle" fill="#9a9a90" fontSize="9" fontFamily="Oxanium, monospace">TENTATIVAS →</text>
     </svg>
   );
 }
@@ -135,7 +135,7 @@ export default function ProgressScreen({ onBack, sessionHistory }) {
   }
 
   const grade = typeAvg >= 90 ? 'S' : typeAvg >= 75 ? 'A' : typeAvg >= 60 ? 'B' : typeAvg >= 40 ? 'C' : 'D';
-  const tabColor = PEDAL_HEX[activeTab] || '#3b82f6';
+  const tabColor = PEDAL_HEX[activeTab] || '#2980b9';
 
   return (
     <div style={{ maxWidth: 720, width: '100%' }}>
@@ -147,7 +147,7 @@ export default function ProgressScreen({ onBack, sessionHistory }) {
       {/* Type tabs */}
       <div className="animate-in animate-in-delay-1" style={{ display: 'flex', gap: 4, marginBottom: '1.25rem', flexWrap: 'wrap' }}>
         {availableTypes.map(t => {
-          const c = PEDAL_HEX[t.key] || '#7a8194'; const active = activeTab === t.key;
+          const c = PEDAL_HEX[t.key] || '#5a5a5a'; const active = activeTab === t.key;
           const count = t.key === 'all' ? sessionHistory.length : sessionHistory.filter(e => (e.pedal || 'brake') === t.key).length;
           return (<button key={t.key} onClick={() => setActiveTab(t.key)} style={{ padding: '6px 14px', fontSize: 10, borderRadius: 20, fontWeight: 500, fontFamily: 'var(--font-condensed)', letterSpacing: '.8px', cursor: 'pointer', border: `1px solid ${active ? c + '60' : 'var(--border)'}`, background: active ? c + '15' : 'transparent', color: active ? c : 'var(--text-muted)', transition: 'all .15s' }}>
             {t.label} <span style={{ opacity: .6 }}>({count})</span></button>);
@@ -205,7 +205,7 @@ export default function ProgressScreen({ onBack, sessionHistory }) {
             {typeExTrends.map(et => {
               const tC = et.trend > 5 ? 'var(--accent-throttle)' : et.trend < -5 ? 'var(--accent-brake)' : 'var(--text-muted)';
               const tI = et.trend > 5 ? '↑' : et.trend < -5 ? '↓' : '→';
-              const pC = PEDAL_HEX[et.pedal] || '#7a8194';
+              const pC = PEDAL_HEX[et.pedal] || '#5a5a5a';
               return (<div key={et.exId} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: 'var(--bg-inset)', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
@@ -237,7 +237,7 @@ export default function ProgressScreen({ onBack, sessionHistory }) {
       <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
         <button onClick={onBack} style={btn}>← Voltar aos exercícios</button>
         <button onClick={() => exportSessionPDF(sessionHistory, insights)} style={{
-          ...btn, borderColor: '#a855f740', color: '#a855f7',
+          ...btn, borderColor: '#8e44ad40', color: '#8e44ad',
         }}>
           📄 Exportar PDF
         </button>

@@ -2,10 +2,10 @@ import React from 'react';
 import { TOLERANCE } from '../data/exercises';
 
 const CURVE_COLORS = {
-  brake:    { target: '#ff475790', user: '#ff4757', label: 'FREIO' },
-  throttle: { target: '#2ed57390', user: '#2ed573', label: 'ACEL' },
-  clutch:   { target: '#ffa50290', user: '#ffa502', label: 'EMBR' },
-  steering: { target: '#3b82f690', user: '#3b82f6', label: 'VOLANTE' },
+  brake:    { target: '#e74c3c80', user: '#e74c3c', label: 'FREIO' },
+  throttle: { target: '#27ae6080', user: '#27ae60', label: 'ACEL' },
+  clutch:   { target: '#f39c1280', user: '#f39c12', label: 'EMBR' },
+  steering: { target: '#2980b980', user: '#2980b9', label: 'VOLANTE' },
 };
 
 export default function CombinedChart({ curves, userDataMap, currentInputs, progress, running, scores }) {
@@ -34,8 +34,8 @@ export default function CombinedChart({ curves, userDataMap, currentInputs, prog
       {/* Grid */}
       {[0, .25, .5, .75, 1].map(v => (
         <g key={v}>
-          <line x1={P.l} y1={ty(v)} x2={W - P.r} y2={ty(v)} stroke="#252a38" strokeWidth=".5" />
-          <text x={P.l - 6} y={ty(v) + 3.5} textAnchor="end" fill="#4a5068" fontSize="9" fontFamily="Oxanium, monospace">{Math.round(v * 100)}</text>
+          <line x1={P.l} y1={ty(v)} x2={W - P.r} y2={ty(v)} stroke="#e0dfd8" strokeWidth=".5" />
+          <text x={P.l - 6} y={ty(v) + 3.5} textAnchor="end" fill="#9a9a90" fontSize="9" fontFamily="Oxanium, monospace">{Math.round(v * 100)}</text>
         </g>
       ))}
 
@@ -74,12 +74,12 @@ export default function CombinedChart({ curves, userDataMap, currentInputs, prog
 
       {/* Playhead */}
       {running && <>
-        <line x1={tx(progress)} y1={P.t} x2={tx(progress)} y2={H - P.b} stroke="#7a8194" strokeWidth=".5" strokeDasharray="3,4" />
+        <line x1={tx(progress)} y1={P.t} x2={tx(progress)} y2={H - P.b} stroke="#9a9a90" strokeWidth=".5" strokeDasharray="3,4" />
         {inputKeys.map(key => {
           const cc = CURVE_COLORS[key] || CURVE_COLORS.brake;
           const val = currentInputs?.[key] ?? 0;
           return (
-            <circle key={key} cx={tx(progress)} cy={ty(val)} r="3.5" fill={cc.user} stroke="#0a0c10" strokeWidth="1.5" />
+            <circle key={key} cx={tx(progress)} cy={ty(val)} r="3.5" fill={cc.user} stroke="#ffffff" strokeWidth="1.5" />
           );
         })}
       </>}
@@ -97,7 +97,7 @@ export default function CombinedChart({ curves, userDataMap, currentInputs, prog
       })}
 
       {/* Axis */}
-      <text x={W / 2} y={H - 3} textAnchor="middle" fill="#4a5068" fontSize="9" fontFamily="Oxanium, monospace">TEMPO →</text>
+      <text x={W / 2} y={H - 3} textAnchor="middle" fill="#9a9a90" fontSize="9" fontFamily="Oxanium, monospace">TEMPO →</text>
     </svg>
   );
 }

@@ -101,13 +101,16 @@ export function isG29(gamepadId) {
 }
 
 /**
- * Default pedal configs (will be overridden by wizard).
+ * Default pedal configs for G29.
+ * G29 c24f mapping: brake=axis5, throttle=axis2, clutch=axis1, steering=axis0
+ * Pedals go from 1.0 (released) to -1.0 (fully pressed)
+ * Steering goes from -1.0 (full left) to +1.0 (full right)
  */
 export function getDefaultPedalConfig() {
   return {
-    brake:    { axisIndex: 2, calibMin: 1, calibMax: -1, invert: false },
-    throttle: { axisIndex: 1, calibMin: 1, calibMax: -1, invert: false },
-    clutch:   { axisIndex: 3, calibMin: 1, calibMax: -1, invert: false },
+    brake:    { axisIndex: 5, calibMin: 1, calibMax: -1, invert: false },
+    throttle: { axisIndex: 2, calibMin: 1, calibMax: -1, invert: false },
+    clutch:   { axisIndex: 1, calibMin: 1, calibMax: -1, invert: false },
     steering: { axisIndex: 0, calibMin: -1, calibMax: 1, invert: false },
   };
 }
