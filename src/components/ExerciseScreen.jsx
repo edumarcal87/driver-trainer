@@ -46,7 +46,47 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
   const userMapRef = useRef({}), inputsRef = useRef({});
   const keysRef = useRef({ up: false, down: false, left: false, right: false });
 
-  const targetPts = !isCombined ? makeCurvePoints(exercise.curve) : null;
+  const LEAD_IN_MS = 1500;
+  const totalDuration = exercise.duration + LEAD_IN_MS;
+  const leadInRatio = LEAD_IN_MS / totalDuration;
+
+  // Generate target points with lead-in flat zone at the start
+  const targetPts = !isCombined ? (() => {
+    const pts = [];
+    const n = 200;
+    const restVal = isSteering ? 0.5 : 0;
+    for (let i = 0; i <= n; i++) {
+      const t = i / n;
+      if (t < leadInRatio) {
+        pts.push({ t, v: restVal });
+      } else {
+        const curveT = (t - leadInRatio) / (1 - leadInRatio);
+        pts.push({ t, v: exercise.curve(curveT) });
+      }
+    }
+    return pts;
+  })() : null;
+
+  // For combined: generate curves with lead-in
+  const combinedTargetPtsMap = isCombined ? (() => {
+    const map = {};
+    for (const key of combinedKeys) {
+      const pts = [];
+      const n = 200;
+      const restVal = key === 'steering' ? 0.5 : 0;
+      for (let i = 0; i <= n; i++) {
+        const t = i / n;
+        if (t < leadInRatio) {
+          pts.push({ t, v: restVal });
+        } else {
+          const curveT = (t - leadInRatio) / (1 - leadInRatio);
+          pts.push({ t, v: exercise.curves[key](curveT) });
+        }
+      }
+      map[key] = pts;
+    }
+    return map;
+  })() : null;
 
   useEffect(() => {
     const kd = e => {
@@ -68,7 +108,7 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
   const gameLoop = useCallback(() => {
     if (!runRef.current) return;
     const elapsed = Date.now() - startRef.current;
-    const t = Math.min(1, elapsed / exercise.duration);
+    const t = Math.min(1, elapsed / totalDuration);
 
     if (isCombined) {
       // Read all involved inputs
@@ -131,7 +171,7 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
         const scores = {};
         let totalScore = 0;
         for (const key of combinedKeys) {
-          const tgtPts = makeCurvePoints(exercise.curves[key]);
+          const tgtPts = combinedTargetPtsMap[key];
           const uPts = userMapRef.current[key] || [];
           scores[key] = calcScore(tgtPts, uPts);
           totalScore += scores[key];
@@ -141,7 +181,7 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
         setScore(overall);
         // Generate analysis from primary (first) input
         const primaryKey = combinedKeys[0];
-        const primaryTarget = makeCurvePoints(exercise.curves[primaryKey]);
+        const primaryTarget = combinedTargetPtsMap[primaryKey];
         const a = analyzePerformance(primaryTarget, userMapRef.current[primaryKey] || [], exercise.name);
         if (a) a.overall = overall;
         setAnalysis(a);
@@ -156,7 +196,7 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
       return;
     }
     afRef.current = requestAnimationFrame(gameLoop);
-  }, [exercise, inputMode, pedalConfigs, pedalType, isCombined, isSteering, combinedKeys, targetPts, onResult]);
+  }, [exercise, inputMode, pedalConfigs, pedalType, isCombined, isSteering, combinedKeys, targetPts, combinedTargetPtsMap, totalDuration, onResult]);
 
   const startRun = useCallback(() => {
     setScore(null); setAnalysis(null); setShowFeedback(false); setCombinedScores({});
@@ -171,8 +211,20 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
     setCountdown(3);
     let c = 3;
     const iv = setInterval(() => {
-      c--; if (c > 0) setCountdown(c);
-      else { clearInterval(iv); setCountdown(null); runRef.current = true; startRef.current = Date.now(); setRunning(true); afRef.current = requestAnimationFrame(gameLoop); }
+      c--;
+      if (c > 0) { setCountdown(c); }
+      else {
+        clearInterval(iv);
+        setCountdown('GO');
+        // 1.5s preparation delay after countdown
+        setTimeout(() => {
+          setCountdown(null);
+          runRef.current = true;
+          startRef.current = Date.now();
+          setRunning(true);
+          afRef.current = requestAnimationFrame(gameLoop);
+        }, 1500);
+      }
     }, 600);
   }, [gameLoop, isSteering, combinedKeys]);
 
@@ -201,7 +253,7 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
           </div>
         )}
         {isCombined ? (
-          <CombinedChart curves={exercise.curves} userDataMap={userDataMap} currentInputs={currentInputs} progress={progress} running={running} scores={combinedScores} />
+          <CombinedChart curves={exercise.curves} targetPtsMap={combinedTargetPtsMap} userDataMap={userDataMap} currentInputs={currentInputs} progress={progress} running={running} scores={combinedScores} />
         ) : (
           <Chart targetPts={targetPts} userPts={userPts} currentInput={currentInput} progress={progress} running={running} score={score} pedalType={pedalType} />
         )}
