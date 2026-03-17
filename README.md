@@ -1,9 +1,6 @@
 
 ![alt text](public/logo.svg)
 
-
-# ![alt text](public/favicon.svg) Drive Trainer
-
 Ferramenta de treino de **freio, acelerador, embreagem, volante e exercícios combinados** para sim racing, com suporte ao **Logitech G29** e importação de telemetria real(em breve).
 
 **[Demo ao vivo →](https://edumarcal87.github.io/driver-trainer/)**
