@@ -354,20 +354,19 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
         )}
       </div>
 
-      {/* ── Evolution mini-card ── */}
+      {/* ── Evolution & stats card (always visible) ── */}
       {(() => {
         const history = (sessionLog || [])
           .filter(e => e.exId === exercise.id && (!carProfile || carProfile.id === 'default' || (e.carProfileId || 'default') === carProfile.id))
-          .slice(0, 10); // last 10 attempts (most recent first)
-        if (history.length === 0) return null;
+          .slice(0, 10);
 
         const last5 = history.slice(0, 5);
         const scores = last5.map(e => e.score);
-        const best = Math.max(...history.map(e => e.score));
-        const lastScore = scores[0];
-        const avg = Math.round(scores.reduce((s, v) => s + v, 0) / scores.length);
+        const best = history.length > 0 ? Math.max(...history.map(e => e.score)) : 0;
+        const lastScore = scores[0] || 0;
+        const avg = scores.length > 0 ? Math.round(scores.reduce((s, v) => s + v, 0) / scores.length) : 0;
 
-        // Calculate trend
+        // Trend
         let trend = 0, trendText = '';
         if (scores.length >= 2) {
           const recent = scores.slice(0, Math.ceil(scores.length / 2));
@@ -375,63 +374,101 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
           const recentAvg = recent.reduce((s, v) => s + v, 0) / recent.length;
           const olderAvg = older.reduce((s, v) => s + v, 0) / older.length;
           trend = Math.round(recentAvg - olderAvg);
-          if (trend > 3) trendText = `Melhorou ${trend}% recentemente`;
-          else if (trend < -3) trendText = `Caiu ${Math.abs(trend)}% — foco!`;
-          else trendText = 'Desempenho estável';
+          if (trend > 3) trendText = `Melhorou ${trend}%`;
+          else if (trend < -3) trendText = `Caiu ${Math.abs(trend)}%`;
+          else trendText = 'Estável';
         }
 
-        // Mini sparkline
-        const sparkW = 100, sparkH = 28;
+        // Sparkline
+        const sparkW = 90, sparkH = 24;
         const reversed = [...scores].reverse();
         const sparkPts = reversed.map((s, i) => {
           const x = reversed.length === 1 ? sparkW / 2 : (i / (reversed.length - 1)) * sparkW;
           const y = sparkH - (s / 100) * sparkH;
           return `${x.toFixed(1)},${y.toFixed(1)}`;
         });
-
         const trendColor = trend > 3 ? '#27ae60' : trend < -3 ? '#e74c3c' : '#2980b9';
 
         return (
           <div className="animate-in" style={{
-            display: 'flex', alignItems: 'center', gap: 14, padding: '10px 14px', marginBottom: 10,
+            display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', marginBottom: 10,
             background: 'var(--bg-card)', borderRadius: 'var(--radius)', border: '1.5px solid var(--border)',
             boxShadow: 'var(--shadow-card)',
           }}>
-            {/* Sparkline */}
-            <svg width={sparkW} height={sparkH} style={{ flexShrink: 0, overflow: 'visible' }}>
-              {reversed.length >= 2 && (
+            {history.length >= 2 ? (
+              /* Sparkline */
+              <svg width={sparkW} height={sparkH} style={{ flexShrink: 0, overflow: 'visible' }}>
                 <polyline points={sparkPts.join(' ')} fill="none" stroke={trendColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              )}
-              {reversed.map((s, i) => (
-                <circle key={i}
-                  cx={reversed.length === 1 ? sparkW / 2 : (i / (reversed.length - 1)) * sparkW}
-                  cy={sparkH - (s / 100) * sparkH}
-                  r="3" fill={s >= 70 ? '#27ae60' : s >= 40 ? '#f39c12' : '#e74c3c'} stroke="#fff" strokeWidth="1.5"
-                />
-              ))}
-            </svg>
+                {reversed.map((s, i) => (
+                  <circle key={i}
+                    cx={reversed.length === 1 ? sparkW / 2 : (i / (reversed.length - 1)) * sparkW}
+                    cy={sparkH - (s / 100) * sparkH}
+                    r={i === reversed.length - 1 ? 3.5 : 2.5}
+                    fill={s >= 70 ? '#27ae60' : s >= 40 ? '#f39c12' : '#e74c3c'}
+                    stroke="#fff" strokeWidth="1.5"
+                  />
+                ))}
+              </svg>
+            ) : history.length === 1 ? (
+              /* Single dot */
+              <div style={{ width: sparkW, height: sparkH, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <div style={{
+                  width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: lastScore >= 70 ? '#27ae6015' : lastScore >= 40 ? '#f39c1215' : '#e74c3c15',
+                  border: `2px solid ${lastScore >= 70 ? '#27ae60' : lastScore >= 40 ? '#f39c12' : '#e74c3c'}`,
+                }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)', color: lastScore >= 70 ? '#27ae60' : lastScore >= 40 ? '#f39c12' : '#e74c3c' }}>
+                    {lastScore}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              /* No history */
+              <div style={{ width: sparkW, height: sparkH, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ fontSize: 18, opacity: 0.3 }}>🎯</span>
+              </div>
+            )}
 
             {/* Stats */}
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                <span style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)', color: lastScore >= 70 ? '#27ae60' : lastScore >= 40 ? '#f39c12' : '#e74c3c' }}>
-                  {lastScore}%
-                </span>
-                <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                  último · melhor {best}% · média {avg}%
-                </span>
-              </div>
-              {trendText && (
-                <p style={{ fontSize: 10, color: trendColor, fontWeight: 600, fontFamily: 'var(--font-condensed)', letterSpacing: '.3px', marginTop: 2 }}>
-                  {trend > 3 ? '📈' : trend < -3 ? '📉' : '➡️'} {trendText}
+              {history.length === 0 ? (
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-condensed)', letterSpacing: '.3px' }}>
+                  Primeira tentativa — boa sorte!
                 </p>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                      Último <strong style={{ fontSize: 13, color: lastScore >= 70 ? '#27ae60' : lastScore >= 40 ? '#f39c12' : '#e74c3c' }}>{lastScore}%</strong>
+                    </span>
+                    <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                      Melhor <strong style={{ color: 'var(--text-primary)' }}>{best}%</strong>
+                    </span>
+                    <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                      Média <strong style={{ color: 'var(--text-primary)' }}>{avg}%</strong>
+                    </span>
+                  </div>
+                  {trendText && (
+                    <p style={{ fontSize: 10, color: trendColor, fontWeight: 600, fontFamily: 'var(--font-condensed)', letterSpacing: '.3px', marginTop: 2 }}>
+                      {trend > 3 ? '📈' : trend < -3 ? '📉' : '➡️'} {trendText}
+                    </p>
+                  )}
+                </>
               )}
             </div>
 
-            {/* Attempts count */}
-            <div style={{ textAlign: 'center', flexShrink: 0 }}>
-              <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)' }}>{history.length}</span>
-              <p style={{ fontSize: 8, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', letterSpacing: '.3px' }}>TENTATIVAS</p>
+            {/* Attempts badge */}
+            <div style={{
+              textAlign: 'center', flexShrink: 0, padding: '4px 10px', borderRadius: 8,
+              background: history.length > 0 ? 'var(--bg-inset)' : 'transparent',
+              border: history.length > 0 ? '1px solid var(--border)' : 'none',
+            }}>
+              <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)' }}>
+                {history.length}
+              </span>
+              <p style={{ fontSize: 7, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', letterSpacing: '.5px' }}>
+                {history.length === 1 ? 'TENTATIVA' : 'TENTATIVAS'}
+              </p>
             </div>
           </div>
         );
