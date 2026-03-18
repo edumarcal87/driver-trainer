@@ -13,9 +13,9 @@ import { BrakeIcon, ThrottleIcon, ClutchIcon, SteeringIcon } from './components/
 import { DifficultyDots, StatusBadge, CategoryBadge, LevelBadge, ScoreRing } from './components/UI';
 
 const btn = { padding: '7px 16px', fontSize: 12, borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 500, boxShadow: '0 1px 2px rgba(0,0,0,0.04)' };
-const CAT_HEX = { brake: '#e74c3c', throttle: '#27ae60', clutch: '#f39c12', steering: '#2980b9', combined: '#8e44ad', sequential: '#e67e22', hpattern: '#d35400' };
+const CAT_HEX = { brake: '#e74c3c', throttle: '#27ae60', clutch: '#f39c12', steering: '#2980b9', combined: '#8e44ad', sequential: '#00bcd4', hpattern: '#5c6bc0' };
 
-const GearIcon = ({ size = 20, color = '#e67e22' }) => (
+const GearIcon = ({ size = 20, color = '#5c6bc0' }) => (
   <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
     <rect x="4" y="6" width="24" height="20" rx="3" stroke={color} strokeWidth="1.5"/>
     <line x1="16" y1="8" x2="16" y2="24" stroke={color} strokeWidth="1" opacity=".3"/>
@@ -29,7 +29,7 @@ const GearIcon = ({ size = 20, color = '#e67e22' }) => (
   </svg>
 );
 
-const PaddleIcon = ({ size = 20, color = '#e67e22' }) => (
+const PaddleIcon = ({ size = 20, color = '#00bcd4' }) => (
   <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
     <rect x="6" y="4" width="8" height="24" rx="4" stroke={color} strokeWidth="1.5"/>
     <rect x="18" y="4" width="8" height="24" rx="4" stroke={color} strokeWidth="1.5"/>
@@ -46,8 +46,8 @@ const PEDAL_ICONS = {
   clutch: (s) => <ClutchIcon size={s} color="#f39c12" />,
   steering: (s) => <SteeringIcon size={s} color="#2980b9" />,
   combined: (s) => <svg width={s} height={s} viewBox="0 0 32 32" fill="none"><circle cx="10" cy="16" r="8" stroke="#8e44ad" strokeWidth="1.5"/><circle cx="22" cy="16" r="8" stroke="#8e44ad" strokeWidth="1.5"/><circle cx="16" cy="16" r="3" fill="#8e44ad" opacity=".4"/></svg>,
-  sequential: (s) => <PaddleIcon size={s} color="#e67e22" />,
-  hpattern: (s) => <GearIcon size={s} color="#d35400" />,
+  sequential: (s) => <PaddleIcon size={s} color="#00bcd4" />,
+  hpattern: (s) => <GearIcon size={s} color="#5c6bc0" />,
 };
 
 const SECTION_ICONS = {
@@ -56,8 +56,8 @@ const SECTION_ICONS = {
   clutch: (s) => <ClutchIcon size={s} color="#f39c12" />,
   steering: (s) => <SteeringIcon size={s} color="#2980b9" />,
   combined: PEDAL_ICONS.combined,
-  sequential: (s) => <PaddleIcon size={s} color="#e67e22" />,
-  hpattern: (s) => <GearIcon size={s} color="#d35400" />,
+  sequential: (s) => <PaddleIcon size={s} color="#00bcd4" />,
+  hpattern: (s) => <GearIcon size={s} color="#5c6bc0" />,
 };
 
 function ExerciseCard({ ex, best, attempts, onOpen }) {
@@ -134,6 +134,7 @@ export default function App() {
   const [gpConnected, setGpConnected] = useState(false);
   const [gpName, setGpName] = useState('');
   const [inputMode, setInputMode] = useState(() => loadStored('inputMode', 'keyboard'));
+  const [inputFilter, setInputFilter] = useState('all'); // all | pedals | pedals_steering | pedals_steering_gear
   const [telemZones, setTelemZones] = useState([]);
   const [telemFile, setTelemFile] = useState('');
   const [sessionLog, setSessionLog] = useState(() => loadStored('sessionLog', []));
@@ -446,12 +447,52 @@ export default function App() {
         <div style={{ flex: 1, height: 1, background: 'var(--border)', marginLeft: 8 }} />
       </div>
 
+      {/* ── Input complexity filter ── */}
+      <div className="animate-in" style={{ display: 'flex', gap: 5, marginBottom: '1rem', flexWrap: 'wrap' }}>
+        {[
+          { key: 'all', label: 'TODOS', icon: '🎮' },
+          { key: 'pedals', label: 'FREIO + ACEL', icon: '🦶' },
+          { key: 'pedals_steering', label: '+ VOLANTE', icon: '🎡' },
+          { key: 'pedals_steering_gear', label: '+ CÂMBIO', icon: '⚙️' },
+        ].map(f => (
+          <button key={f.key} onClick={() => setInputFilter(f.key)}
+            style={{
+              padding: '5px 12px', fontSize: 10, borderRadius: 16, fontWeight: 600,
+              fontFamily: 'var(--font-condensed)', letterSpacing: '.5px', cursor: 'pointer',
+              border: `1.5px solid ${inputFilter === f.key ? 'var(--accent-steering)' : 'var(--border)'}`,
+              background: inputFilter === f.key ? 'var(--accent-steering-light)' : 'var(--bg-card)',
+              color: inputFilter === f.key ? 'var(--accent-steering)' : 'var(--text-muted)',
+              boxShadow: inputFilter === f.key ? '0 1px 4px rgba(41,128,185,0.1)' : '0 1px 2px rgba(0,0,0,0.03)',
+            }}>
+            {f.icon} {f.label}
+          </button>
+        ))}
+      </div>
+
       {/* ── Exercise sections by category ── */}
       {EXERCISE_CATEGORIES.map(cat => {
+        // Apply input filter
+        const filterAllowed = {
+          all: true,
+          pedals: ['brake', 'throttle', 'combined'].includes(cat.key),
+          pedals_steering: ['brake', 'throttle', 'clutch', 'steering', 'combined'].includes(cat.key),
+          pedals_steering_gear: true,
+        };
+        if (!filterAllowed[inputFilter]) return null;
+
         const catExercises = exercises.filter(ex => {
-          if (ex.track) return false; // Hide track-specific exercises from free practice
+          if (ex.track) return false;
           const p = ex.pedal || 'brake';
-          return p === cat.key;
+          if (p !== cat.key) return false;
+          // For combined exercises, filter by which inputs they actually use
+          if (p === 'combined' && ex.curves && inputFilter !== 'all') {
+            const keys = Object.keys(ex.curves);
+            const hasSteering = keys.includes('steering');
+            const hasGear = keys.includes('gear');
+            if (inputFilter === 'pedals' && (hasSteering || hasGear)) return false;
+            if (inputFilter === 'pedals_steering' && hasGear) return false;
+          }
+          return true;
         });
         if (catExercises.length === 0) return null;
         return (

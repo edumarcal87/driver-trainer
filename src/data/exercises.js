@@ -226,13 +226,13 @@ export const COMBINED_EXERCISES = [
 export const ALL_EXERCISES = [...BRAKE_EXERCISES, ...THROTTLE_EXERCISES, ...CLUTCH_EXERCISES, ...STEERING_EXERCISES, ...COMBINED_EXERCISES, ...INTERLAGOS_EXERCISES, ...ALL_GEAR_EXERCISES];
 
 export const EXERCISE_CATEGORIES = [
-  { key:'brake', label:'Freio', color:'#ff4757', exercises:BRAKE_EXERCISES },
-  { key:'throttle', label:'Acelerador', color:'#2ed573', exercises:THROTTLE_EXERCISES },
-  { key:'clutch', label:'Embreagem', color:'#ffa502', exercises:CLUTCH_EXERCISES },
-  { key:'steering', label:'Volante', color:'#3b82f6', exercises:STEERING_EXERCISES },
-  { key:'sequential', label:'Câmbio Sequencial', color:'#e67e22', exercises:SEQUENTIAL_EXERCISES },
-  { key:'hpattern', label:'Câmbio H-Pattern', color:'#d35400', exercises:HPATTERN_EXERCISES },
-  { key:'combined', label:'Combinado', color:'#a855f7', exercises:COMBINED_EXERCISES },
+  { key:'brake', label:'Freio', color:'#e74c3c', exercises:BRAKE_EXERCISES },
+  { key:'throttle', label:'Acelerador', color:'#27ae60', exercises:THROTTLE_EXERCISES },
+  { key:'clutch', label:'Embreagem', color:'#f39c12', exercises:CLUTCH_EXERCISES },
+  { key:'sequential', label:'Câmbio Sequencial', color:'#00bcd4', exercises:SEQUENTIAL_EXERCISES },
+  { key:'hpattern', label:'Câmbio H-Pattern', color:'#5c6bc0', exercises:HPATTERN_EXERCISES },
+  { key:'steering', label:'Volante', color:'#2980b9', exercises:STEERING_EXERCISES },
+  { key:'combined', label:'Combinado', color:'#8e44ad', exercises:COMBINED_EXERCISES },
 ];
 
 export const TOLERANCE = 0.12;

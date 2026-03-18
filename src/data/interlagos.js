@@ -266,6 +266,36 @@ export const INTERLAGOS_EXERCISES = [
     duration: 6000, diff: 2,
   },
 
+  // ── Saída dos boxes — aceleração controlada + merge na pista ──
+  {
+    id: 'ilg_pit_exit',
+    name: 'Saída de Boxes',
+    desc: 'Saia do pit lane, respeite o limite de velocidade até a linha e acelere para a pista.',
+    icon: '🚦',
+    pedal: 'combined',
+    track: 'interlagos',
+    corner: 'PIT_EXIT',
+    curves: {
+      brake: t => {
+        return 0; // sem freio na saída
+      },
+      steering: t => {
+        if (t < 0.2) return 0.5; // pit lane reto
+        if (t < 0.4) return 0.5 - ((t - 0.2) / 0.2) * 0.15; // merge suave para a esquerda
+        if (t < 0.6) return 0.35;
+        if (t < 0.8) return 0.35 + ((t - 0.6) / 0.2) * 0.15; // volta ao centro
+        return 0.5;
+      },
+      throttle: t => {
+        if (t < 0.3) return 0.3; // velocidade de pit controlada
+        if (t < 0.4) return 0.3 + ((t - 0.3) / 0.1) * 0.3; // começa a acelerar
+        if (t < 0.7) return 0.6 + ((t - 0.4) / 0.3) * 0.4; // aceleração progressiva
+        return 1; // full gas na pista
+      },
+    },
+    duration: 5000, diff: 1,
+  },
+
   // ── T3: Curva do Sol — frenagem leve + trail longo à esquerda ──
   {
     id: 'ilg_t3_curva_sol',
@@ -740,6 +770,15 @@ export const INTERLAGOS_TUTORIALS = {
     ],
     diagram: 'progressive',
     tips: ['Freio moderado — não trave', 'Desvio suave para a direita', 'Sem acelerador no pit lane'],
+  },
+  ilg_pit_exit: {
+    title: 'Saída de Boxes',
+    paragraphs: [
+      'Saia do pit lane respeitando o limite até a linha de saída. Depois, acelere progressivamente.',
+      'O merge com a pista deve ser suave — esterço leve para a esquerda e aceleração gradual.',
+    ],
+    diagram: 'smooth_exit',
+    tips: ['Velocidade controlada (~30%) no pit lane', 'Após a linha, aceleração progressiva', 'Merge suave — não entre na pista de golpe'],
   },
   ilg_t13_subida_boxes: {
     title: 'Subida dos Boxes',

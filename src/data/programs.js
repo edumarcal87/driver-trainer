@@ -385,11 +385,11 @@ export const PROGRAMS = [
         ]
       },
       {
-        title: 'Volta Completa e Boxes',
+        title: 'Boxes — Entrada e Saída',
         sessions: [
-          { title: 'Entrada de Boxes', exercises: ['ilg_pit_entry'], minScore: 45, desc: 'Desacelere e desvie para o pit lane' },
-          { title: 'Meia volta', exercises: ['ilg_half_lap'], minScore: 35, desc: 'Setores 1 e 2 contínuos — 5 curvas em sequência sem parar' },
-          { title: 'Volta completa', exercises: ['ilg_full_lap'], minScore: 30, desc: 'Todas as 9 curvas numa volta ininterrupta de Interlagos!' },
+          { title: 'Entrada de Boxes', exercises: ['ilg_pit_entry', 'ilg_pit_entry'], minScore: 45, desc: 'Desacelere e desvie para o pit lane' },
+          { title: 'Saída de Boxes', exercises: ['ilg_pit_exit', 'ilg_pit_exit'], minScore: 45, desc: 'Saia do pit e faça o merge com a pista' },
+          { title: 'Pit stop completo', exercises: ['ilg_pit_entry', 'ilg_pit_exit'], minScore: 42, desc: 'Entrada e saída em sequência — como num pit stop real' },
         ]
       },
     ]
