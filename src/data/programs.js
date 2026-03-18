@@ -333,8 +333,8 @@ export const PROGRAMS = [
         title: 'Volta Completa e Boxes',
         sessions: [
           { title: 'Entrada de Boxes', exercises: ['ilg_pit_entry'], minScore: 45, desc: 'Desacelere e desvie para o pit lane' },
-          { title: 'Meia volta (S1+S2)', exercises: ['ilg_t1_senna_s', 'ilg_t3_curva_sol', 'ilg_t4_descida_lago', 'ilg_t6_laranjinha', 'ilg_t8_pinheirinho'], minScore: 38, desc: 'Setores 1 e 2 — metade da volta' },
-          { title: 'Volta completa', exercises: ['ilg_t1_senna_s', 'ilg_t3_curva_sol', 'ilg_t4_descida_lago', 'ilg_t6_laranjinha', 'ilg_t7_ferradura', 'ilg_t8_pinheirinho', 'ilg_t10_mergulho', 'ilg_t11_bico_pato', 'ilg_t12_juncao', 'ilg_t13_subida_boxes'], minScore: 35, desc: 'Todas as curvas — uma volta completa em Interlagos!' },
+          { title: 'Meia volta', exercises: ['ilg_half_lap'], minScore: 35, desc: 'Setores 1 e 2 contínuos — 5 curvas em sequência sem parar' },
+          { title: 'Volta completa', exercises: ['ilg_full_lap'], minScore: 30, desc: 'Todas as 9 curvas numa volta ininterrupta de Interlagos!' },
         ]
       },
     ]

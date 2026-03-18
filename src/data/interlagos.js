@@ -386,6 +386,258 @@ export const INTERLAGOS_EXERCISES = [
     },
     duration: 3000, diff: 1,
   },
+
+  // ═══════════════════════════════════════════
+  // MEIA VOLTA e VOLTA COMPLETA (exercícios únicos)
+  // ═══════════════════════════════════════════
+
+  // Helper: each segment = { start, end } as fraction of total time
+  // Segments: T1(.00-.12) reta(.12-.15) T3(.15-.24) reta(.24-.28) T4(.28-.38) reta(.38-.42) T6(.42-.50) T8(.50-.62)
+
+  {
+    id: 'ilg_half_lap',
+    name: 'Meia Volta — Interlagos',
+    desc: 'Setores 1 e 2 em sequência: Senna S → Curva do Sol → Descida do Lago → Laranjinha → Pinheirinho.',
+    icon: '🏁',
+    pedal: 'combined',
+    track: 'interlagos',
+    corner: 'HALF',
+    curves: {
+      brake: t => {
+        // T1 Senna S (0.00-0.14): ataque + trail
+        if (t < 0.02) return t / 0.02;
+        if (t < 0.05) return 1;
+        if (t < 0.12) return 1 - (t - 0.05) / 0.07;
+        // Reta (0.12-0.18): sem freio
+        if (t < 0.18) return 0;
+        // T3 Curva do Sol (0.18-0.28): frenagem leve
+        if (t < 0.20) return (t - 0.18) / 0.02 * 0.6;
+        if (t < 0.23) return 0.6;
+        if (t < 0.28) return 0.6 - (t - 0.23) / 0.05 * 0.6;
+        // Reta (0.28-0.34): sem freio
+        if (t < 0.34) return 0;
+        // T4 Descida do Lago (0.34-0.46): frenagem em descida
+        if (t < 0.36) return (t - 0.34) / 0.02 * 0.85;
+        if (t < 0.39) return 0.85;
+        if (t < 0.46) return 0.85 - (t - 0.39) / 0.07 * 0.85;
+        // Reta (0.46-0.52): sem freio
+        if (t < 0.52) return 0;
+        // T6 Laranjinha (0.52-0.62): SEM FREIO
+        if (t < 0.62) return 0;
+        // Reta curta (0.62-0.66)
+        if (t < 0.66) return 0;
+        // T8 Pinheirinho (0.66-0.82): frenagem forte + trail
+        if (t < 0.68) return (t - 0.66) / 0.02;
+        if (t < 0.73) return 1;
+        if (t < 0.80) return 1 - (t - 0.73) / 0.07 * 0.8;
+        if (t < 0.82) return 0.2 - (t - 0.80) / 0.02 * 0.2;
+        return 0;
+      },
+      steering: t => {
+        // T1: esquerda
+        if (t < 0.03) return 0.5;
+        if (t < 0.06) return 0.5 - (t - 0.03) / 0.03 * 0.3;
+        if (t < 0.10) return 0.2;
+        if (t < 0.12) return 0.2 + (t - 0.10) / 0.02 * 0.3;
+        // Reta
+        if (t < 0.18) return 0.5;
+        // T3: esquerda
+        if (t < 0.20) return 0.5;
+        if (t < 0.23) return 0.5 - (t - 0.20) / 0.03 * 0.25;
+        if (t < 0.26) return 0.25;
+        if (t < 0.28) return 0.25 + (t - 0.26) / 0.02 * 0.25;
+        // Reta
+        if (t < 0.34) return 0.5;
+        // T4: esquerda
+        if (t < 0.37) return 0.5 - (t - 0.34) / 0.03 * 0.25;
+        if (t < 0.43) return 0.25;
+        if (t < 0.46) return 0.25 + (t - 0.43) / 0.03 * 0.25;
+        // Reta
+        if (t < 0.52) return 0.5;
+        // T6 Laranjinha: esquerda suave
+        if (t < 0.55) return 0.5 - (t - 0.52) / 0.03 * 0.2;
+        if (t < 0.60) return 0.3;
+        if (t < 0.62) return 0.3 + (t - 0.60) / 0.02 * 0.2;
+        // Reta
+        if (t < 0.66) return 0.5;
+        // T8 Pinheirinho: esquerda forte
+        if (t < 0.70) return 0.5 - (t - 0.66) / 0.04 * 0.4;
+        if (t < 0.78) return 0.1;
+        if (t < 0.82) return 0.1 + (t - 0.78) / 0.04 * 0.4;
+        return 0.5;
+      },
+      throttle: t => {
+        // T1: sem gás, depois progressivo
+        if (t < 0.08) return 0;
+        if (t < 0.12) return (t - 0.08) / 0.04 * 0.8;
+        // Reta: full gas
+        if (t < 0.18) return 1;
+        // T3: sem gás, depois retoma
+        if (t < 0.24) return 0;
+        if (t < 0.28) return (t - 0.24) / 0.04;
+        // Reta: full gas
+        if (t < 0.34) return 1;
+        // T4: sem gás, retoma
+        if (t < 0.42) return 0;
+        if (t < 0.46) return (t - 0.42) / 0.04;
+        // Reta
+        if (t < 0.52) return 1;
+        // T6: lift + feathering
+        if (t < 0.54) return 1 - (t - 0.52) / 0.02 * 0.6;
+        if (t < 0.58) return 0.4;
+        if (t < 0.62) return 0.4 + (t - 0.58) / 0.04 * 0.6;
+        // Reta
+        if (t < 0.66) return 1;
+        // T8: sem gás, saída lenta
+        if (t < 0.76) return 0;
+        if (t < 0.82) return (t - 0.76) / 0.06 * 0.6;
+        // Saída
+        if (t < 0.90) return 0.6 + (t - 0.82) / 0.08 * 0.4;
+        return 1;
+      },
+    },
+    duration: 25000, diff: 3,
+  },
+
+  {
+    id: 'ilg_full_lap',
+    name: 'Volta Completa — Interlagos',
+    desc: 'Todos os setores: S do Senna → Sol → Descida → Laranjinha → Ferradura → Pinheirinho → Mergulho → Bico de Pato → Junção.',
+    icon: '🏆',
+    pedal: 'combined',
+    track: 'interlagos',
+    corner: 'FULL',
+    curves: {
+      brake: t => {
+        // S1: T1(0-0.08) reta(0.08-0.11) T3(0.11-0.17) reta(0.17-0.20) T4(0.20-0.28)
+        // S2: reta(0.28-0.32) T6(0.32-0.38) T7(0.38-0.46) T8(0.46-0.56)
+        // S3: reta(0.56-0.60) T10(0.60-0.70) T11(0.70-0.78) T12(0.78-0.88) T13(0.88-0.94)
+        // T1
+        if (t < 0.01) return t / 0.01;
+        if (t < 0.03) return 1;
+        if (t < 0.07) return 1 - (t - 0.03) / 0.04;
+        if (t < 0.11) return 0; // reta
+        // T3
+        if (t < 0.12) return (t - 0.11) / 0.01 * 0.6;
+        if (t < 0.14) return 0.6;
+        if (t < 0.17) return 0.6 - (t - 0.14) / 0.03 * 0.6;
+        if (t < 0.20) return 0; // reta
+        // T4
+        if (t < 0.21) return (t - 0.20) / 0.01 * 0.85;
+        if (t < 0.24) return 0.85;
+        if (t < 0.28) return 0.85 - (t - 0.24) / 0.04 * 0.85;
+        if (t < 0.32) return 0; // reta
+        // T6 sem freio
+        if (t < 0.38) return 0;
+        // T7 Ferradura
+        if (t < 0.39) return (t - 0.38) / 0.01 * 0.75;
+        if (t < 0.41) return 0.75;
+        if (t < 0.46) return 0.75 - (t - 0.41) / 0.05 * 0.75;
+        // T8 Pinheirinho
+        if (t < 0.47) return (t - 0.46) / 0.01;
+        if (t < 0.50) return 1;
+        if (t < 0.55) return 1 - (t - 0.50) / 0.05 * 0.8;
+        if (t < 0.56) return 0.2 - (t - 0.55) / 0.01 * 0.2;
+        if (t < 0.60) return 0; // reta
+        // T10 Mergulho
+        if (t < 0.62) return (t - 0.60) / 0.02 * 0.7;
+        if (t < 0.65) return 0.7 + (t - 0.62) / 0.03 * 0.3;
+        if (t < 0.67) return 1;
+        if (t < 0.70) return 1 - (t - 0.67) / 0.03;
+        // T11 Bico de Pato
+        if (t < 0.71) return (t - 0.70) / 0.01;
+        if (t < 0.74) return 1;
+        if (t < 0.78) return 1 - (t - 0.74) / 0.04;
+        // T12 Junção
+        if (t < 0.79) return (t - 0.78) / 0.01 * 0.9;
+        if (t < 0.82) return 0.9;
+        if (t < 0.86) return 0.9 - (t - 0.82) / 0.04 * 0.9;
+        return 0;
+      },
+      steering: t => {
+        // T1 esquerda
+        if (t < 0.02) return 0.5;
+        if (t < 0.04) return 0.5 - (t - 0.02) / 0.02 * 0.3;
+        if (t < 0.06) return 0.2;
+        if (t < 0.08) return 0.2 + (t - 0.06) / 0.02 * 0.3;
+        if (t < 0.11) return 0.5;
+        // T3 esquerda
+        if (t < 0.13) return 0.5 - (t - 0.11) / 0.02 * 0.25;
+        if (t < 0.16) return 0.25;
+        if (t < 0.17) return 0.25 + (t - 0.16) / 0.01 * 0.25;
+        if (t < 0.20) return 0.5;
+        // T4 esquerda
+        if (t < 0.22) return 0.5 - (t - 0.20) / 0.02 * 0.25;
+        if (t < 0.26) return 0.25;
+        if (t < 0.28) return 0.25 + (t - 0.26) / 0.02 * 0.25;
+        if (t < 0.32) return 0.5;
+        // T6 esquerda suave
+        if (t < 0.34) return 0.5 - (t - 0.32) / 0.02 * 0.15;
+        if (t < 0.37) return 0.35;
+        if (t < 0.38) return 0.35 + (t - 0.37) / 0.01 * 0.15;
+        // T7 Ferradura direita
+        if (t < 0.40) return 0.5 + (t - 0.38) / 0.02 * 0.3;
+        if (t < 0.44) return 0.8;
+        if (t < 0.46) return 0.8 - (t - 0.44) / 0.02 * 0.3;
+        // T8 Pinheirinho esquerda forte
+        if (t < 0.48) return 0.5;
+        if (t < 0.50) return 0.5 - (t - 0.48) / 0.02 * 0.4;
+        if (t < 0.54) return 0.1;
+        if (t < 0.56) return 0.1 + (t - 0.54) / 0.02 * 0.4;
+        if (t < 0.60) return 0.5;
+        // T10 Mergulho esquerda
+        if (t < 0.63) return 0.5 - (t - 0.60) / 0.03 * 0.25;
+        if (t < 0.68) return 0.25;
+        if (t < 0.70) return 0.25 + (t - 0.68) / 0.02 * 0.25;
+        // T11 esquerda
+        if (t < 0.72) return 0.5 - (t - 0.70) / 0.02 * 0.25;
+        if (t < 0.76) return 0.25;
+        if (t < 0.78) return 0.25 + (t - 0.76) / 0.02 * 0.25;
+        // T12 Junção esquerda
+        if (t < 0.80) return 0.5 - (t - 0.78) / 0.02 * 0.25;
+        if (t < 0.85) return 0.25;
+        if (t < 0.88) return 0.25 + (t - 0.85) / 0.03 * 0.25;
+        return 0.5;
+      },
+      throttle: t => {
+        // T1: sem gás → retoma
+        if (t < 0.05) return 0;
+        if (t < 0.08) return (t - 0.05) / 0.03;
+        if (t < 0.11) return 1;
+        // T3: corta → retoma
+        if (t < 0.15) return 0;
+        if (t < 0.17) return (t - 0.15) / 0.02;
+        if (t < 0.20) return 1;
+        // T4: corta → retoma
+        if (t < 0.26) return 0;
+        if (t < 0.28) return (t - 0.26) / 0.02;
+        if (t < 0.32) return 1;
+        // T6: lift + feathering
+        if (t < 0.33) return 1 - (t - 0.32) / 0.01 * 0.6;
+        if (t < 0.36) return 0.4;
+        if (t < 0.38) return 0.4 + (t - 0.36) / 0.02 * 0.6;
+        // T7: corta → retoma lenta
+        if (t < 0.43) return 0;
+        if (t < 0.46) return (t - 0.43) / 0.03 * 0.7;
+        // T8: corta → saída lenta
+        if (t < 0.52) return 0;
+        if (t < 0.56) return (t - 0.52) / 0.04 * 0.6;
+        if (t < 0.60) return 0.6 + (t - 0.56) / 0.04 * 0.4;
+        // T10: corta → retoma
+        if (t < 0.68) return 0;
+        if (t < 0.70) return (t - 0.68) / 0.02;
+        // T11: corta → retoma
+        if (t < 0.76) return 0;
+        if (t < 0.78) return (t - 0.76) / 0.02;
+        // T12: corta → saída crucial
+        if (t < 0.84) return 0;
+        if (t < 0.88) return Math.pow((t - 0.84) / 0.04, 0.9) * 0.5;
+        if (t < 0.94) return 0.5 + (t - 0.88) / 0.06 * 0.5;
+        return 1;
+      },
+    },
+    duration: 45000, diff: 3,
+  },
 ];
 
 // Tutorials for Interlagos scenarios
@@ -497,5 +749,23 @@ export const INTERLAGOS_TUTORIALS = {
     ],
     diagram: 'smooth_exit',
     tips: ['Volante vai endireitando', 'Acelerador a fundo o mais rápido possível', 'Exercício de saída pura — velocidade na reta depende disso'],
+  },
+  ilg_half_lap: {
+    title: 'Meia Volta — Interlagos',
+    paragraphs: [
+      'Setores 1 e 2 de Interlagos em sequência contínua: Senna S → Curva do Sol → Descida do Lago → Laranjinha → Pinheirinho.',
+      'São 25 segundos ininterruptos. O ritmo é tudo — cada curva conecta naturalmente na próxima. Nas retas entre curvas, acelere a fundo.',
+    ],
+    diagram: 'full_corner',
+    tips: ['Cada curva é separada por uma breve reta a fundo', 'Mantenha o ritmo — não pense em cada curva isolada', 'A Laranjinha é SEM FREIO — apenas tire o pé do gás'],
+  },
+  ilg_full_lap: {
+    title: 'Volta Completa — Interlagos',
+    paragraphs: [
+      'A volta inteira do Autódromo José Carlos Pace: 9 curvas, 45 segundos de concentração total.',
+      'É o teste supremo. Freio, volante e acelerador em sequência ininterrupta. Dominar isso é dominar Interlagos.',
+    ],
+    diagram: 'full_corner',
+    tips: ['45 segundos de foco absoluto', 'Cada reta é para recuperar — gás a fundo e respirar', 'A Junção no final é a mais importante — concentre-se na saída'],
   },
 };
