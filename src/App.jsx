@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ALL_EXERCISES, EXERCISE_CATEGORIES, BRAKE_EXERCISES } from './data/exercises';
+import { PROGRAMS } from './data/programs';
 import { parseCSV, detectBrakeZones, zoneToExercise } from './utils/telemetry';
 import { getDefaultPedalConfig } from './utils/gamepad';
 import ExerciseScreen from './components/ExerciseScreen';
 import ConfigScreen from './components/ConfigScreen';
 import ProgressScreen from './components/ProgressScreen';
+import ProgramsScreen from './components/ProgramsScreen';
+import ProgramSessionScreen from './components/ProgramSessionScreen';
 import SetupWizard from './components/SetupWizard';
 import { BrakeIcon, ThrottleIcon, ClutchIcon, SteeringIcon } from './components/SetupWizard';
 import { DifficultyDots, StatusBadge, CategoryBadge, LevelBadge, ScoreRing } from './components/UI';
@@ -150,15 +153,53 @@ export default function App() {
 
   const openExercise = ex => { setSelectedEx(ex); setScreen('exercise'); };
 
+  // Program session state
+  const [activeProgram, setActiveProgram] = useState(null);
+  const [activeWeekIdx, setActiveWeekIdx] = useState(0);
+  const [activeSessionIdx, setActiveSessionIdx] = useState(0);
+
+  const startProgramSession = (program, weekIdx, sessionIdx) => {
+    setActiveProgram(program);
+    setActiveWeekIdx(weekIdx);
+    setActiveSessionIdx(sessionIdx);
+    setScreen('program_session');
+  };
+
   // ── Screen routing ──
   if (screen === 'wizard') return <SetupWizard onComplete={() => setScreen('menu')} gpConnected={gpConnected} gpName={gpName} pedalConfigs={pedalConfigs} setPedalConfigs={setPedalConfigs} />;
   if (screen === 'config') return <ConfigScreen onBack={() => setScreen('menu')} gpConnected={gpConnected} gpName={gpName} pedalConfigs={pedalConfigs} setPedalConfigs={setPedalConfigs} />;
   if (screen === 'exercise') return <ExerciseScreen exercise={selectedEx} onBack={() => setScreen('menu')} inputMode={inputMode} pedalConfigs={pedalConfigs} onResult={handleResult} />;
   if (screen === 'progress') return <ProgressScreen sessionHistory={sessionLog} onBack={() => setScreen('menu')} />;
+  if (screen === 'programs') return <ProgramsScreen onBack={() => setScreen('menu')} onStartSession={startProgramSession} sessionLog={sessionLog} />;
+  if (screen === 'program_session' && activeProgram) return (
+    <ProgramSessionScreen
+      program={activeProgram} weekIdx={activeWeekIdx} sessionIdx={activeSessionIdx}
+      onBack={() => setScreen('programs')} onResult={handleResult}
+      inputMode={inputMode} pedalConfigs={pedalConfigs}
+    />
+  );
 
   // ── Main Menu ──
   const totalAttempts = sessionLog.length;
   const sessionAvg = totalAttempts > 0 ? Math.round(sessionLog.reduce((s, e) => s + e.score, 0) / totalAttempts) : 0;
+
+  // Program progress helper
+  const getProgramProgress = (prog) => {
+    let total = 0, done = 0;
+    for (const w of prog.weeks) for (const s of w.sessions) {
+      total++;
+      if (s.exercises.every(exId => sessionLog.filter(e => e.exId === exId).reduce((mx, e) => Math.max(mx, e.score), 0) >= s.minScore)) done++;
+    }
+    return { total, done, pct: total > 0 ? Math.round((done / total) * 100) : 0 };
+  };
+
+  // Find next session for a program
+  const getNextSession = (prog) => {
+    for (const w of prog.weeks) for (const s of w.sessions) {
+      if (!s.exercises.every(exId => sessionLog.filter(e => e.exId === exId).reduce((mx, e) => Math.max(mx, e.score), 0) >= s.minScore)) return s;
+    }
+    return null;
+  };
 
   return (
     <div style={{ maxWidth: 780, width: '100%' }}>
@@ -181,17 +222,84 @@ export default function App() {
         </div>
       </div>
 
+      {/* ── Programs section ── */}
+      <div className="animate-in animate-in-delay-1" style={{ marginBottom: '1.25rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 16 }}>🎯</span>
+            <h2 style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '.3px' }}>PROGRAMAS DE TREINO</h2>
+          </div>
+          <button onClick={() => setScreen('programs')} style={{ ...btn, fontSize: 10, padding: '5px 14px', color: '#2980b9', borderColor: '#2980b930' }}>VER TODOS →</button>
+        </div>
+        <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 6, scrollSnapType: 'x mandatory' }}>
+          {PROGRAMS.map((prog) => {
+            const pr = getProgramProgress(prog);
+            const next = getNextSession(prog);
+            const isComplete = !next;
+            return (
+              <div key={prog.id} onClick={() => setScreen('programs')}
+                style={{
+                  minWidth: 200, maxWidth: 220, flex: '0 0 auto', scrollSnapAlign: 'start',
+                  background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)',
+                  boxShadow: 'var(--shadow-card)', padding: '14px 16px', cursor: 'pointer',
+                  borderTop: `3px solid ${prog.color}40`,
+                  transition: 'box-shadow .2s, border-color .2s',
+                }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 18 }}>{prog.icon}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-display)', color: prog.color }}>{prog.name}</span>
+                  </div>
+                </div>
+                <p style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.3, marginBottom: 8, minHeight: 26 }}>{prog.desc.substring(0, 60)}...</p>
+                {/* Progress bar */}
+                <div style={{ marginBottom: 6 }}>
+                  <div style={{ height: 4, background: 'var(--bg-inset)', borderRadius: 2, overflow: 'hidden', border: '1px solid var(--border)' }}>
+                    <div style={{ width: `${pr.pct}%`, height: '100%', background: prog.color, borderRadius: 2, transition: 'width .4s' }} />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                    {pr.done}/{pr.total} sessões
+                  </span>
+                  {isComplete ? (
+                    <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: '#27ae60', fontWeight: 600 }}>✓ COMPLETO</span>
+                  ) : pr.pct > 0 ? (
+                    <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: prog.color, fontWeight: 600 }}>{pr.pct}%</span>
+                  ) : (
+                    <span style={{
+                      fontSize: 8, fontFamily: 'var(--font-mono)', padding: '2px 8px', borderRadius: 8,
+                      background: prog.color + '12', color: prog.color, fontWeight: 600, letterSpacing: '.3px',
+                    }}>{prog.level.toUpperCase()}</span>
+                  )}
+                </div>
+                {/* Next session hint */}
+                {next && (
+                  <div style={{
+                    marginTop: 8, padding: '6px 10px', background: prog.color + '08', borderRadius: 8,
+                    border: `1px solid ${prog.color}15`, fontSize: 10, color: prog.color, fontWeight: 500,
+                  }}>
+                    Próximo: {next.title}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* ── Session summary ── */}
       {totalAttempts > 0 && (
-        <div className="card animate-in animate-in-delay-1" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 18px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
-            <span style={{ fontSize: 11, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '1px' }}>PROGRESS:</span>
-            <span style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-display)', color: sessionAvg >= 70 ? 'var(--accent-throttle)' : 'var(--accent-clutch)' }}>{sessionAvg}%</span>
-            <div style={{ flex: 1, maxWidth: 200, height: 6, background: 'var(--bg-inset)', borderRadius: 3, overflow: 'hidden', border: '1px solid var(--border)' }}>
+        <div className="card animate-in animate-in-delay-2" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '12px 18px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1 }}>
+            <span style={{ fontSize: 11, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '1px' }}>SESSÃO:</span>
+            <span style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)', color: sessionAvg >= 70 ? 'var(--accent-throttle)' : 'var(--accent-clutch)' }}>{sessionAvg}%</span>
+            <div style={{ flex: 1, maxWidth: 160, height: 5, background: 'var(--bg-inset)', borderRadius: 3, overflow: 'hidden', border: '1px solid var(--border)' }}>
               <div style={{ width: `${sessionAvg}%`, height: '100%', background: sessionAvg >= 70 ? 'linear-gradient(90deg, #27ae60, #2ecc71)' : 'linear-gradient(90deg, #f39c12, #e67e22)', borderRadius: 3 }} />
             </div>
+            <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{totalAttempts} treinos</span>
           </div>
-          <button onClick={() => setScreen('progress')} style={{ ...btn, borderColor: '#8e44ad30', color: '#8e44ad', background: '#f3e8f9', fontWeight: 600 }}>EVOLUÇÃO</button>
+          <button onClick={() => setScreen('progress')} style={{ ...btn, borderColor: '#8e44ad30', color: '#8e44ad', background: '#f3e8f9', fontWeight: 600, fontSize: 11 }}>EVOLUÇÃO</button>
         </div>
       )}
 
@@ -212,6 +320,13 @@ export default function App() {
             {m === 'keyboard' ? 'TECLADO ↑↓' : 'PEDAL / G29'}
           </button>
         ))}
+      </div>
+
+      {/* ── Free practice header ── */}
+      <div className="animate-in" style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, marginTop: 8 }}>
+        <span style={{ fontSize: 14 }}>🏎️</span>
+        <h2 style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '.3px', color: 'var(--text-secondary)' }}>TREINO LIVRE</h2>
+        <div style={{ flex: 1, height: 1, background: 'var(--border)', marginLeft: 8 }} />
       </div>
 
       {/* ── Exercise sections by category ── */}
