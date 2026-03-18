@@ -47,4 +47,6 @@ Configurações de pedais, histórico e scores são salvos no localStorage e sob
 
 **O pedal errado está sendo lido**
 → Vá em "Configurar pedais" → "Iniciar detecção" e siga o wizard.
+
+
 ---
