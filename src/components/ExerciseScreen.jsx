@@ -7,6 +7,7 @@ import { makeCurvePoints, calcScore, analyzePerformance } from '../utils/scoring
 import { readPedal, readSteering, readShifterButtons, readHShifterGear } from '../utils/gamepad';
 import { TUTORIALS, LIVE_TIPS, getLiveTip } from '../data/tutorials';
 import { gearToValue } from '../data/gears';
+import { applyProfile, applyProfileToCurves, getProfileDuration } from '../data/carProfiles';
 
 const btnS = { padding: '5px 14px', fontSize: 12, borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-body)' };
 
@@ -16,7 +17,7 @@ function readInput(key, pedalConfigs, gearState) {
   return readPedal(pedalConfigs[key]);
 }
 
-export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfigs, onResult }) {
+export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfigs, onResult, carProfile }) {
   const isGearExercise = exercise.pedal === 'sequential' || exercise.pedal === 'hpattern';
   const isCombined = exercise.pedal === 'combined' || isGearExercise;
   const isSteering = exercise.pedal === 'steering';
@@ -73,11 +74,16 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
   const keysRef = useRef({ up: false, down: false, left: false, right: false, shiftUp: false, shiftDown: false });
 
   const LEAD_IN_MS = 1500;
-  const totalDuration = (exercise.duration + LEAD_IN_MS) * speedMultiplier;
+  const profileDuration = getProfileDuration(exercise.duration, carProfile);
+  const totalDuration = (profileDuration + LEAD_IN_MS) * speedMultiplier;
   const leadInRatio = LEAD_IN_MS / totalDuration;
 
+  // Apply car profile to curves
+  const profiledCurve = !isCombined && exercise.curve ? applyProfile(exercise.curve, pedalType, carProfile) : null;
+  const profiledCurves = isCombined && exercise.curves ? applyProfileToCurves(exercise.curves, carProfile) : null;
+
   // Generate target points with lead-in flat zone at the start
-  const targetPts = !isCombined ? (() => {
+  const targetPts = !isCombined && profiledCurve ? (() => {
     const pts = [];
     const n = 200;
     const restVal = isSteering ? 0.5 : 0;
@@ -87,14 +93,14 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
         pts.push({ t, v: restVal });
       } else {
         const curveT = (t - leadInRatio) / (1 - leadInRatio);
-        pts.push({ t, v: exercise.curve(curveT) });
+        pts.push({ t, v: profiledCurve(curveT) });
       }
     }
     return pts;
   })() : null;
 
-  // For combined: generate curves with lead-in
-  const combinedTargetPtsMap = isCombined ? (() => {
+  // For combined: generate curves with lead-in (using profiled curves)
+  const combinedTargetPtsMap = isCombined && profiledCurves ? (() => {
     const map = {};
     for (const key of combinedKeys) {
       const pts = [];
@@ -106,7 +112,7 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
           pts.push({ t, v: restVal });
         } else {
           const curveT = (t - leadInRatio) / (1 - leadInRatio);
-          pts.push({ t, v: exercise.curves[key](curveT) });
+          pts.push({ t, v: profiledCurves[key](curveT) });
         }
       }
       map[key] = pts;
@@ -361,6 +367,22 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
           <button onClick={() => setSpeedMultiplier(1)} style={{ ...btnS, fontSize: 10, padding: '3px 10px', color: '#2980b9', borderColor: '#2980b930' }}>
             VELOCIDADE NORMAL
           </button>
+        </div>
+      )}
+
+      {/* Car profile indicator */}
+      {carProfile && carProfile.id !== 'default' && (
+        <div className="animate-in" style={{
+          display: 'flex', alignItems: 'center', gap: 8, padding: '7px 14px', marginBottom: 10,
+          background: carProfile.color + '10', borderRadius: 10, border: `1px solid ${carProfile.color}20`,
+        }}>
+          <span style={{ fontSize: 14 }}>{carProfile.icon}</span>
+          <span style={{ fontSize: 11, color: carProfile.color, fontWeight: 600, fontFamily: 'var(--font-condensed)', letterSpacing: '.3px' }}>
+            PERFIL: {carProfile.name.toUpperCase()}
+          </span>
+          <span style={{ fontSize: 10, color: 'var(--text-muted)', flex: 1 }}>
+            {carProfile.durationScale > 1 ? 'Zonas mais longas' : carProfile.durationScale < 1 ? 'Reações mais rápidas' : ''}
+          </span>
         </div>
       )}
 

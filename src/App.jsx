@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ALL_EXERCISES, EXERCISE_CATEGORIES, BRAKE_EXERCISES } from './data/exercises';
 import { PROGRAMS } from './data/programs';
+import { CAR_PROFILES } from './data/carProfiles';
 import { parseCSV, detectBrakeZones, zoneToExercise } from './utils/telemetry';
 import { getDefaultPedalConfig } from './utils/gamepad';
 import ExerciseScreen from './components/ExerciseScreen';
@@ -134,7 +135,8 @@ export default function App() {
   const [gpConnected, setGpConnected] = useState(false);
   const [gpName, setGpName] = useState('');
   const [inputMode, setInputMode] = useState(() => loadStored('inputMode', 'keyboard'));
-  const [inputFilter, setInputFilter] = useState('all'); // all | pedals | pedals_steering | pedals_steering_gear
+  const [inputFilter, setInputFilter] = useState('all');
+  const [carProfile, setCarProfile] = useState(CAR_PROFILES[0]); // default
   const [telemZones, setTelemZones] = useState([]);
   const [telemFile, setTelemFile] = useState('');
   const [sessionLog, setSessionLog] = useState(() => loadStored('sessionLog', []));
@@ -228,14 +230,14 @@ export default function App() {
   // ── All other screens with global header ──
   const renderScreen = () => {
     if (screen === 'config') return <ConfigScreen onBack={() => setScreen('menu')} gpConnected={gpConnected} gpName={gpName} pedalConfigs={pedalConfigs} setPedalConfigs={setPedalConfigs} />;
-    if (screen === 'exercise') return <ExerciseScreen exercise={selectedEx} onBack={() => setScreen('menu')} inputMode={inputMode} pedalConfigs={pedalConfigs} onResult={handleResult} />;
+    if (screen === 'exercise') return <ExerciseScreen exercise={selectedEx} onBack={() => setScreen('menu')} inputMode={inputMode} pedalConfigs={pedalConfigs} onResult={handleResult} carProfile={carProfile} />;
     if (screen === 'progress') return <ProgressScreen sessionHistory={sessionLog} onBack={() => setScreen('menu')} />;
     if (screen === 'programs') return <ProgramsScreen onBack={() => setScreen('menu')} onStartSession={startProgramSession} sessionLog={sessionLog} initialProgram={initialProgramForScreen} />;
     if (screen === 'program_session' && activeProgram) return (
       <ProgramSessionScreen
         program={activeProgram} weekIdx={activeWeekIdx} sessionIdx={activeSessionIdx}
         onBack={() => { setInitialProgramForScreen(activeProgram); setScreen('programs'); }} onResult={handleResult}
-        inputMode={inputMode} pedalConfigs={pedalConfigs}
+        inputMode={inputMode} pedalConfigs={pedalConfigs} carProfile={carProfile}
       />
     );
     return null; // menu renders below
@@ -444,7 +446,7 @@ export default function App() {
       )}
 
       {/* ── Controls row ── */}
-      <div className="animate-in animate-in-delay-1" style={{ display: 'flex', gap: 6, marginBottom: '0.5rem', marginTop: totalAttempts > 0 ? 0 : '0.5rem', flexWrap: 'wrap' }}>
+      <div className="animate-in animate-in-delay-1" style={{ display: 'flex', gap: 6, marginBottom: '0.5rem', marginTop: totalAttempts > 0 ? 0 : '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
         {['keyboard', 'gamepad'].map(m => (
           <button key={m} onClick={() => { if (m === 'gamepad' && !gpConnected) return; setInputMode(m); }}
             disabled={m === 'gamepad' && !gpConnected}
@@ -458,6 +460,20 @@ export default function App() {
               boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
             }}>
             {m === 'keyboard' ? 'TECLADO ↑↓' : 'PEDAL / G29'}
+          </button>
+        ))}
+        <div style={{ width: 1, height: 20, background: 'var(--border)', margin: '0 4px' }} />
+        {CAR_PROFILES.map(p => (
+          <button key={p.id} onClick={() => setCarProfile(p)}
+            style={{
+              padding: '5px 12px', fontSize: 10, borderRadius: 16, fontWeight: 600,
+              fontFamily: 'var(--font-condensed)', letterSpacing: '.3px', cursor: 'pointer',
+              border: `1.5px solid ${carProfile.id === p.id ? p.color : 'var(--border)'}`,
+              background: carProfile.id === p.id ? p.color + '12' : 'var(--bg-card)',
+              color: carProfile.id === p.id ? p.color : 'var(--text-muted)',
+              boxShadow: carProfile.id === p.id ? `0 1px 4px ${p.color}15` : '0 1px 2px rgba(0,0,0,0.03)',
+            }}>
+            {p.icon} {p.name}
           </button>
         ))}
       </div>

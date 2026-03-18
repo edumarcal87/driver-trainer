@@ -5,7 +5,7 @@ import { ScoreRing } from './UI';
 
 const btn = { padding: '7px 16px', fontSize: 12, borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 500, boxShadow: '0 1px 2px rgba(0,0,0,0.04)' };
 
-export default function ProgramSessionScreen({ program, weekIdx, sessionIdx, onBack, onResult, inputMode, pedalConfigs }) {
+export default function ProgramSessionScreen({ program, weekIdx, sessionIdx, onBack, onResult, inputMode, pedalConfigs, carProfile }) {
   const week = program.weeks[weekIdx];
   const session = week.sessions[sessionIdx];
   const [currentExIdx, setCurrentExIdx] = useState(0);
@@ -63,6 +63,7 @@ export default function ProgramSessionScreen({ program, weekIdx, sessionIdx, onB
         inputMode={inputMode}
         pedalConfigs={pedalConfigs}
         onResult={handleExResult}
+        carProfile={carProfile}
       />
     );
   }
