@@ -17,7 +17,7 @@ function readInput(key, pedalConfigs, gearState) {
   return readPedal(pedalConfigs[key]);
 }
 
-export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfigs, onResult, carProfile }) {
+export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfigs, onResult, carProfile, sessionLog }) {
   const isGearExercise = exercise.pedal === 'sequential' || exercise.pedal === 'hpattern';
   const isCombined = exercise.pedal === 'combined' || isGearExercise;
   const isSteering = exercise.pedal === 'steering';
@@ -354,6 +354,89 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
         )}
       </div>
 
+      {/* ── Evolution mini-card ── */}
+      {(() => {
+        const history = (sessionLog || [])
+          .filter(e => e.exId === exercise.id && (!carProfile || carProfile.id === 'default' || (e.carProfileId || 'default') === carProfile.id))
+          .slice(0, 10); // last 10 attempts (most recent first)
+        if (history.length === 0) return null;
+
+        const last5 = history.slice(0, 5);
+        const scores = last5.map(e => e.score);
+        const best = Math.max(...history.map(e => e.score));
+        const lastScore = scores[0];
+        const avg = Math.round(scores.reduce((s, v) => s + v, 0) / scores.length);
+
+        // Calculate trend
+        let trend = 0, trendText = '';
+        if (scores.length >= 2) {
+          const recent = scores.slice(0, Math.ceil(scores.length / 2));
+          const older = scores.slice(Math.ceil(scores.length / 2));
+          const recentAvg = recent.reduce((s, v) => s + v, 0) / recent.length;
+          const olderAvg = older.reduce((s, v) => s + v, 0) / older.length;
+          trend = Math.round(recentAvg - olderAvg);
+          if (trend > 3) trendText = `Melhorou ${trend}% recentemente`;
+          else if (trend < -3) trendText = `Caiu ${Math.abs(trend)}% — foco!`;
+          else trendText = 'Desempenho estável';
+        }
+
+        // Mini sparkline
+        const sparkW = 100, sparkH = 28;
+        const reversed = [...scores].reverse();
+        const sparkPts = reversed.map((s, i) => {
+          const x = reversed.length === 1 ? sparkW / 2 : (i / (reversed.length - 1)) * sparkW;
+          const y = sparkH - (s / 100) * sparkH;
+          return `${x.toFixed(1)},${y.toFixed(1)}`;
+        });
+
+        const trendColor = trend > 3 ? '#27ae60' : trend < -3 ? '#e74c3c' : '#2980b9';
+
+        return (
+          <div className="animate-in" style={{
+            display: 'flex', alignItems: 'center', gap: 14, padding: '10px 14px', marginBottom: 10,
+            background: 'var(--bg-card)', borderRadius: 'var(--radius)', border: '1.5px solid var(--border)',
+            boxShadow: 'var(--shadow-card)',
+          }}>
+            {/* Sparkline */}
+            <svg width={sparkW} height={sparkH} style={{ flexShrink: 0, overflow: 'visible' }}>
+              {reversed.length >= 2 && (
+                <polyline points={sparkPts.join(' ')} fill="none" stroke={trendColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              )}
+              {reversed.map((s, i) => (
+                <circle key={i}
+                  cx={reversed.length === 1 ? sparkW / 2 : (i / (reversed.length - 1)) * sparkW}
+                  cy={sparkH - (s / 100) * sparkH}
+                  r="3" fill={s >= 70 ? '#27ae60' : s >= 40 ? '#f39c12' : '#e74c3c'} stroke="#fff" strokeWidth="1.5"
+                />
+              ))}
+            </svg>
+
+            {/* Stats */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                <span style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)', color: lastScore >= 70 ? '#27ae60' : lastScore >= 40 ? '#f39c12' : '#e74c3c' }}>
+                  {lastScore}%
+                </span>
+                <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                  último · melhor {best}% · média {avg}%
+                </span>
+              </div>
+              {trendText && (
+                <p style={{ fontSize: 10, color: trendColor, fontWeight: 600, fontFamily: 'var(--font-condensed)', letterSpacing: '.3px', marginTop: 2 }}>
+                  {trend > 3 ? '📈' : trend < -3 ? '📉' : '➡️'} {trendText}
+                </p>
+              )}
+            </div>
+
+            {/* Attempts count */}
+            <div style={{ textAlign: 'center', flexShrink: 0 }}>
+              <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)' }}>{history.length}</span>
+              <p style={{ fontSize: 8, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', letterSpacing: '.3px' }}>TENTATIVAS</p>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Speed indicator */}
       {speedMultiplier > 1 && (
         <div className="animate-in" style={{
@@ -473,6 +556,107 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
               border: '1px solid var(--accent-throttle)', background: 'var(--accent-throttle-glow)', color: 'var(--accent-throttle)', cursor: 'pointer',
             }}>REPETIR</button>
           </div>
+
+          {/* ── Comparison with previous attempts ── */}
+          {(() => {
+            const hist = (sessionLog || [])
+              .filter(e => e.exId === exercise.id && (!carProfile || carProfile.id === 'default' || (e.carProfileId || 'default') === carProfile.id));
+            // Exclude the most recent entry if it matches this score (just recorded)
+            const prev = hist.length > 0 && hist[0].score === analysis.overall ? hist.slice(1) : hist;
+            if (prev.length === 0) return (
+              <div style={{ padding: '10px 14px', marginBottom: 16, borderRadius: 'var(--radius)', background: '#2980b908', border: '1px solid #2980b915' }}>
+                <p style={{ fontSize: 11, color: '#2980b9', fontWeight: 600, fontFamily: 'var(--font-condensed)', letterSpacing: '.3px' }}>
+                  🎯 Primeira tentativa registrada! Complete mais vezes para ver sua evolução.
+                </p>
+              </div>
+            );
+
+            const prevScore = prev[0].score;
+            const delta = analysis.overall - prevScore;
+            const bestEver = Math.max(...hist.map(e => e.score), analysis.overall);
+            const isNewBest = analysis.overall >= bestEver;
+            const last5 = prev.slice(0, 5);
+            const avgPrev = Math.round(last5.reduce((s, e) => s + e.score, 0) / last5.length);
+            const deltaAvg = analysis.overall - avgPrev;
+
+            // Weekly comparison
+            const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+            const thisWeek = hist.filter(e => e.timestamp > weekAgo);
+            const lastWeek = hist.filter(e => e.timestamp <= weekAgo && e.timestamp > weekAgo - 7 * 24 * 60 * 60 * 1000);
+            let weeklyText = '';
+            if (thisWeek.length > 0 && lastWeek.length > 0) {
+              const thisAvg = Math.round(thisWeek.reduce((s, e) => s + e.score, 0) / thisWeek.length);
+              const lastAvg = Math.round(lastWeek.reduce((s, e) => s + e.score, 0) / lastWeek.length);
+              const weekDelta = thisAvg - lastAvg;
+              if (weekDelta > 0) weeklyText = `Melhorou ${weekDelta}% esta semana`;
+              else if (weekDelta < 0) weeklyText = `Caiu ${Math.abs(weekDelta)}% em relação à semana passada`;
+            }
+
+            // Sparkline of last 5 + current
+            const sparkScores = [...last5.map(e => e.score).reverse(), analysis.overall];
+            const sparkW = 90, sparkH = 24;
+            const sparkPts = sparkScores.map((s, i) => {
+              const x = sparkScores.length === 1 ? sparkW / 2 : (i / (sparkScores.length - 1)) * sparkW;
+              const y = sparkH - (s / 100) * sparkH;
+              return `${x.toFixed(1)},${y.toFixed(1)}`;
+            });
+
+            const deltaColor = delta > 0 ? '#27ae60' : delta < 0 ? '#e74c3c' : '#2980b9';
+
+            return (
+              <div style={{
+                padding: '14px 16px', marginBottom: 16, borderRadius: 'var(--radius-lg)',
+                background: 'var(--bg-card)', border: `1.5px solid ${isNewBest ? '#27ae6030' : 'var(--border)'}`,
+                boxShadow: isNewBest ? '0 2px 12px rgba(39,174,96,0.08)' : 'var(--shadow-card)',
+              }}>
+                {isNewBest && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, padding: '4px 10px', background: '#27ae6012', borderRadius: 8, width: 'fit-content' }}>
+                    <span style={{ fontSize: 12 }}>🏆</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-display)', color: '#27ae60', letterSpacing: '.3px' }}>NOVO RECORDE PESSOAL!</span>
+                  </div>
+                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                  {/* Sparkline */}
+                  <svg width={sparkW} height={sparkH} style={{ flexShrink: 0, overflow: 'visible' }}>
+                    {sparkScores.length >= 2 && (
+                      <polyline points={sparkPts.join(' ')} fill="none" stroke={deltaColor + '60'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    )}
+                    {sparkScores.map((s, i) => {
+                      const isLast = i === sparkScores.length - 1;
+                      return (
+                        <circle key={i}
+                          cx={sparkScores.length === 1 ? sparkW / 2 : (i / (sparkScores.length - 1)) * sparkW}
+                          cy={sparkH - (s / 100) * sparkH}
+                          r={isLast ? 4 : 2.5}
+                          fill={isLast ? deltaColor : s >= 70 ? '#27ae6080' : '#f39c1280'}
+                          stroke={isLast ? '#fff' : 'none'} strokeWidth={isLast ? 2 : 0}
+                        />
+                      );
+                    })}
+                  </svg>
+
+                  {/* Comparison stats */}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-condensed)', color: deltaColor }}>
+                        {delta > 0 ? '▲' : delta < 0 ? '▼' : '●'} {delta > 0 ? '+' : ''}{delta}% vs anterior ({prevScore}%)
+                      </span>
+                      {deltaAvg !== 0 && last5.length >= 2 && (
+                        <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                          · {deltaAvg > 0 ? '+' : ''}{deltaAvg}% vs média ({avgPrev}%)
+                        </span>
+                      )}
+                    </div>
+                    {weeklyText && (
+                      <p style={{ fontSize: 10, color: deltaColor, fontFamily: 'var(--font-condensed)', letterSpacing: '.3px', marginTop: 3 }}>
+                        📊 {weeklyText}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Per-input scores (combined only) */}
           {isCombined && Object.keys(combinedScores).length > 0 && (

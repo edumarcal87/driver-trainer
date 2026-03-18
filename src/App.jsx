@@ -231,14 +231,14 @@ export default function App() {
   // ── All other screens with global header ──
   const renderScreen = () => {
     if (screen === 'config') return <ConfigScreen onBack={() => setScreen('menu')} gpConnected={gpConnected} gpName={gpName} pedalConfigs={pedalConfigs} setPedalConfigs={setPedalConfigs} />;
-    if (screen === 'exercise') return <ExerciseScreen exercise={selectedEx} onBack={() => setScreen('menu')} inputMode={inputMode} pedalConfigs={pedalConfigs} onResult={handleResult} carProfile={carProfile} />;
+    if (screen === 'exercise') return <ExerciseScreen exercise={selectedEx} onBack={() => setScreen('menu')} inputMode={inputMode} pedalConfigs={pedalConfigs} onResult={handleResult} carProfile={carProfile} sessionLog={sessionLog} />;
     if (screen === 'progress') return <ProgressScreen sessionHistory={sessionLog} onBack={() => setScreen('menu')} carProfile={carProfile} setCarProfile={setCarProfile} />;
     if (screen === 'programs') return <ProgramsScreen onBack={() => setScreen('menu')} onStartSession={startProgramSession} sessionLog={sessionLog} initialProgram={initialProgramForScreen} carProfile={carProfile} setCarProfile={setCarProfile} />;
     if (screen === 'program_session' && activeProgram) return (
       <ProgramSessionScreen
         program={activeProgram} weekIdx={activeWeekIdx} sessionIdx={activeSessionIdx}
         onBack={() => { setInitialProgramForScreen(activeProgram); setScreen('programs'); }} onResult={handleResult}
-        inputMode={inputMode} pedalConfigs={pedalConfigs} carProfile={carProfile}
+        inputMode={inputMode} pedalConfigs={pedalConfigs} carProfile={carProfile} sessionLog={sessionLog}
       />
     );
     return null; // menu renders below
