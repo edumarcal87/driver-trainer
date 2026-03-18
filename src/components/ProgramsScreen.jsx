@@ -199,15 +199,17 @@ export default function ProgramsScreen({ onBack, onStartSession, sessionLog }) {
                         border: `1.5px solid ${prog.color}`, background: prog.color + '12', color: prog.color, cursor: 'pointer',
                         boxShadow: `0 1px 4px ${prog.color}15`, width: '100%',
                       }}>
-                        {isCurrent ? 'INICIAR SESSÃO' : 'REPETIR SESSÃO'}
+                        {isCurrent ? 'INICIAR SESSÃO' : 'INICIAR SESSÃO'}
                       </button>
                     )}
                     {allPassed && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: '#27ae60', fontWeight: 600 }}>✓ COMPLETA</span>
                         <button onClick={() => onStartSession(prog, wi, si)} style={{
-                          ...btn, fontSize: 10, padding: '4px 12px', marginLeft: 'auto', color: 'var(--text-muted)',
-                        }}>REPETIR</button>
+                          padding: '7px 18px', fontSize: 11, borderRadius: 10, fontWeight: 700, fontFamily: 'var(--font-display)',
+                          border: `1.5px solid ${prog.color}40`, background: prog.color + '08', color: prog.color, cursor: 'pointer',
+                          marginLeft: 'auto', boxShadow: `0 1px 3px ${prog.color}10`,
+                        }}>🔄 REPETIR SESSÃO</button>
                       </div>
                     )}
                   </div>

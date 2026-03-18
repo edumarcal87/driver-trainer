@@ -247,7 +247,14 @@ export default function App() {
                 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 18 }}>{prog.icon}</span>
+                    {prog.level === 'Pista Real' ? (
+                      <svg width="20" height="20" viewBox="0 0 32 32" fill="none" style={{ flexShrink: 0 }}>
+                        <circle cx="16" cy="16" r="14" fill={prog.color} opacity=".12" stroke={prog.color} strokeWidth="1"/>
+                        <path d="M13 13 Q16 10 19 13 Q22 16 19 19 Q16 22 13 19 Q10 16 13 13" fill="none" stroke={prog.color} strokeWidth="2" strokeLinecap="round"/>
+                      </svg>
+                    ) : (
+                      <span style={{ fontSize: 18 }}>{prog.icon}</span>
+                    )}
                     <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-display)', color: prog.color }}>{prog.name}</span>
                   </div>
                 </div>
@@ -320,6 +327,30 @@ export default function App() {
             {m === 'keyboard' ? 'TECLADO ↑↓' : 'PEDAL / G29'}
           </button>
         ))}
+      </div>
+
+      {/* ── Interlagos section ── */}
+      <div className="animate-in" style={{ marginTop: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, marginTop: 20 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: '#00973912', border: '1.5px solid #00973925', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
+              <path d="M16 2 L14 6 L10 5 L9 9 L5 10 L6 14 L2 16 L6 18 L5 22 L9 23 L10 27 L14 26 L16 30 L18 26 L22 27 L23 23 L27 22 L26 18 L30 16 L26 14 L27 10 L23 9 L22 5 L18 6 Z" fill="#009739" opacity=".15" stroke="#009739" strokeWidth="1"/>
+              <circle cx="16" cy="16" r="6" fill="none" stroke="#009739" strokeWidth="1.5"/>
+              <path d="M13 13 Q16 10 19 13 Q22 16 19 19 Q16 22 13 19 Q10 16 13 13" fill="none" stroke="#009739" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <div style={{ flex: 1 }}>
+            <h2 style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)', color: '#009739', letterSpacing: '.3px' }}>INTERLAGOS — VOLTA COMPLETA</h2>
+          </div>
+          <button onClick={() => setScreen('programs')} style={{ ...btn, fontSize: 10, padding: '5px 12px', color: '#009739', borderColor: '#00973930' }}>VER PROGRAMA →</button>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 10 }}>
+          {exercises.filter(ex => ex.track === 'interlagos').map(ex => (
+            <ExerciseCard key={ex.id} ex={ex} best={bests[ex.id]}
+              attempts={sessionLog.filter(s => s.exId === ex.id).length}
+              onOpen={() => openExercise(ex)} />
+          ))}
+        </div>
       </div>
 
       {/* ── Free practice header ── */}
