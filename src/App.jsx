@@ -156,21 +156,6 @@ export default function App() {
   if (screen === 'exercise') return <ExerciseScreen exercise={selectedEx} onBack={() => setScreen('menu')} inputMode={inputMode} pedalConfigs={pedalConfigs} onResult={handleResult} />;
   if (screen === 'progress') return <ProgressScreen sessionHistory={sessionLog} onBack={() => setScreen('menu')} />;
 
-  if (screen === 'telemetry') return (
-    <div style={{ maxWidth: 780, width: '100%' }}>
-      <div className="animate-in" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1rem' }}>
-        <button onClick={() => setScreen('menu')} style={btn}>← VOLTAR</button>
-        <div><h2 style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-display)' }}>Telemetria importada</h2>
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{telemFile} — {telemZones.length} zona(s)</p></div>
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 12 }}>
-        {telemZones.map((ex, i) => (
-          <ExerciseCard key={ex.id} ex={ex} best={bests[ex.id]} attempts={sessionLog.filter(s => s.exId === ex.id).length} onOpen={() => openExercise(ex)} />
-        ))}
-      </div>
-    </div>
-  );
-
   // ── Main Menu ──
   const totalAttempts = sessionLog.length;
   const sessionAvg = totalAttempts > 0 ? Math.round(sessionLog.reduce((s, e) => s + e.score, 0) / totalAttempts) : 0;
@@ -227,23 +212,7 @@ export default function App() {
             {m === 'keyboard' ? 'TECLADO ↑↓' : 'PEDAL / G29'}
           </button>
         ))}
-        <label style={{ ...btn, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-          IMPORTAR CSV
-          <input type="file" accept=".csv,.txt" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) handleFile(e.target.files[0]); }} />
-        </label>
       </div>
-
-      {/* ── Telemetry banner ── */}
-      {telemZones.length > 0 && (
-        <div className="card animate-in" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderLeft: '3px solid #8e44ad30' }}>
-          <span style={{ fontSize: 18 }}>📊</span>
-          <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 12, fontWeight: 500, color: '#8e44ad' }}>{telemFile}</p>
-            <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{telemZones.length} zonas detectadas</p>
-          </div>
-          <button onClick={() => setScreen('telemetry')} style={{ ...btn, borderColor: '#8e44ad30', color: '#8e44ad' }}>VER</button>
-        </div>
-      )}
 
       {/* ── Exercise sections by category ── */}
       {EXERCISE_CATEGORIES.map(cat => {
@@ -284,16 +253,6 @@ export default function App() {
           </div>
         </div>
       )}
-
-      {/* ── Drop zone ── */}
-      <div
-        onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--accent-throttle)'; }}
-        onDragLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; }}
-        onDrop={e => { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--border)'; if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); }}
-        style={{ marginTop: '1.5rem', padding: '2rem', border: '2px dashed var(--border)', borderRadius: 'var(--radius-lg)', textAlign: 'center', transition: 'border-color .2s', background: 'var(--bg-card)' }}>
-        <p style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-condensed)', letterSpacing: '.3px' }}>ARRASTE UM CSV DE TELEMETRIA AQUI</p>
-        <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6, opacity: .6 }}>Garage61 · MoTeC · SRT · qualquer CSV com coluna Brake</p>
-      </div>
 
       {/* ── Footer ── */}
       <div style={{ marginTop: '2rem', padding: '12px 0', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
