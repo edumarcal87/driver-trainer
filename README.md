@@ -47,14 +47,4 @@ Configurações de pedais, histórico e scores são salvos no localStorage e sob
 
 **O pedal errado está sendo lido**
 → Vá em "Configurar pedais" → "Iniciar detecção" e siga o wizard.
-
-**O site no GitHub Pages mostra 404**
-→ Verifique se o nome do repositório bate com o `base` no `vite.config.js`. Se o repo se chama `meu-brake-trainer`, altere para `base: '/meu-brake-trainer/'`.
-
-**O gamepad não é detectado no site remoto**
-→ O site precisa estar em HTTPS (GitHub Pages já é). Pressione qualquer botão no volante antes de clicar em "Configurar pedais".
-
-**Funciona local mas não no GitHub Pages**
-→ Verifique na aba Actions se o build passou. Erros comuns: nome do repo diferente do `base` no vite.config.
-
 ---
