@@ -287,4 +287,56 @@ export const PROGRAMS = [
       },
     ]
   },
+
+  // ═══════════════════════════════════════════
+  // CENÁRIOS DE PISTA
+  // ═══════════════════════════════════════════
+  {
+    id: 'prog_interlagos',
+    name: 'Interlagos — Volta Completa',
+    desc: 'Treine cada curva do Autódromo José Carlos Pace. 12 cenários reais baseados em telemetria.',
+    icon: '🇧🇷',
+    color: '#009739',
+    level: 'Pista Real',
+    weeks: [
+      {
+        title: 'Setor 1 — Senna S, Curva do Sol e Descida',
+        sessions: [
+          { title: 'Senna S — Entrada', exercises: ['ilg_t1_senna_s', 'ilg_t1_senna_s'], minScore: 40, desc: 'Frenagem forte + trail na curva mais icônica' },
+          { title: 'Senna S — Saída', exercises: ['ilg_t2_senna_s2', 'ilg_t2_senna_s2'], minScore: 40, desc: 'Transição rápida para a direita' },
+          { title: 'Senna S Completo', exercises: ['ilg_t1_senna_s', 'ilg_t2_senna_s2'], minScore: 45, desc: 'As duas partes em sequência' },
+          { title: 'Curva do Sol', exercises: ['ilg_t3_curva_sol', 'ilg_t3_curva_sol'], minScore: 40, desc: 'Frenagem leve + trail longo' },
+          { title: 'Descida do Lago', exercises: ['ilg_t4_descida_lago', 'ilg_t4_descida_lago'], minScore: 40, desc: 'Frenagem em descida — suavidade' },
+          { title: 'Setor 1 completo', exercises: ['ilg_t1_senna_s', 'ilg_t3_curva_sol', 'ilg_t4_descida_lago'], minScore: 40, desc: 'Senna S → Sol → Descida em sequência' },
+        ]
+      },
+      {
+        title: 'Setor 2 — Laranjinha, Ferradura e Pinheirinho',
+        sessions: [
+          { title: 'Laranjinha', exercises: ['ilg_t6_laranjinha', 'ilg_t6_laranjinha'], minScore: 45, desc: 'Curva rápida com feathering — sem freio!' },
+          { title: 'Ferradura', exercises: ['ilg_t7_ferradura', 'ilg_t7_ferradura'], minScore: 40, desc: 'Curva longa de direita — paciência' },
+          { title: 'Pinheirinho', exercises: ['ilg_t8_pinheirinho', 'ilg_t8_pinheirinho'], minScore: 40, desc: 'Hairpin — esterço máximo e saída paciente' },
+          { title: 'Setor 2 completo', exercises: ['ilg_t6_laranjinha', 'ilg_t7_ferradura', 'ilg_t8_pinheirinho'], minScore: 40, desc: 'As três curvas do setor 2 em sequência' },
+        ]
+      },
+      {
+        title: 'Setor 3 — Mergulho, Bico de Pato e Junção',
+        sessions: [
+          { title: 'Mergulho', exercises: ['ilg_t10_mergulho', 'ilg_t10_mergulho'], minScore: 40, desc: 'A descida mais íngreme do circuito' },
+          { title: 'Bico de Pato', exercises: ['ilg_t11_bico_pato', 'ilg_t11_bico_pato'], minScore: 40, desc: 'Frenagem forte na subida + trail curto' },
+          { title: 'Junção', exercises: ['ilg_t12_juncao', 'ilg_t12_juncao'], minScore: 45, desc: 'A curva mais importante — saída para a reta' },
+          { title: 'Subida dos Boxes', exercises: ['ilg_t13_subida_boxes', 'ilg_t13_subida_boxes'], minScore: 45, desc: 'Aceleração máxima na subida' },
+          { title: 'Setor 3 completo', exercises: ['ilg_t10_mergulho', 'ilg_t11_bico_pato', 'ilg_t12_juncao'], minScore: 40, desc: 'Mergulho → Bico de Pato → Junção' },
+        ]
+      },
+      {
+        title: 'Volta Completa e Boxes',
+        sessions: [
+          { title: 'Entrada de Boxes', exercises: ['ilg_pit_entry'], minScore: 45, desc: 'Desacelere e desvie para o pit lane' },
+          { title: 'Meia volta (S1+S2)', exercises: ['ilg_t1_senna_s', 'ilg_t3_curva_sol', 'ilg_t4_descida_lago', 'ilg_t6_laranjinha', 'ilg_t8_pinheirinho'], minScore: 38, desc: 'Setores 1 e 2 — metade da volta' },
+          { title: 'Volta completa', exercises: ['ilg_t1_senna_s', 'ilg_t3_curva_sol', 'ilg_t4_descida_lago', 'ilg_t6_laranjinha', 'ilg_t7_ferradura', 'ilg_t8_pinheirinho', 'ilg_t10_mergulho', 'ilg_t11_bico_pato', 'ilg_t12_juncao', 'ilg_t13_subida_boxes'], minScore: 35, desc: 'Todas as curvas — uma volta completa em Interlagos!' },
+        ]
+      },
+    ]
+  },
 ];

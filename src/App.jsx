@@ -332,6 +332,7 @@ export default function App() {
       {/* ── Exercise sections by category ── */}
       {EXERCISE_CATEGORIES.map(cat => {
         const catExercises = exercises.filter(ex => {
+          if (ex.track) return false; // Hide track-specific exercises from free practice
           const p = ex.pedal || 'brake';
           return p === cat.key;
         });

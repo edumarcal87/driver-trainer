@@ -103,6 +103,115 @@ export const TUTORIALS = {
     diagram: 'full_corner',
     tips: ['Freio primeiro (vermelho), forte e trail', 'Volante (azul) entra quando o freio começa a sair', 'Acelerador (verde) só depois que o volante começa a desfazer'],
   },
+  // ── Interlagos scenarios ──
+  ilg_t1_senna_s: {
+    title: 'Curva 1 — Senna S',
+    paragraphs: [
+      'A curva mais icônica de Interlagos. Frenagem forte no final da reta dos boxes, com trail braking longo na entrada à esquerda.',
+      'Solte o freio gradualmente enquanto esterça. Frear demais na curva trava a dianteira.',
+    ],
+    diagram: 'full_corner',
+    tips: ['Frenagem forte mas curta — ataque rápido', 'Trail longo: freio sai enquanto volante entra', 'Acelerador só quando o volante desfaz'],
+  },
+  ilg_t8_pinheirinho: {
+    title: 'Curva 8 — Pinheirinho',
+    paragraphs: [
+      'Hairpin lento que exige paciência. Frenagem forte, esterço máximo, saída controlada.',
+      'O erro mais comum: acelerar cedo demais. Espere o carro apontar antes de pisar no gás.',
+    ],
+    diagram: 'full_corner',
+    tips: ['Freie forte e mantenha', 'Esterço quase total à esquerda', 'Saída com calma — gás só quando endireitar'],
+  },
+  ilg_t12_juncao: {
+    title: 'Curva 12 — Junção',
+    paragraphs: [
+      'A curva mais importante: boa saída = velocidade na reta dos boxes.',
+      'Trail curto, foco na aceleração: comece leve e construa até 100%.',
+    ],
+    diagram: 'trail_throttle',
+    tips: ['Frenagem curta e eficiente', 'Aceleração progressiva', 'Cada 1% a mais na saída = tempo na reta'],
+  },
+  ilg_t10_mergulho: {
+    title: 'Curva 10 — Mergulho',
+    paragraphs: [
+      'Descida mais íngreme do circuito. A transferência de peso muda — freio mais modulado.',
+      'Construa pressão gradualmente, não ataque de golpe.',
+    ],
+    diagram: 'progressive',
+    tips: ['Na descida, ataque gradual', 'Build up: 70% → 100%', 'Trail braking standard na saída'],
+  },
+  ilg_t2_senna_s2: {
+    title: 'Curva 2 — Senna S (saída)',
+    paragraphs: [
+      'Segunda parte do S do Senna. Transição rápida da esquerda para a direita.',
+      'Acelerador dosado na transição — gás parcial entre as curvas, full gas na saída.',
+    ],
+    diagram: 'chicane',
+    tips: ['Transição fluida — não hesite', 'Gás parcial entre os lados', 'Full gas só na saída'],
+  },
+  ilg_t3_curva_sol: {
+    title: 'Curva 3 — Curva do Sol',
+    paragraphs: [
+      'Média velocidade à esquerda. Frenagem mais leve que a T1, trail longo e gradual.',
+      'Boa saída aqui dá velocidade na reta oposta.',
+    ],
+    diagram: 'trail',
+    tips: ['Frenagem leve — não a fundo', 'Trail longo e suave', 'Boa saída = velocidade na reta oposta'],
+  },
+  ilg_t4_descida_lago: {
+    title: 'Curva 4 — Descida do Lago',
+    paragraphs: [
+      'Frenagem em descida forte. O grip muda na descida — menos pressão inicial.',
+      'Evite travar as rodas. Use threshold mais leve (~85%).',
+    ],
+    diagram: 'progressive',
+    tips: ['Ataque mais suave na descida', 'Threshold ~85%, não 100%', 'Trail standard na saída'],
+  },
+  ilg_t6_laranjinha: {
+    title: 'Curva 6 — Laranjinha',
+    paragraphs: [
+      'Curva rápida SEM FREIO! Apenas lift do acelerador e feathering no apex.',
+      'Curva de comprometimento — entre com confiança.',
+    ],
+    diagram: 'feathering',
+    tips: ['SEM FREIO — tire o pé do gás', 'Feathering ~35% no apex', 'Aceleração progressiva na saída'],
+  },
+  ilg_t7_ferradura: {
+    title: 'Curva 7 — Ferradura',
+    paragraphs: [
+      'Curva longa de direita. Esterço prolongado, aceleração gradual.',
+      'O erro comum: acelerar cedo e sair de pista na saída.',
+    ],
+    diagram: 'full_corner',
+    tips: ['Frenagem média e curta', 'Mantenha esterço por bastante tempo', 'Aceleração só quando o carro "apoiar"'],
+  },
+  ilg_t11_bico_pato: {
+    title: 'Curva 11 — Bico de Pato',
+    paragraphs: [
+      'Frenagem forte na subida para curva rápida de esquerda.',
+      'Em subida o carro tem mais grip — pode atacar mais agressivamente.',
+    ],
+    diagram: 'trail',
+    tips: ['Ataque forte — subida dá grip', 'Trail curto — solte rápido', 'Aceleração progressiva'],
+  },
+  ilg_t13_subida_boxes: {
+    title: 'Subida dos Boxes',
+    paragraphs: [
+      'Após a Junção, aceleração máxima na subida para a reta.',
+      'Endireite o volante enquanto sobe o acelerador a 100%.',
+    ],
+    diagram: 'smooth_exit',
+    tips: ['Volante endireitando', 'Acelerador a fundo rápido', 'Velocidade na reta depende desta saída'],
+  },
+  ilg_pit_entry: {
+    title: 'Entrada de Boxes',
+    paragraphs: [
+      'Desacelere controladamente para o pit lane. Respeite o limite de velocidade!',
+      'Freio moderado e constante, desvio suave para a direita.',
+    ],
+    diagram: 'progressive',
+    tips: ['Freio moderado', 'Desvio suave para a direita', 'Sem acelerador no pit'],
+  },
 };
 
 // Live coaching tips shown DURING exercise based on real-time performance
