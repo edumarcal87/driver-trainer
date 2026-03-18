@@ -328,16 +328,20 @@ export const PROGRAMS = [
     icon: '🏁',
     color: '#27ae60',
     level: 'Todos',
+    filterEnabled: true,
     weeks: [
       {
         title: 'Aquecimento pré-corrida',
         sessions: [
-          { title: 'Aquecer freio', exercises: ['b_threshold', 'b_trail'], minScore: 50, desc: 'Aqueça a frenagem' },
-          { title: 'Aquecer acelerador', exercises: ['t_smooth_exit', 't_aggressive_exit'], minScore: 50, desc: 'Calibre a dosagem de gás' },
-          { title: 'Aquecer volante', exercises: ['s_smooth_turn_r', 's_chicane'], minScore: 45, desc: 'Suavize as mãos' },
-          { title: 'Aquecer câmbio', exercises: ['seq_upshift_basic', 'seq_downshift_basic'], minScore: 45, desc: 'Aqueça o timing de troca' },
-          { title: 'Transições', exercises: ['x_trail_throttle', 'x_corner_exit'], minScore: 45, desc: 'Freio→gás, volante→gás' },
-          { title: 'Simulação de volta', exercises: ['x_brake_steer', 'x_full_corner', 'x_trail_throttle'], minScore: 45, desc: 'Sequência de curva completa — pronto pra pista' },
+          { title: 'Aquecer freio', exercises: ['b_threshold', 'b_trail'], minScore: 50, desc: 'Aqueça a frenagem', inputs: ['brake'] },
+          { title: 'Aquecer acelerador', exercises: ['t_smooth_exit', 't_aggressive_exit'], minScore: 50, desc: 'Calibre a dosagem de gás', inputs: ['throttle'] },
+          { title: 'Aquecer volante', exercises: ['s_smooth_turn_r', 's_chicane'], minScore: 45, desc: 'Suavize as mãos', inputs: ['steering'] },
+          { title: 'Aquecer câmbio', exercises: ['seq_upshift_basic', 'seq_downshift_basic'], minScore: 45, desc: 'Aqueça o timing de troca', inputs: ['gear'] },
+          { title: 'Transições pedais', exercises: ['x_trail_throttle', 'x_corner_exit'], minScore: 45, desc: 'Freio→gás, volante→gás', inputs: ['brake', 'throttle'] },
+          { title: 'Transições com volante', exercises: ['x_brake_steer', 'x_full_corner'], minScore: 45, desc: 'Freio + volante + acelerador', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Frenagem com reduções', exercises: ['seq_braking_downshift', 'seq_braking_downshift'], minScore: 40, desc: 'Freio + reduções sequenciais', inputs: ['brake', 'gear'] },
+          { title: 'Largada completa', exercises: ['x_launch_with_shifts'], minScore: 40, desc: 'Embreagem + acelerador + trocas', inputs: ['clutch', 'throttle', 'gear'] },
+          { title: 'Simulação de volta', exercises: ['x_brake_downshift_corner', 'x_full_corner', 'x_trail_throttle'], minScore: 42, desc: 'Sequência completa — pronto pra pista', inputs: ['brake', 'throttle', 'steering', 'gear'] },
         ]
       },
     ]
@@ -349,47 +353,52 @@ export const PROGRAMS = [
   {
     id: 'prog_interlagos',
     name: 'Interlagos — Volta Completa',
-    desc: 'Treine cada curva do Autódromo José Carlos Pace. 12 cenários reais baseados em telemetria.',
+    desc: 'Treine cada curva do Autódromo José Carlos Pace. Cenários reais com freio, volante, acelerador e câmbio.',
     icon: '🇧🇷',
     color: '#009739',
     level: 'Pista Real',
+    filterEnabled: true,
     weeks: [
       {
         title: 'Setor 1 — Senna S, Curva do Sol e Descida',
         sessions: [
-          { title: 'Senna S — Entrada', exercises: ['ilg_t1_senna_s', 'ilg_t1_senna_s'], minScore: 40, desc: 'Frenagem forte + trail na curva mais icônica' },
-          { title: 'Senna S — Saída', exercises: ['ilg_t2_senna_s2', 'ilg_t2_senna_s2'], minScore: 40, desc: 'Transição rápida para a direita' },
-          { title: 'Senna S Completo', exercises: ['ilg_t1_senna_s', 'ilg_t2_senna_s2'], minScore: 45, desc: 'As duas partes em sequência' },
-          { title: 'Curva do Sol', exercises: ['ilg_t3_curva_sol', 'ilg_t3_curva_sol'], minScore: 40, desc: 'Frenagem leve + trail longo' },
-          { title: 'Descida do Lago', exercises: ['ilg_t4_descida_lago', 'ilg_t4_descida_lago'], minScore: 40, desc: 'Frenagem em descida — suavidade' },
-          { title: 'Setor 1 completo', exercises: ['ilg_t1_senna_s', 'ilg_t3_curva_sol', 'ilg_t4_descida_lago'], minScore: 40, desc: 'Senna S → Sol → Descida em sequência' },
+          { title: 'Senna S — Entrada', exercises: ['ilg_t1_senna_s', 'ilg_t1_senna_s'], minScore: 40, desc: 'Frenagem forte + trail na curva mais icônica', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Senna S — Saída', exercises: ['ilg_t2_senna_s2', 'ilg_t2_senna_s2'], minScore: 40, desc: 'Transição rápida para a direita', inputs: ['throttle', 'steering'] },
+          { title: 'Senna S Completo', exercises: ['ilg_t1_senna_s', 'ilg_t2_senna_s2'], minScore: 45, desc: 'As duas partes em sequência', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Curva do Sol', exercises: ['ilg_t3_curva_sol', 'ilg_t3_curva_sol'], minScore: 40, desc: 'Frenagem leve + trail longo', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Descida do Lago', exercises: ['ilg_t4_descida_lago', 'ilg_t4_descida_lago'], minScore: 40, desc: 'Frenagem em descida — suavidade', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Setor 1 completo', exercises: ['ilg_t1_senna_s', 'ilg_t3_curva_sol', 'ilg_t4_descida_lago'], minScore: 40, desc: 'Senna S → Sol → Descida em sequência', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Setor 1 + reduções', exercises: ['seq_braking_downshift', 'ilg_t1_senna_s'], minScore: 38, desc: 'Frenagem com reduções antes do S do Senna', inputs: ['brake', 'throttle', 'gear'] },
         ]
       },
       {
         title: 'Setor 2 — Laranjinha, Ferradura e Pinheirinho',
         sessions: [
-          { title: 'Laranjinha', exercises: ['ilg_t6_laranjinha', 'ilg_t6_laranjinha'], minScore: 45, desc: 'Curva rápida com feathering — sem freio!' },
-          { title: 'Ferradura', exercises: ['ilg_t7_ferradura', 'ilg_t7_ferradura'], minScore: 40, desc: 'Curva longa de direita — paciência' },
-          { title: 'Pinheirinho', exercises: ['ilg_t8_pinheirinho', 'ilg_t8_pinheirinho'], minScore: 40, desc: 'Hairpin — esterço máximo e saída paciente' },
-          { title: 'Setor 2 completo', exercises: ['ilg_t6_laranjinha', 'ilg_t7_ferradura', 'ilg_t8_pinheirinho'], minScore: 40, desc: 'As três curvas do setor 2 em sequência' },
+          { title: 'Laranjinha', exercises: ['ilg_t6_laranjinha', 'ilg_t6_laranjinha'], minScore: 45, desc: 'Curva rápida com feathering — sem freio!', inputs: ['throttle', 'steering'] },
+          { title: 'Ferradura', exercises: ['ilg_t7_ferradura', 'ilg_t7_ferradura'], minScore: 40, desc: 'Curva longa de direita — paciência', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Pinheirinho', exercises: ['ilg_t8_pinheirinho', 'ilg_t8_pinheirinho'], minScore: 40, desc: 'Hairpin — esterço máximo e saída paciente', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Setor 2 completo', exercises: ['ilg_t6_laranjinha', 'ilg_t7_ferradura', 'ilg_t8_pinheirinho'], minScore: 40, desc: 'As três curvas do setor 2 em sequência', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Setor 2 + câmbio', exercises: ['seq_downshift_basic', 'ilg_t8_pinheirinho', 'seq_upshift_basic'], minScore: 38, desc: 'Reduz antes do Pinheirinho, sobe na saída', inputs: ['brake', 'throttle', 'gear'] },
         ]
       },
       {
         title: 'Setor 3 — Mergulho, Bico de Pato e Junção',
         sessions: [
-          { title: 'Mergulho', exercises: ['ilg_t10_mergulho', 'ilg_t10_mergulho'], minScore: 40, desc: 'A descida mais íngreme do circuito' },
-          { title: 'Bico de Pato', exercises: ['ilg_t11_bico_pato', 'ilg_t11_bico_pato'], minScore: 40, desc: 'Frenagem forte na subida + trail curto' },
-          { title: 'Junção', exercises: ['ilg_t12_juncao', 'ilg_t12_juncao'], minScore: 45, desc: 'A curva mais importante — saída para a reta' },
-          { title: 'Subida dos Boxes', exercises: ['ilg_t13_subida_boxes', 'ilg_t13_subida_boxes'], minScore: 45, desc: 'Aceleração máxima na subida' },
-          { title: 'Setor 3 completo', exercises: ['ilg_t10_mergulho', 'ilg_t11_bico_pato', 'ilg_t12_juncao'], minScore: 40, desc: 'Mergulho → Bico de Pato → Junção' },
+          { title: 'Mergulho', exercises: ['ilg_t10_mergulho', 'ilg_t10_mergulho'], minScore: 40, desc: 'A descida mais íngreme do circuito', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Bico de Pato', exercises: ['ilg_t11_bico_pato', 'ilg_t11_bico_pato'], minScore: 40, desc: 'Frenagem forte na subida + trail curto', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Junção', exercises: ['ilg_t12_juncao', 'ilg_t12_juncao'], minScore: 45, desc: 'A curva mais importante — saída para a reta', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Subida dos Boxes', exercises: ['ilg_t13_subida_boxes', 'ilg_t13_subida_boxes'], minScore: 45, desc: 'Aceleração máxima na subida', inputs: ['throttle', 'steering'] },
+          { title: 'Setor 3 completo', exercises: ['ilg_t10_mergulho', 'ilg_t11_bico_pato', 'ilg_t12_juncao'], minScore: 40, desc: 'Mergulho → Bico de Pato → Junção', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Setor 3 + reduções', exercises: ['seq_braking_downshift', 'ilg_t12_juncao', 'seq_upshift_basic'], minScore: 38, desc: 'Reduz no mergulho, sobe na saída da junção', inputs: ['brake', 'throttle', 'gear'] },
         ]
       },
       {
         title: 'Boxes — Entrada e Saída',
         sessions: [
-          { title: 'Entrada de Boxes', exercises: ['ilg_pit_entry', 'ilg_pit_entry'], minScore: 45, desc: 'Desacelere e desvie para o pit lane' },
-          { title: 'Saída de Boxes', exercises: ['ilg_pit_exit', 'ilg_pit_exit'], minScore: 45, desc: 'Saia do pit e faça o merge com a pista' },
-          { title: 'Pit stop completo', exercises: ['ilg_pit_entry', 'ilg_pit_exit'], minScore: 42, desc: 'Entrada e saída em sequência — como num pit stop real' },
+          { title: 'Entrada de Boxes', exercises: ['ilg_pit_entry', 'ilg_pit_entry'], minScore: 45, desc: 'Desacelere e desvie para o pit lane', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Saída de Boxes', exercises: ['ilg_pit_exit', 'ilg_pit_exit'], minScore: 45, desc: 'Saia do pit e faça o merge com a pista', inputs: ['throttle', 'steering'] },
+          { title: 'Pit stop completo', exercises: ['ilg_pit_entry', 'ilg_pit_exit'], minScore: 42, desc: 'Entrada e saída em sequência — como num pit stop real', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Pit + reduções', exercises: ['seq_downshift_basic', 'ilg_pit_entry', 'ilg_pit_exit', 'seq_upshift_basic'], minScore: 38, desc: 'Reduz antes do pit, sobe marcha na saída', inputs: ['brake', 'throttle', 'steering', 'gear'] },
         ]
       },
     ]

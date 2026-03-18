@@ -37,6 +37,7 @@ function findCurrentSession(program, sessionLog) {
 
 export default function ProgramsScreen({ onBack, onStartSession, sessionLog, initialProgram }) {
   const [selectedProgram, setSelectedProgram] = useState(initialProgram || null);
+  const [programFilter, setProgramFilter] = useState('all'); // all | pedals | pedals_steering | pedals_steering_gear
 
   // ── Program list ──
   if (!selectedProgram) {
@@ -116,7 +117,7 @@ export default function ProgramsScreen({ onBack, onStartSession, sessionLog, ini
       </div>
 
       {/* Progress bar */}
-      <div className="animate-in animate-in-delay-1" style={{ marginBottom: '1.25rem' }}>
+      <div className="animate-in animate-in-delay-1" style={{ marginBottom: '1rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
           <span style={{ fontSize: 11, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.5px' }}>PROGRESSO GERAL</span>
           <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: prog.color, fontWeight: 600 }}>{progress.completedSessions}/{progress.totalSessions}</span>
@@ -126,8 +127,45 @@ export default function ProgramsScreen({ onBack, onStartSession, sessionLog, ini
         </div>
       </div>
 
+      {/* Input filter (only for programs that support it) */}
+      {prog.filterEnabled && (
+        <div className="animate-in animate-in-delay-1" style={{ display: 'flex', gap: 5, marginBottom: '1rem', flexWrap: 'wrap' }}>
+          {[
+            { key: 'all', label: 'TODOS', icon: '🎮' },
+            { key: 'pedals', label: 'FREIO + ACEL', icon: '🦶' },
+            { key: 'pedals_steering', label: '+ VOLANTE', icon: '🎡' },
+            { key: 'pedals_steering_gear', label: '+ CÂMBIO', icon: '⚙️' },
+          ].map(f => (
+            <button key={f.key} onClick={() => setProgramFilter(f.key)}
+              style={{
+                padding: '5px 12px', fontSize: 10, borderRadius: 16, fontWeight: 600,
+                fontFamily: 'var(--font-condensed)', letterSpacing: '.5px', cursor: 'pointer',
+                border: `1.5px solid ${programFilter === f.key ? prog.color : 'var(--border)'}`,
+                background: programFilter === f.key ? prog.color + '12' : 'var(--bg-card)',
+                color: programFilter === f.key ? prog.color : 'var(--text-muted)',
+                boxShadow: programFilter === f.key ? `0 1px 4px ${prog.color}15` : '0 1px 2px rgba(0,0,0,0.03)',
+              }}>
+              {f.icon} {f.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Weeks & sessions */}
       {prog.weeks.map((week, wi) => {
+        // Filter sessions based on selected input filter
+        const filteredSessions = prog.filterEnabled && programFilter !== 'all'
+          ? week.sessions.filter(s => {
+              if (!s.inputs) return true; // no inputs tag = always show
+              const has = (type) => s.inputs.includes(type);
+              if (programFilter === 'pedals') return !has('steering') && !has('gear');
+              if (programFilter === 'pedals_steering') return !has('gear');
+              return true; // pedals_steering_gear = all
+            })
+          : week.sessions;
+
+        if (filteredSessions.length === 0) return null;
+
         return (
           <div key={wi} className="animate-in" style={{ marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
@@ -144,7 +182,10 @@ export default function ProgramsScreen({ onBack, onStartSession, sessionLog, ini
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingLeft: 36 }}>
-              {week.sessions.map((session, si) => {
+              {filteredSessions.map((session, fsi) => {
+                // Find original index in week.sessions for correct routing
+                const origSi = week.sessions.indexOf(session);
+                const si = origSi >= 0 ? origSi : fsi;
                 // Check if this specific session is the "current" one
                 const isCurrent = current && current.weekIdx === wi && current.sessionIdx === si;
                 const allPassed = session.exercises.every(exId => {
