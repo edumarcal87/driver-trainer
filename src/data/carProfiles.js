@@ -14,9 +14,9 @@
 export const CAR_PROFILES = [
   {
     id: 'default',
-    name: 'Padrão',
+    name: 'Genérico',
     desc: 'Curvas originais sem modificação. Ideal para aprender os fundamentos.',
-    icon: '🏁',
+    icon: '🎮',
     color: '#5a5a5a',
     modifiers: {
       // No modifications — identity

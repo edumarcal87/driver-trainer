@@ -232,7 +232,7 @@ export default function App() {
     if (screen === 'config') return <ConfigScreen onBack={() => setScreen('menu')} gpConnected={gpConnected} gpName={gpName} pedalConfigs={pedalConfigs} setPedalConfigs={setPedalConfigs} />;
     if (screen === 'exercise') return <ExerciseScreen exercise={selectedEx} onBack={() => setScreen('menu')} inputMode={inputMode} pedalConfigs={pedalConfigs} onResult={handleResult} carProfile={carProfile} />;
     if (screen === 'progress') return <ProgressScreen sessionHistory={sessionLog} onBack={() => setScreen('menu')} />;
-    if (screen === 'programs') return <ProgramsScreen onBack={() => setScreen('menu')} onStartSession={startProgramSession} sessionLog={sessionLog} initialProgram={initialProgramForScreen} />;
+    if (screen === 'programs') return <ProgramsScreen onBack={() => setScreen('menu')} onStartSession={startProgramSession} sessionLog={sessionLog} initialProgram={initialProgramForScreen} carProfile={carProfile} setCarProfile={setCarProfile} />;
     if (screen === 'program_session' && activeProgram) return (
       <ProgramSessionScreen
         program={activeProgram} weekIdx={activeWeekIdx} sessionIdx={activeSessionIdx}
@@ -462,20 +462,44 @@ export default function App() {
             {m === 'keyboard' ? 'TECLADO ↑↓' : 'PEDAL / G29'}
           </button>
         ))}
-        <div style={{ width: 1, height: 20, background: 'var(--border)', margin: '0 4px' }} />
-        {CAR_PROFILES.map(p => (
-          <button key={p.id} onClick={() => setCarProfile(p)}
-            style={{
-              padding: '5px 12px', fontSize: 10, borderRadius: 16, fontWeight: 600,
-              fontFamily: 'var(--font-condensed)', letterSpacing: '.3px', cursor: 'pointer',
-              border: `1.5px solid ${carProfile.id === p.id ? p.color : 'var(--border)'}`,
-              background: carProfile.id === p.id ? p.color + '12' : 'var(--bg-card)',
-              color: carProfile.id === p.id ? p.color : 'var(--text-muted)',
-              boxShadow: carProfile.id === p.id ? `0 1px 4px ${p.color}15` : '0 1px 2px rgba(0,0,0,0.03)',
-            }}>
-            {p.icon} {p.name}
-          </button>
-        ))}
+      </div>
+
+      {/* ── Car profile selector ── */}
+      <div className="card animate-in animate-in-delay-1" style={{ padding: '12px 16px', marginBottom: '0.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <span style={{ fontSize: 13 }}>🏎️</span>
+          <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '.3px', color: 'var(--text-secondary)' }}>PERFIL DO CARRO</span>
+          {carProfile.id !== 'default' && (
+            <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', padding: '2px 8px', borderRadius: 8, background: carProfile.color + '15', color: carProfile.color, fontWeight: 600 }}>
+              {carProfile.icon} {carProfile.name.toUpperCase()}
+            </span>
+          )}
+        </div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {CAR_PROFILES.map(p => {
+            const active = carProfile.id === p.id;
+            return (
+              <button key={p.id} onClick={() => setCarProfile(p)}
+                style={{
+                  padding: '8px 14px', fontSize: 11, borderRadius: 12, fontWeight: active ? 700 : 500,
+                  fontFamily: 'var(--font-condensed)', letterSpacing: '.3px', cursor: 'pointer',
+                  border: `1.5px solid ${active ? p.color : 'var(--border)'}`,
+                  background: active ? p.color + '15' : 'var(--bg-card)',
+                  color: active ? p.color : 'var(--text-muted)',
+                  boxShadow: active ? `0 2px 8px ${p.color}20` : '0 1px 2px rgba(0,0,0,0.03)',
+                  transition: 'all .15s',
+                }}>
+                <span style={{ marginRight: 4 }}>{p.icon}</span> {p.name}
+                {active && <span style={{ marginLeft: 6, fontSize: 9, opacity: 0.7 }}>✓</span>}
+              </button>
+            );
+          })}
+        </div>
+        {carProfile.id !== 'default' && (
+          <p style={{ fontSize: 10, color: carProfile.color, marginTop: 8, fontFamily: 'var(--font-condensed)', letterSpacing: '.3px' }}>
+            {carProfile.desc}
+          </p>
+        )}
       </div>
 
       {/* ── Free practice header ── */}

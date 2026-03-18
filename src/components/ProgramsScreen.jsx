@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { PROGRAMS } from '../data/programs';
+import { CAR_PROFILES } from '../data/carProfiles';
 import { ScoreRing, DifficultyDots } from './UI';
 
 const btn = { padding: '7px 16px', fontSize: 12, borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 500, boxShadow: '0 1px 2px rgba(0,0,0,0.04)' };
@@ -35,7 +36,7 @@ function findCurrentSession(program, sessionLog) {
   return null; // All complete
 }
 
-export default function ProgramsScreen({ onBack, onStartSession, sessionLog, initialProgram }) {
+export default function ProgramsScreen({ onBack, onStartSession, sessionLog, initialProgram, carProfile, setCarProfile }) {
   const [selectedProgram, setSelectedProgram] = useState(initialProgram || null);
   const [programFilter, setProgramFilter] = useState('all'); // all | pedals | pedals_steering | pedals_steering_gear
 
@@ -126,6 +127,47 @@ export default function ProgramsScreen({ onBack, onStartSession, sessionLog, ini
           <div style={{ width: `${progress.pct}%`, height: '100%', background: prog.color, borderRadius: 3, transition: 'width .4s' }} />
         </div>
       </div>
+
+      {/* Car profile selector */}
+      {carProfile && setCarProfile && (
+        <div className="animate-in animate-in-delay-1" style={{
+          ...card, padding: '12px 16px', marginBottom: '0.75rem',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+            <span style={{ fontSize: 13 }}>🏎️</span>
+            <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '.3px', color: 'var(--text-secondary)' }}>PERFIL DO CARRO</span>
+            {carProfile.id !== 'default' && (
+              <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', padding: '2px 8px', borderRadius: 8, background: carProfile.color + '15', color: carProfile.color, fontWeight: 600 }}>
+                {carProfile.icon} {carProfile.name.toUpperCase()}
+              </span>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {CAR_PROFILES.map(p => {
+              const active = carProfile.id === p.id;
+              return (
+                <button key={p.id} onClick={() => setCarProfile(p)}
+                  style={{
+                    padding: '7px 12px', fontSize: 10, borderRadius: 10, fontWeight: active ? 700 : 500,
+                    fontFamily: 'var(--font-condensed)', letterSpacing: '.3px', cursor: 'pointer',
+                    border: `1.5px solid ${active ? p.color : 'var(--border)'}`,
+                    background: active ? p.color + '15' : 'var(--bg-card)',
+                    color: active ? p.color : 'var(--text-muted)',
+                    boxShadow: active ? `0 2px 8px ${p.color}20` : '0 1px 2px rgba(0,0,0,0.03)',
+                    transition: 'all .15s',
+                  }}>
+                  {p.icon} {p.name}{active ? ' ✓' : ''}
+                </button>
+              );
+            })}
+          </div>
+          {carProfile.id !== 'default' && (
+            <p style={{ fontSize: 10, color: carProfile.color, marginTop: 6, fontFamily: 'var(--font-condensed)', letterSpacing: '.3px' }}>
+              {carProfile.desc}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Input filter (only for programs that support it) */}
       {prog.filterEnabled && (
