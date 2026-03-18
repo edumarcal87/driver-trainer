@@ -1,7 +1,13 @@
 import React from 'react';
 import { TOLERANCE } from '../data/exercises';
 
-const USER_COLORS = { brake: '#e74c3c', throttle: '#27ae60', clutch: '#f39c12', steering: '#2980b9', combined: '#8e44ad' };
+const CHART_COLORS = {
+  brake:    { target: '#e74c3c', targetAlpha: '#e74c3c70', tolFill: '#e74c3c', user: '#c0392b' },
+  throttle: { target: '#27ae60', targetAlpha: '#27ae6070', tolFill: '#27ae60', user: '#1e8449' },
+  clutch:   { target: '#f39c12', targetAlpha: '#f39c1270', tolFill: '#f39c12', user: '#d68910' },
+  steering: { target: '#2980b9', targetAlpha: '#2980b970', tolFill: '#2980b9', user: '#1f6da0' },
+  combined: { target: '#8e44ad', targetAlpha: '#8e44ad70', tolFill: '#8e44ad', user: '#7d3c98' },
+};
 
 export default function Chart({ targetPts, userPts, currentInput, progress, running, score, pedalType = 'brake' }) {
   const W = 700, H = 240;
@@ -9,19 +15,21 @@ export default function Chart({ targetPts, userPts, currentInput, progress, runn
   const cw = W - P.l - P.r, ch = H - P.t - P.b;
   const tx = t => P.l + t * cw;
   const ty = v => P.t + (1 - v) * ch;
-  const userColor = USER_COLORS[pedalType] || USER_COLORS.brake;
+  const cc = CHART_COLORS[pedalType] || CHART_COLORS.brake;
 
   const tPath = targetPts.map((p, i) => `${i ? 'L' : 'M'}${tx(p.t).toFixed(1)},${ty(p.v).toFixed(1)}`).join('');
   const tolU = targetPts.map((p, i) => `${i ? 'L' : 'M'}${tx(p.t).toFixed(1)},${ty(Math.min(1, p.v + TOLERANCE)).toFixed(1)}`).join('');
   const tolL = [...targetPts].reverse().map((p, i) => `${i ? 'L' : 'M'}${tx(p.t).toFixed(1)},${ty(Math.max(0, p.v - TOLERANCE)).toFixed(1)}`).join('');
   const uPath = userPts.length > 1 ? userPts.map((p, i) => `${i ? 'L' : 'M'}${tx(p.t).toFixed(1)},${ty(p.v).toFixed(1)}`).join('') : '';
 
+  const gradId = `tolFill_${pedalType}`;
+
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block' }}>
       <defs>
-        <linearGradient id="tolFillL" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#27ae60" stopOpacity=".1" />
-          <stop offset="100%" stopColor="#27ae60" stopOpacity=".03" />
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={cc.tolFill} stopOpacity=".1" />
+          <stop offset="100%" stopColor={cc.tolFill} stopOpacity=".03" />
         </linearGradient>
       </defs>
 
@@ -32,16 +40,20 @@ export default function Chart({ targetPts, userPts, currentInput, progress, runn
         </g>
       ))}
 
-      <path d={`${tolU} ${tolL} Z`} fill="url(#tolFillL)" />
-      <path d={tPath} fill="none" stroke="#27ae60" strokeWidth="2.5" strokeLinecap="round" opacity=".7" />
+      {/* Tolerance band — colored by pedal type */}
+      <path d={`${tolU} ${tolL} Z`} fill={`url(#${gradId})`} />
 
+      {/* Target curve — colored by pedal type */}
+      <path d={tPath} fill="none" stroke={cc.target} strokeWidth="2.5" strokeLinecap="round" opacity=".75" />
+
+      {/* User curve — slightly darker shade */}
       {uPath && (
-        <path d={uPath} fill="none" stroke={userColor} strokeWidth="2" strokeLinecap="round" />
+        <path d={uPath} fill="none" stroke={cc.user} strokeWidth="2" strokeLinecap="round" />
       )}
 
       {running && <>
         <line x1={tx(progress)} y1={P.t} x2={tx(progress)} y2={H - P.b} stroke="#9a9a90" strokeWidth=".5" strokeDasharray="3,4" />
-        <circle cx={tx(progress)} cy={ty(currentInput)} r="5" fill={userColor} stroke="#fff" strokeWidth="2" />
+        <circle cx={tx(progress)} cy={ty(currentInput)} r="5" fill={cc.user} stroke="#fff" strokeWidth="2" />
       </>}
 
       <text x={W / 2} y={H - 3} textAnchor="middle" fill="#9a9a90" fontSize="9" fontFamily="Oxanium, monospace">TEMPO →</text>
