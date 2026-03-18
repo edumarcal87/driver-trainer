@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { analyzeSession } from '../utils/scoring';
 import { exportSessionPDF } from '../utils/pdfExport';
+import { CAR_PROFILES } from '../data/carProfiles';
 import { GradeDisplay, StatCard, TipCard, SegmentBar } from './UI';
 
 const btn = { padding: '6px 14px', fontSize: 12, borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-body)' };
@@ -113,10 +114,18 @@ function generateTypeTips(entries, typeKey) {
   return tips;
 }
 
-export default function ProgressScreen({ onBack, sessionHistory }) {
+export default function ProgressScreen({ onBack, sessionHistory, carProfile, setCarProfile }) {
   const [activeTab, setActiveTab] = useState('all');
-  const insights = useMemo(() => analyzeSession(sessionHistory), [sessionHistory]);
-  const filteredHistory = useMemo(() => activeTab === 'all' ? sessionHistory : sessionHistory.filter(e => (e.pedal || 'brake') === activeTab), [sessionHistory, activeTab]);
+  const [profileFilter, setProfileFilter] = useState('all'); // 'all' or a profile id
+
+  // Pre-filter by car profile
+  const profiledHistory = useMemo(() => {
+    if (profileFilter === 'all') return sessionHistory;
+    return sessionHistory.filter(e => (e.carProfileId || 'default') === profileFilter);
+  }, [sessionHistory, profileFilter]);
+
+  const insights = useMemo(() => analyzeSession(profiledHistory), [profiledHistory]);
+  const filteredHistory = useMemo(() => activeTab === 'all' ? profiledHistory : profiledHistory.filter(e => (e.pedal || 'brake') === activeTab), [profiledHistory, activeTab]);
   const typeTips = useMemo(() => activeTab === 'all' ? (insights?.tips || []) : generateTypeTips(filteredHistory, activeTab), [filteredHistory, activeTab, insights]);
   const typeScores = useMemo(() => filteredHistory.map(e => e.score), [filteredHistory]);
   const typeAvg = typeScores.length > 0 ? Math.round(typeScores.reduce((s, v) => s + v, 0) / typeScores.length) : 0;
@@ -125,7 +134,7 @@ export default function ProgressScreen({ onBack, sessionHistory }) {
     const byEx = {}; for (const e of filteredHistory) { if (!byEx[e.exId]) byEx[e.exId] = []; byEx[e.exId].push(e); }
     return Object.entries(byEx).map(([id, arr]) => { const sc = arr.map(a => a.score); return { exId: id, name: arr[0].exName, pedal: arr[0].pedal || 'brake', attempts: sc.length, avg: Math.round(sc.reduce((s, v) => s + v, 0) / sc.length), best: Math.max(...sc), trend: sc.length >= 2 ? sc[0] - sc[sc.length - 1] : 0, scores: sc }; });
   }, [filteredHistory]);
-  const availableTypes = useMemo(() => { const ts = new Set(sessionHistory.map(e => e.pedal || 'brake')); return INPUT_TYPES.filter(t => t.key === 'all' || ts.has(t.key)); }, [sessionHistory]);
+  const availableTypes = useMemo(() => { const ts = new Set(profiledHistory.map(e => e.pedal || 'brake')); return INPUT_TYPES.filter(t => t.key === 'all' || ts.has(t.key)); }, [profiledHistory]);
 
   if (!insights || sessionHistory.length === 0) {
     return (<div style={{ maxWidth: 720, width: '100%' }}>
@@ -149,11 +158,48 @@ export default function ProgressScreen({ onBack, sessionHistory }) {
         </button>
       </div>
 
+      {/* Car profile filter */}
+      <div className="animate-in animate-in-delay-1" style={{ marginBottom: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <span style={{ fontSize: 13 }}>🏎️</span>
+          <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '.3px', color: 'var(--text-secondary)' }}>FILTRAR POR CARRO</span>
+        </div>
+        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+          <button onClick={() => setProfileFilter('all')}
+            style={{
+              padding: '6px 12px', fontSize: 10, borderRadius: 12, fontWeight: profileFilter === 'all' ? 700 : 500,
+              fontFamily: 'var(--font-condensed)', letterSpacing: '.3px', cursor: 'pointer',
+              border: `1.5px solid ${profileFilter === 'all' ? '#8e44ad' : 'var(--border)'}`,
+              background: profileFilter === 'all' ? '#8e44ad15' : 'var(--bg-card)',
+              color: profileFilter === 'all' ? '#8e44ad' : 'var(--text-muted)',
+            }}>
+            🎮 Todos {profileFilter === 'all' ? '✓' : ''}
+          </button>
+          {CAR_PROFILES.map(p => {
+            const count = sessionHistory.filter(e => (e.carProfileId || 'default') === p.id).length;
+            if (count === 0) return null;
+            const active = profileFilter === p.id;
+            return (
+              <button key={p.id} onClick={() => setProfileFilter(p.id)}
+                style={{
+                  padding: '6px 12px', fontSize: 10, borderRadius: 12, fontWeight: active ? 700 : 500,
+                  fontFamily: 'var(--font-condensed)', letterSpacing: '.3px', cursor: 'pointer',
+                  border: `1.5px solid ${active ? p.color : 'var(--border)'}`,
+                  background: active ? p.color + '15' : 'var(--bg-card)',
+                  color: active ? p.color : 'var(--text-muted)',
+                }}>
+                {p.icon} {p.name} <span style={{ opacity: .6 }}>({count})</span>{active ? ' ✓' : ''}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Type tabs */}
       <div className="animate-in animate-in-delay-1" style={{ display: 'flex', gap: 4, marginBottom: '1.25rem', flexWrap: 'wrap' }}>
         {availableTypes.map(t => {
           const c = PEDAL_HEX[t.key] || '#5a5a5a'; const active = activeTab === t.key;
-          const count = t.key === 'all' ? sessionHistory.length : sessionHistory.filter(e => (e.pedal || 'brake') === t.key).length;
+          const count = t.key === 'all' ? profiledHistory.length : profiledHistory.filter(e => (e.pedal || 'brake') === t.key).length;
           return (<button key={t.key} onClick={() => setActiveTab(t.key)} style={{ padding: '6px 14px', fontSize: 10, borderRadius: 20, fontWeight: 500, fontFamily: 'var(--font-condensed)', letterSpacing: '.8px', cursor: 'pointer', border: `1px solid ${active ? c + '60' : 'var(--border)'}`, background: active ? c + '15' : 'transparent', color: active ? c : 'var(--text-muted)', transition: 'all .15s' }}>
             {t.label} <span style={{ opacity: .6 }}>({count})</span></button>);
         })}
@@ -225,6 +271,52 @@ export default function ProgressScreen({ onBack, sessionHistory }) {
                 <MiniSparkline scores={[...et.scores].reverse()} color={pC} width={80} height={28} />
               </div>);
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Consistency Heatmap */}
+      {activeTab === 'all' && sessionHistory.length >= 3 && (() => {
+        const heatmap = generateHeatmap(sessionHistory);
+        const hasData = Object.values(heatmap).some(s => s.scores.length > 0);
+        if (!hasData) return null;
+        return (
+          <div className="animate-in animate-in-delay-3" style={{ ...card, marginBottom: 12 }}>
+            <p style={{ fontSize: 11, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.5px', marginBottom: 12 }}>MAPA DE CONSISTÊNCIA</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+              {Object.entries(heatmap).map(([key, seg]) => {
+                if (seg.scores.length === 0) return null;
+                const c = seg.avg >= 75 ? '#27ae60' : seg.avg >= 50 ? '#f39c12' : '#e74c3c';
+                const intensity = Math.max(0.15, Math.min(1, seg.avg / 100));
+                return (
+                  <div key={key} style={{
+                    padding: '12px 10px', borderRadius: 10, textAlign: 'center',
+                    background: c + Math.round(intensity * 25).toString(16).padStart(2, '0'),
+                    border: `1.5px solid ${c}30`,
+                  }}>
+                    <p style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)', color: c }}>{seg.avg}%</p>
+                    <p style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: c, letterSpacing: '.3px', marginTop: 2 }}>{seg.label.toUpperCase()}</p>
+                    {seg.trend !== 0 && (
+                      <p style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: seg.trend > 0 ? '#27ae60' : '#e74c3c', marginTop: 4 }}>
+                        {seg.trend > 0 ? '↑' : '↓'} {seg.trend > 0 ? '+' : ''}{seg.trend}pts
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Pattern Detection */}
+      {activeTab === 'all' && insights?.patterns?.length > 0 && (
+        <div className="animate-in animate-in-delay-3" style={{ marginBottom: 12 }}>
+          <p style={{ fontSize: 11, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.5px', marginBottom: 8 }}>PADRÕES DETECTADOS</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {insights.patterns.map((p, i) => (
+              <TipCard key={i} type={p.severity} text={p.message} />
+            ))}
           </div>
         </div>
       )}

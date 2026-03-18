@@ -165,8 +165,9 @@ export default function App() {
       score: sc, grade: analysis?.grade, consistency: analysis?.stats?.consistency,
       peakAccuracy: analysis?.stats?.peakAccuracy, peakTimingDelta: analysis?.stats?.peakTimingDelta,
       segments: analysis?.segments, timestamp: Date.now(),
+      carProfileId: carProfile?.id || 'default',
     }]);
-  }, [exercises]);
+  }, [exercises, carProfile]);
 
   const handleFile = useCallback(file => {
     const r = new FileReader();
@@ -231,7 +232,7 @@ export default function App() {
   const renderScreen = () => {
     if (screen === 'config') return <ConfigScreen onBack={() => setScreen('menu')} gpConnected={gpConnected} gpName={gpName} pedalConfigs={pedalConfigs} setPedalConfigs={setPedalConfigs} />;
     if (screen === 'exercise') return <ExerciseScreen exercise={selectedEx} onBack={() => setScreen('menu')} inputMode={inputMode} pedalConfigs={pedalConfigs} onResult={handleResult} carProfile={carProfile} />;
-    if (screen === 'progress') return <ProgressScreen sessionHistory={sessionLog} onBack={() => setScreen('menu')} />;
+    if (screen === 'progress') return <ProgressScreen sessionHistory={sessionLog} onBack={() => setScreen('menu')} carProfile={carProfile} setCarProfile={setCarProfile} />;
     if (screen === 'programs') return <ProgramsScreen onBack={() => setScreen('menu')} onStartSession={startProgramSession} sessionLog={sessionLog} initialProgram={initialProgramForScreen} carProfile={carProfile} setCarProfile={setCarProfile} />;
     if (screen === 'program_session' && activeProgram) return (
       <ProgramSessionScreen
