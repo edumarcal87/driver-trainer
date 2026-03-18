@@ -353,7 +353,7 @@ export default function App() {
               <circle cx="16" cy="16" r="14" fill="#009739" opacity=".12" stroke="#009739" strokeWidth="1.5"/>
               <path d="M13 13 Q16 10 19 13 Q22 16 19 19 Q16 22 13 19 Q10 16 13 13" fill="none" stroke="#009739" strokeWidth="2" strokeLinecap="round"/>
             </svg>
-            <h2 style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '.3px' }}>VOLTAS COMPLETAS</h2>
+            <h2 style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '.3px' }}>CENÁRIOS REAIS</h2>
           </div>
         </div>
         <div style={{ position: 'relative' }}>
@@ -410,7 +410,7 @@ export default function App() {
                         Próximo: {next.title}
                       </div>
                     ) : (
-                      <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: '#27ae60', fontWeight: 600 }}>✓ VOLTA COMPLETA DOMINADA</span>
+                      <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: '#27ae60', fontWeight: 600 }}>✓ CENÁRIO DOMINADO</span>
                     )}
                   </div>
                 </div>
@@ -424,7 +424,7 @@ export default function App() {
               textAlign: 'center', opacity: 0.6,
             }}>
               <span style={{ fontSize: 24, marginBottom: 8 }}>🏗️</span>
-              <span style={{ fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-display)', color: 'var(--text-muted)' }}>MAIS PISTAS</span>
+              <span style={{ fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-display)', color: 'var(--text-muted)' }}>MAIS CIRCUITOS</span>
               <span style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>Em breve...</span>
             </div>
           </div>

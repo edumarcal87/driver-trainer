@@ -276,15 +276,24 @@ export default function ProgressScreen({ onBack, sessionHistory, carProfile, set
       )}
 
       {/* Consistency Heatmap */}
-      {activeTab === 'all' && sessionHistory.length >= 3 && (() => {
-        const heatmap = generateHeatmap(sessionHistory);
-        const hasData = Object.values(heatmap).some(s => s.scores.length > 0);
+      {activeTab === 'all' && profiledHistory.length >= 3 && (() => {
+        // Build heatmap from segment data in session history
+        const segments = { attack: { scores: [], label: 'Ataque' }, peak: { scores: [], label: 'Pico' }, modulation: { scores: [], label: 'Modulação' }, release: { scores: [], label: 'Liberação' } };
+        for (const e of profiledHistory) {
+          if (e.segments) {
+            for (const seg of e.segments) {
+              if (segments[seg.key]) segments[seg.key].scores.push(seg.score);
+            }
+          }
+        }
+        for (const s of Object.values(segments)) { s.avg = s.scores.length > 0 ? Math.round(s.scores.reduce((a, b) => a + b, 0) / s.scores.length) : 0; }
+        const hasData = Object.values(segments).some(s => s.scores.length > 0);
         if (!hasData) return null;
         return (
           <div className="animate-in animate-in-delay-3" style={{ ...card, marginBottom: 12 }}>
             <p style={{ fontSize: 11, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.5px', marginBottom: 12 }}>MAPA DE CONSISTÊNCIA</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-              {Object.entries(heatmap).map(([key, seg]) => {
+              {Object.entries(segments).map(([key, seg]) => {
                 if (seg.scores.length === 0) return null;
                 const c = seg.avg >= 75 ? '#27ae60' : seg.avg >= 50 ? '#f39c12' : '#e74c3c';
                 const intensity = Math.max(0.15, Math.min(1, seg.avg / 100));
