@@ -141,7 +141,12 @@ export default function ProgressScreen({ onBack, sessionHistory }) {
     <div style={{ maxWidth: 720, width: '100%' }}>
       <div className="animate-in" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1.25rem' }}>
         <button onClick={onBack} style={btn}>← VOLTAR</button>
-        <h2 style={{ fontSize: 18, fontWeight: 600, fontFamily: 'var(--font-display)' }}>Evolução da sessão</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 600, fontFamily: 'var(--font-display)', flex: 1 }}>Evolução da sessão</h2>
+        <button onClick={() => exportSessionPDF(sessionHistory, insights)} style={{
+          ...btn, borderColor: '#8e44ad40', color: '#8e44ad', fontWeight: 600,
+        }}>
+          📄 Exportar PDF
+        </button>
       </div>
 
       {/* Type tabs */}
@@ -236,11 +241,6 @@ export default function ProgressScreen({ onBack, sessionHistory }) {
 
       <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
         <button onClick={onBack} style={btn}>← Voltar aos exercícios</button>
-        <button onClick={() => exportSessionPDF(sessionHistory, insights)} style={{
-          ...btn, borderColor: '#8e44ad40', color: '#8e44ad',
-        }}>
-          📄 Exportar PDF
-        </button>
       </div>
     </div>
   );
