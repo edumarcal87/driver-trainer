@@ -1,4 +1,5 @@
 import { INTERLAGOS_EXERCISES } from './interlagos';
+import { SEQUENTIAL_EXERCISES, HPATTERN_EXERCISES, ALL_GEAR_EXERCISES } from './gears';
 
 export const BRAKE_EXERCISES = [
   { id:'b_threshold', name:'Threshold braking', desc:'Frenagem forte e constante — máxima desaceleração', icon:'█',
@@ -166,7 +167,7 @@ export const COMBINED_EXERCISES = [
     duration: 5000, diff: 3 },
 ];
 
-export const ALL_EXERCISES = [...BRAKE_EXERCISES, ...THROTTLE_EXERCISES, ...CLUTCH_EXERCISES, ...STEERING_EXERCISES, ...COMBINED_EXERCISES, ...INTERLAGOS_EXERCISES];
+export const ALL_EXERCISES = [...BRAKE_EXERCISES, ...THROTTLE_EXERCISES, ...CLUTCH_EXERCISES, ...STEERING_EXERCISES, ...COMBINED_EXERCISES, ...INTERLAGOS_EXERCISES, ...ALL_GEAR_EXERCISES];
 
 export const EXERCISE_CATEGORIES = [
   { key:'brake', label:'Freio', color:'#ff4757', exercises:BRAKE_EXERCISES },
@@ -174,6 +175,8 @@ export const EXERCISE_CATEGORIES = [
   { key:'clutch', label:'Embreagem', color:'#ffa502', exercises:CLUTCH_EXERCISES },
   { key:'steering', label:'Volante', color:'#3b82f6', exercises:STEERING_EXERCISES },
   { key:'combined', label:'Combinado', color:'#a855f7', exercises:COMBINED_EXERCISES },
+  { key:'sequential', label:'Câmbio Sequencial', color:'#e67e22', exercises:SEQUENTIAL_EXERCISES },
+  { key:'hpattern', label:'Câmbio H-Pattern', color:'#d35400', exercises:HPATTERN_EXERCISES },
 ];
 
 export const TOLERANCE = 0.12;

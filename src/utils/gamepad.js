@@ -81,18 +81,49 @@ export function detectMovedAxis(baseline, current) {
 }
 
 /**
- * Checks if a paddle shifter button is pressed (button index 4 or 5 on G29).
+ * Reads paddle shifter buttons.
+ * G29: Button 4 = right paddle (upshift), Button 5 = left paddle (downshift)
  */
 export function readShifterButtons() {
   const gamepads = navigator.getGamepads();
   for (const gp of gamepads) {
     if (!gp) continue;
     return {
-      upshift: gp.buttons[5]?.pressed || gp.buttons[4]?.pressed || false,
-      downshift: gp.buttons[4]?.pressed || gp.buttons[5]?.pressed || false,
+      upshift: gp.buttons[4]?.pressed || false,
+      downshift: gp.buttons[5]?.pressed || false,
     };
   }
   return { upshift: false, downshift: false };
+}
+
+/**
+ * Reads H-shifter gear position.
+ * G29 H-Shifter: buttons 12-17 = gears 1-6, button 18 = reverse
+ * Returns 0 = neutral, 1-6 = gear, -1 = reverse
+ */
+export function readHShifterGear() {
+  const gamepads = navigator.getGamepads();
+  for (const gp of gamepads) {
+    if (!gp) continue;
+    if (gp.buttons[18]?.pressed) return -1; // reverse
+    for (let g = 1; g <= 6; g++) {
+      if (gp.buttons[11 + g]?.pressed) return g;
+    }
+    return 0; // neutral
+  }
+  return 0;
+}
+
+/**
+ * Reads all button states (for diagnostics/detection).
+ */
+export function readAllButtons() {
+  const gamepads = navigator.getGamepads();
+  for (const gp of gamepads) {
+    if (!gp) continue;
+    return gp.buttons.map((b, i) => ({ index: i, pressed: b.pressed, value: b.value }));
+  }
+  return [];
 }
 
 export function isG29(gamepadId) {

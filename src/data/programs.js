@@ -265,6 +265,60 @@ export const PROGRAMS = [
   },
 
   // ═══════════════════════════════════════════
+  // CÂMBIO
+  // ═══════════════════════════════════════════
+  {
+    id: 'prog_sequential_shifting',
+    name: 'Câmbio Sequencial',
+    desc: 'Domine as borboletas. Timing de troca, reduções com freio e largadas com paddle shifter.',
+    icon: '🏎️',
+    color: '#e67e22',
+    level: 'Iniciante',
+    weeks: [
+      {
+        title: 'Semana 1 — Fundamentos',
+        sessions: [
+          { title: 'Subir marchas', exercises: ['seq_upshift_basic', 'seq_upshift_basic'], minScore: 45, desc: 'De 1ª a 6ª com timing de acelerador' },
+          { title: 'Descer marchas', exercises: ['seq_downshift_basic', 'seq_downshift_basic'], minScore: 45, desc: 'De 6ª a 2ª com freio' },
+          { title: 'Trocas rápidas', exercises: ['seq_quick_shifts', 'seq_quick_shifts'], minScore: 40, desc: 'Sobe e desce — teste de reflexo' },
+        ]
+      },
+      {
+        title: 'Semana 2 — Aplicação em corrida',
+        sessions: [
+          { title: 'Largada', exercises: ['seq_race_start', 'seq_race_start'], minScore: 45, desc: 'Largada com aceleração máxima entre trocas' },
+          { title: 'Frenagem com reduções', exercises: ['seq_braking_downshift', 'seq_braking_downshift'], minScore: 40, desc: 'Freio + redução + rev matching' },
+          { title: 'Simulação completa', exercises: ['seq_race_start', 'seq_braking_downshift', 'seq_quick_shifts'], minScore: 42, desc: 'Todos os padrões em sequência' },
+        ]
+      },
+    ]
+  },
+  {
+    id: 'prog_hpattern_shifting',
+    name: 'Câmbio H-Pattern',
+    desc: 'Domine o câmbio manual com embreagem. Da troca básica ao heel-toe com H-shifter.',
+    icon: '🔧',
+    color: '#d35400',
+    level: 'Intermediário',
+    weeks: [
+      {
+        title: 'Semana 1 — Coordenação básica',
+        sessions: [
+          { title: 'Subir com embreagem', exercises: ['hpat_upshift_basic', 'hpat_upshift_basic'], minScore: 40, desc: 'H-shifter + embreagem coordenados' },
+          { title: 'Largada manual', exercises: ['hpat_race_start', 'hpat_race_start'], minScore: 40, desc: 'Largada com embreagem e câmbio H' },
+        ]
+      },
+      {
+        title: 'Semana 2 — Heel-toe com H-Pattern',
+        sessions: [
+          { title: 'Heel-toe reduções', exercises: ['hpat_downshift_heel_toe', 'hpat_downshift_heel_toe'], minScore: 35, desc: 'A técnica suprema: freio + embreagem + blip + câmbio' },
+          { title: 'Domínio completo', exercises: ['hpat_upshift_basic', 'hpat_downshift_heel_toe', 'hpat_race_start'], minScore: 38, desc: 'Subir, descer e largar — tudo com H-pattern' },
+        ]
+      },
+    ]
+  },
+
+  // ═══════════════════════════════════════════
   // UTILITÁRIOS
   // ═══════════════════════════════════════════
   {
@@ -281,6 +335,7 @@ export const PROGRAMS = [
           { title: 'Aquecer freio', exercises: ['b_threshold', 'b_trail'], minScore: 50, desc: 'Aqueça a frenagem' },
           { title: 'Aquecer acelerador', exercises: ['t_smooth_exit', 't_aggressive_exit'], minScore: 50, desc: 'Calibre a dosagem de gás' },
           { title: 'Aquecer volante', exercises: ['s_smooth_turn_r', 's_chicane'], minScore: 45, desc: 'Suavize as mãos' },
+          { title: 'Aquecer câmbio', exercises: ['seq_upshift_basic', 'seq_downshift_basic'], minScore: 45, desc: 'Aqueça o timing de troca' },
           { title: 'Transições', exercises: ['x_trail_throttle', 'x_corner_exit'], minScore: 45, desc: 'Freio→gás, volante→gás' },
           { title: 'Simulação de volta', exercises: ['x_brake_steer', 'x_full_corner', 'x_trail_throttle'], minScore: 45, desc: 'Sequência de curva completa — pronto pra pista' },
         ]

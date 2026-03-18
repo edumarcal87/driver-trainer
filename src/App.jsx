@@ -13,7 +13,32 @@ import { BrakeIcon, ThrottleIcon, ClutchIcon, SteeringIcon } from './components/
 import { DifficultyDots, StatusBadge, CategoryBadge, LevelBadge, ScoreRing } from './components/UI';
 
 const btn = { padding: '7px 16px', fontSize: 12, borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 500, boxShadow: '0 1px 2px rgba(0,0,0,0.04)' };
-const CAT_HEX = { brake: '#e74c3c', throttle: '#27ae60', clutch: '#f39c12', steering: '#2980b9', combined: '#8e44ad' };
+const CAT_HEX = { brake: '#e74c3c', throttle: '#27ae60', clutch: '#f39c12', steering: '#2980b9', combined: '#8e44ad', sequential: '#e67e22', hpattern: '#d35400' };
+
+const GearIcon = ({ size = 20, color = '#e67e22' }) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+    <rect x="4" y="6" width="24" height="20" rx="3" stroke={color} strokeWidth="1.5"/>
+    <line x1="16" y1="8" x2="16" y2="24" stroke={color} strokeWidth="1" opacity=".3"/>
+    <line x1="6" y1="16" x2="26" y2="16" stroke={color} strokeWidth="1" opacity=".3"/>
+    <circle cx="10" cy="11" r="2" fill={color} opacity=".7"/><text x="10" y="13" textAnchor="middle" fontSize="4" fill="#fff" fontWeight="700">1</text>
+    <circle cx="10" cy="21" r="2" fill={color} opacity=".7"/><text x="10" y="23" textAnchor="middle" fontSize="4" fill="#fff" fontWeight="700">2</text>
+    <circle cx="16" cy="11" r="2" fill={color} opacity=".5"/><text x="16" y="13" textAnchor="middle" fontSize="4" fill="#fff" fontWeight="700">3</text>
+    <circle cx="16" cy="21" r="2" fill={color} opacity=".5"/><text x="16" y="23" textAnchor="middle" fontSize="4" fill="#fff" fontWeight="700">4</text>
+    <circle cx="22" cy="11" r="2" fill={color} opacity=".3"/><text x="22" y="13" textAnchor="middle" fontSize="4" fill="#fff" fontWeight="700">5</text>
+    <circle cx="22" cy="21" r="2" fill={color} opacity=".3"/><text x="22" y="23" textAnchor="middle" fontSize="4" fill="#fff" fontWeight="700">6</text>
+  </svg>
+);
+
+const PaddleIcon = ({ size = 20, color = '#e67e22' }) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+    <rect x="6" y="4" width="8" height="24" rx="4" stroke={color} strokeWidth="1.5"/>
+    <rect x="18" y="4" width="8" height="24" rx="4" stroke={color} strokeWidth="1.5"/>
+    <path d="M10 10 L10 7" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+    <path d="M22 22 L22 25" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+    <text x="10" y="19" textAnchor="middle" fontSize="6" fill={color} fontWeight="700">+</text>
+    <text x="22" y="13" textAnchor="middle" fontSize="6" fill={color} fontWeight="700">−</text>
+  </svg>
+);
 
 const PEDAL_ICONS = {
   brake: (s) => <BrakeIcon size={s} color="#e74c3c" />,
@@ -21,6 +46,8 @@ const PEDAL_ICONS = {
   clutch: (s) => <ClutchIcon size={s} color="#f39c12" />,
   steering: (s) => <SteeringIcon size={s} color="#2980b9" />,
   combined: (s) => <svg width={s} height={s} viewBox="0 0 32 32" fill="none"><circle cx="10" cy="16" r="8" stroke="#8e44ad" strokeWidth="1.5"/><circle cx="22" cy="16" r="8" stroke="#8e44ad" strokeWidth="1.5"/><circle cx="16" cy="16" r="3" fill="#8e44ad" opacity=".4"/></svg>,
+  sequential: (s) => <PaddleIcon size={s} color="#e67e22" />,
+  hpattern: (s) => <GearIcon size={s} color="#d35400" />,
 };
 
 const SECTION_ICONS = {
@@ -29,6 +56,8 @@ const SECTION_ICONS = {
   clutch: (s) => <ClutchIcon size={s} color="#f39c12" />,
   steering: (s) => <SteeringIcon size={s} color="#2980b9" />,
   combined: PEDAL_ICONS.combined,
+  sequential: (s) => <PaddleIcon size={s} color="#e67e22" />,
+  hpattern: (s) => <GearIcon size={s} color="#d35400" />,
 };
 
 function ExerciseCard({ ex, best, attempts, onOpen }) {

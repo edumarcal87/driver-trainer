@@ -103,6 +103,52 @@ export const TUTORIALS = {
     diagram: 'full_corner',
     tips: ['Freio primeiro (vermelho), forte e trail', 'Volante (azul) entra quando o freio começa a sair', 'Acelerador (verde) só depois que o volante começa a desfazer'],
   },
+  // ── Gear exercises ──
+  seq_upshift_basic: {
+    title: 'Subida de Marchas — Sequencial',
+    paragraphs: [
+      'A troca de marcha ideal: gás a fundo, paddle no momento certo, breve lift do acelerador durante a troca.',
+      'O timing é tudo. Troque cedo demais e o motor não terá potência na próxima marcha. Tarde demais e perde tempo no limitador.',
+    ],
+    diagram: 'smooth_exit',
+    tips: ['Acompanhe a linha laranja (MARCHA) — troque quando ela subir', 'Levante brevemente o acelerador a cada troca', 'O ritmo é mais importante que a velocidade'],
+  },
+  seq_downshift_basic: {
+    title: 'Descida de Marchas — Sequencial',
+    paragraphs: [
+      'Reduzir marchas durante a frenagem. Cada redução deve coincidir com a desaceleração do carro.',
+      'Com borboletas, o timing é simples: reduza conforme a velocidade cai. O carro faz o rev match automaticamente (com sequencial).',
+    ],
+    diagram: 'trail',
+    tips: ['Freie primeiro, depois comece a reduzir', 'Uma redução a cada ~0.5 segundo', 'A linha laranja mostra quando cada redução deve acontecer'],
+  },
+  seq_braking_downshift: {
+    title: 'Frenagem com Reduções',
+    paragraphs: [
+      'O cenário completo: frenagem forte + trail + reduções sequenciais. Três inputs simultâneos.',
+      'Os blips de acelerador (verde) são o rev match — coincida cada blip com uma redução.',
+    ],
+    diagram: 'full_corner',
+    tips: ['Freio vermelho constante enquanto reduz', 'Blip verde rápido a cada redução', 'Linha laranja = marcha alvo — siga ela com as borboletas'],
+  },
+  hpat_upshift_basic: {
+    title: 'Subida H-Pattern',
+    paragraphs: [
+      'Com câmbio H, cada troca exige coordenação: embreagem → move alavanca → solta embreagem.',
+      'O acelerador precisa ser levantado durante a troca e reaplicado imediatamente depois.',
+    ],
+    diagram: 'smooth_exit',
+    tips: ['Embreagem (amarelo) sobe antes da troca', 'Mova a alavanca durante o pico de embreagem', 'Solte a embreagem + reaplique o gás juntos'],
+  },
+  hpat_downshift_heel_toe: {
+    title: 'Heel-Toe com H-Pattern',
+    paragraphs: [
+      'A técnica mais difícil do sim racing: freio com a ponta do pé, blip de acelerador com o calcanhar, embreagem + câmbio H — tudo simultaneamente.',
+      'É 4 inputs ao mesmo tempo. Domine cada parte antes de combinar.',
+    ],
+    diagram: 'heel_toe',
+    tips: ['Freio (vermelho) mantém constante durante tudo', 'Embreagem (amarelo) + câmbio H = a troca', 'Blip de acelerador (verde) coincide com a embreagem para equalizar rotação'],
+  },
   // ── Interlagos scenarios ──
   ilg_t1_senna_s: {
     title: 'Curva 1 — Senna S',

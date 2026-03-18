@@ -4,27 +4,34 @@ import CombinedChart from './CombinedChart';
 import TutorialOverlay from './TutorialOverlay';
 import { PedalBar, DifficultyDots, Legend, GradeDisplay, StatCard, SegmentBar, TipCard } from './UI';
 import { makeCurvePoints, calcScore, analyzePerformance } from '../utils/scoring';
-import { readPedal, readSteering } from '../utils/gamepad';
+import { readPedal, readSteering, readShifterButtons, readHShifterGear } from '../utils/gamepad';
 import { TUTORIALS, LIVE_TIPS, getLiveTip } from '../data/tutorials';
+import { gearToValue } from '../data/gears';
 
 const btnS = { padding: '5px 14px', fontSize: 12, borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-body)' };
 
-function readInput(key, pedalConfigs) {
+function readInput(key, pedalConfigs, gearState) {
   if (key === 'steering') return readSteering(pedalConfigs.steering);
+  if (key === 'gear') return gearState.current;
   return readPedal(pedalConfigs[key]);
 }
 
 export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfigs, onResult }) {
-  const isCombined = exercise.pedal === 'combined';
+  const isGearExercise = exercise.pedal === 'sequential' || exercise.pedal === 'hpattern';
+  const isCombined = exercise.pedal === 'combined' || isGearExercise;
   const isSteering = exercise.pedal === 'steering';
   const pedalType = exercise.pedal || 'brake';
 
-  // For combined: keys of inputs involved
+  // For combined (including gear): keys of inputs involved
   const combinedKeys = isCombined ? Object.keys(exercise.curves) : [];
 
   // Single-input init
   const initVal = isSteering ? 0.5 : 0;
-  const pedalLabel = { brake: 'FREIO', throttle: 'ACEL', clutch: 'EMBR', steering: 'VOLANTE', combined: 'COMBINADO' }[pedalType];
+  const pedalLabel = { brake: 'FREIO', throttle: 'ACEL', clutch: 'EMBR', steering: 'VOLANTE', combined: 'COMBINADO', sequential: 'SEQUENCIAL', hpattern: 'H-PATTERN' }[pedalType];
+
+  // Gear state for gear exercises
+  const gearRef = useRef({ current: gearToValue(1), gearNum: 1 });
+  const prevShiftRef = useRef({ up: false, down: false });
 
   const [running, setRunning] = useState(false);
   const [countdown, setCountdown] = useState(null);
@@ -53,15 +60,17 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
 
   // Live coaching tip
   const [liveTip, setLiveTip] = useState(null);
-  const liveTipRef = useRef(null);
-  const prevTargetRef = useRef(0);
+  const liveTipTimerRef = useRef(0);
+  const recentDiffsRef = useRef([]);
+  const lastTipRef = useRef(null);
+  const lastTipTimeRef = useRef(0);
 
   const runRef = useRef(false), startRef = useRef(0), afRef = useRef(null);
   // Single refs
   const userRef = useRef([]), inputRef = useRef(initVal);
   // Combined refs
   const userMapRef = useRef({}), inputsRef = useRef({});
-  const keysRef = useRef({ up: false, down: false, left: false, right: false });
+  const keysRef = useRef({ up: false, down: false, left: false, right: false, shiftUp: false, shiftDown: false });
 
   const LEAD_IN_MS = 1500;
   const totalDuration = (exercise.duration + LEAD_IN_MS) * speedMultiplier;
@@ -111,6 +120,8 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
       if (e.key === 'ArrowDown' || e.key === 's') keysRef.current.down = true;
       if (e.key === 'ArrowLeft' || e.key === 'a') keysRef.current.left = true;
       if (e.key === 'ArrowRight' || e.key === 'd') keysRef.current.right = true;
+      if (e.key === 'q' || e.key === 'Q' || e.key === 'PageUp') keysRef.current.shiftUp = true;
+      if (e.key === 'e' || e.key === 'E' || e.key === 'PageDown') keysRef.current.shiftDown = true;
     };
     const ku = e => {
       if (e.key === 'ArrowUp' || e.key === 'w') keysRef.current.up = false;
@@ -128,11 +139,46 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
     const t = Math.min(1, elapsed / totalDuration);
 
     if (isCombined) {
+      // Update gear state for gear exercises
+      if (isGearExercise && inputMode === 'gamepad') {
+        if (exercise.pedal === 'sequential') {
+          const btns = readShifterButtons();
+          // Edge detection — only shift on press, not hold
+          if (btns.upshift && !prevShiftRef.current.up) {
+            gearRef.current.gearNum = Math.min(6, gearRef.current.gearNum + 1);
+            gearRef.current.current = gearToValue(gearRef.current.gearNum);
+          }
+          if (btns.downshift && !prevShiftRef.current.down) {
+            gearRef.current.gearNum = Math.max(1, gearRef.current.gearNum - 1);
+            gearRef.current.current = gearToValue(gearRef.current.gearNum);
+          }
+          prevShiftRef.current = { up: btns.upshift, down: btns.downshift };
+        } else if (exercise.pedal === 'hpattern') {
+          const hGear = readHShifterGear();
+          if (hGear > 0) {
+            gearRef.current.gearNum = hGear;
+            gearRef.current.current = gearToValue(hGear);
+          }
+        }
+      } else if (isGearExercise && inputMode === 'keyboard') {
+        // Keyboard: Q = upshift, E = downshift (or PageUp/PageDown)
+        if (keysRef.current.shiftUp) {
+          gearRef.current.gearNum = Math.min(6, gearRef.current.gearNum + 1);
+          gearRef.current.current = gearToValue(gearRef.current.gearNum);
+          keysRef.current.shiftUp = false;
+        }
+        if (keysRef.current.shiftDown) {
+          gearRef.current.gearNum = Math.max(1, gearRef.current.gearNum - 1);
+          gearRef.current.current = gearToValue(gearRef.current.gearNum);
+          keysRef.current.shiftDown = false;
+        }
+      }
+
       // Read all involved inputs
       const newInputs = {};
       for (const key of combinedKeys) {
         if (inputMode === 'gamepad') {
-          newInputs[key] = readInput(key, pedalConfigs);
+          newInputs[key] = readInput(key, pedalConfigs, gearRef.current);
         } else {
           // Keyboard: primary input via ↑↓, steering via ←→ — limited for testing
           const prev = inputsRef.current[key] || (key === 'steering' ? 0.5 : 0);
@@ -180,19 +226,30 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
 
     setProgress(t);
 
-    // Live coaching tip (throttled to every ~200ms)
+    // Live coaching tip — sliding window with hysteresis
     if (!isCombined && t > 0.05) {
       const now = Date.now();
-      if (!liveTipRef.current || now - liveTipRef.current > 200) {
-        liveTipRef.current = now;
-        // Get target value at current t
-        const tIdx = Math.min(Math.floor(t * 200), 199);
-        const targetVal = targetPts?.[tIdx]?.v ?? 0;
-        const prevTarget = prevTargetRef.current;
-        const userVal = inputRef.current;
-        const tipKey = getLiveTip(targetVal, userVal, t, prevTarget);
-        setLiveTip(tipKey ? LIVE_TIPS[tipKey] : null);
-        prevTargetRef.current = targetVal;
+      // Collect diff samples continuously
+      const tIdx = Math.min(Math.floor(t * 200), 199);
+      const targetVal = targetPts?.[tIdx]?.v ?? 0;
+      const userVal = inputRef.current;
+      const diff = userVal - targetVal;
+      recentDiffsRef.current.push(diff);
+      if (recentDiffsRef.current.length > 8) recentDiffsRef.current.shift(); // keep last ~8 samples (~250ms)
+
+      // Update tip every 500ms (less flickering)
+      if (now - liveTipTimerRef.current > 500) {
+        liveTipTimerRef.current = now;
+        const tipKey = getLiveTip(targetVal, userVal, t, leadInRatio, recentDiffsRef.current);
+
+        // Hysteresis: keep same tip for at least 800ms before changing
+        if (tipKey !== lastTipRef.current) {
+          if (now - lastTipTimeRef.current > 800 || !lastTipRef.current) {
+            lastTipRef.current = tipKey;
+            lastTipTimeRef.current = now;
+            setLiveTip(tipKey ? LIVE_TIPS[tipKey] : null);
+          }
+        }
       }
     }
 
@@ -235,7 +292,7 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
     setScore(null); setAnalysis(null); setShowFeedback(false); setCombinedScores({});
     setUserPts([]); userRef.current = []; inputRef.current = isSteering ? 0.5 : 0;
     setCurrentInput(isSteering ? 0.5 : 0); setProgress(0);
-    setLiveTip(null); liveTipRef.current = null; prevTargetRef.current = 0;
+    setLiveTip(null); liveTipTimerRef.current = 0; recentDiffsRef.current = []; lastTipRef.current = null; lastTipTimeRef.current = 0;
     // Combined reset
     userMapRef.current = {}; inputsRef.current = {};
     const initInputs = {};
@@ -265,7 +322,7 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
   useEffect(() => () => { if (afRef.current) cancelAnimationFrame(afRef.current); }, []);
 
   // Input labels for combined
-  const INPUT_LABELS = { brake: 'FREIO', throttle: 'ACEL', clutch: 'EMBR', steering: 'VOLANTE' };
+  const INPUT_LABELS = { brake: 'FREIO', throttle: 'ACEL', clutch: 'EMBR', steering: 'VOLANTE', gear: 'MARCHA' };
 
   return (
     <div style={{ maxWidth: 720, width: '100%' }}>
@@ -367,8 +424,8 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
         {running && (
           <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', letterSpacing: '.5px' }}>
             {inputMode === 'keyboard'
-              ? (isCombined ? '↑↓ PEDAIS · ←→ VOLANTE' : isSteering ? '← ESQUERDA · → DIREITA' : '↑ PRESSIONA · ↓ SOLTA')
-              : (isCombined ? 'USE TODOS OS PEDAIS' : isSteering ? 'GIRE O VOLANTE' : `PISE NO ${pedalLabel}`)}
+              ? (isGearExercise ? 'Q SOBE · E DESCE · ↑↓ PEDAIS' : isCombined ? '↑↓ PEDAIS · ←→ VOLANTE' : isSteering ? '← ESQUERDA · → DIREITA' : '↑ PRESSIONA · ↓ SOLTA')
+              : (isGearExercise ? (exercise.pedal === 'sequential' ? 'BORBOLETAS + PEDAIS' : 'H-SHIFTER + EMBREAGEM + PEDAIS') : isCombined ? 'USE TODOS OS PEDAIS' : isSteering ? 'GIRE O VOLANTE' : `PISE NO ${pedalLabel}`)}
           </span>
         )}
       </div>

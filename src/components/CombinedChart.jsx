@@ -6,6 +6,7 @@ const CURVE_COLORS = {
   throttle: { target: '#27ae6090', user: '#27ae60', label: 'ACEL' },
   clutch:   { target: '#f39c1290', user: '#f39c12', label: 'EMBR' },
   steering: { target: '#2980b990', user: '#2980b9', label: 'VOLANTE' },
+  gear:     { target: '#e67e2290', user: '#e67e22', label: 'MARCHA' },
 };
 
 export default function CombinedChart({ curves, targetPtsMap: externalPtsMap, userDataMap, currentInputs, progress, running, scores }) {
