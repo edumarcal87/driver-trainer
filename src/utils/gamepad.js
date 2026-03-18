@@ -114,18 +114,6 @@ export function readHShifterGear() {
   return 0;
 }
 
-/**
- * Reads all button states (for diagnostics/detection).
- */
-export function readAllButtons() {
-  const gamepads = navigator.getGamepads();
-  for (const gp of gamepads) {
-    if (!gp) continue;
-    return gp.buttons.map((b, i) => ({ index: i, pressed: b.pressed, value: b.value }));
-  }
-  return [];
-}
-
 export function isG29(gamepadId) {
   const id = (gamepadId || '').toLowerCase();
   return id.includes('g29') || id.includes('g920') || id.includes('driving force');
