@@ -82,15 +82,18 @@ export function detectMovedAxis(baseline, current) {
 
 /**
  * Reads paddle shifter buttons.
- * G29: Button 4 = right paddle (upshift), Button 5 = left paddle (downshift)
+ * Default: Button 4 = upshift, Button 5 = downshift (G29).
+ * Configurable via shifterConfig.
  */
-export function readShifterButtons() {
+export function readShifterButtons(shifterConfig) {
+  const up = shifterConfig?.upshift ?? 4;
+  const down = shifterConfig?.downshift ?? 5;
   const gamepads = navigator.getGamepads();
   for (const gp of gamepads) {
     if (!gp) continue;
     return {
-      upshift: gp.buttons[4]?.pressed || false,
-      downshift: gp.buttons[5]?.pressed || false,
+      upshift: gp.buttons[up]?.pressed || false,
+      downshift: gp.buttons[down]?.pressed || false,
     };
   }
   return { upshift: false, downshift: false };
@@ -98,18 +101,22 @@ export function readShifterButtons() {
 
 /**
  * Reads H-shifter gear position.
- * G29 H-Shifter: buttons 12-17 = gears 1-6, button 18 = reverse
+ * Default: buttons 12-17 = gears 1-6, button 18 = reverse (G29).
+ * Configurable via shifterConfig.
  * Returns 0 = neutral, 1-6 = gear, -1 = reverse
  */
-export function readHShifterGear() {
+export function readHShifterGear(shifterConfig) {
+  const base = shifterConfig?.hShifterBase ?? 12;
+  const rev = shifterConfig?.hShifterReverse ?? 18;
+  if (base < 0) return 0; // no H-shifter
   const gamepads = navigator.getGamepads();
   for (const gp of gamepads) {
     if (!gp) continue;
-    if (gp.buttons[18]?.pressed) return -1; // reverse
+    if (rev >= 0 && gp.buttons[rev]?.pressed) return -1;
     for (let g = 1; g <= 6; g++) {
-      if (gp.buttons[11 + g]?.pressed) return g;
+      if (gp.buttons[base + g - 1]?.pressed) return g;
     }
-    return 0; // neutral
+    return 0;
   }
   return 0;
 }

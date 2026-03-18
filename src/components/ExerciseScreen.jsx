@@ -18,7 +18,7 @@ function readInput(key, pedalConfigs, gearState) {
   return readPedal(pedalConfigs[key]);
 }
 
-export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfigs, onResult, carProfile, sessionLog }) {
+export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfigs, onResult, carProfile, sessionLog, shifterConfig }) {
   const isGearExercise = exercise.pedal === 'sequential' || exercise.pedal === 'hpattern';
   const isCombined = exercise.pedal === 'combined' || isGearExercise;
   const isSteering = exercise.pedal === 'steering';
@@ -149,7 +149,7 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
       // Update gear state for gear exercises
       if (isGearExercise && inputMode === 'gamepad') {
         if (exercise.pedal === 'sequential') {
-          const btns = readShifterButtons();
+          const btns = readShifterButtons(shifterConfig);
           // Edge detection — only shift on press, not hold
           if (btns.upshift && !prevShiftRef.current.up) {
             gearRef.current.gearNum = Math.min(6, gearRef.current.gearNum + 1);
@@ -161,7 +161,7 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
           }
           prevShiftRef.current = { up: btns.upshift, down: btns.downshift };
         } else if (exercise.pedal === 'hpattern') {
-          const hGear = readHShifterGear();
+          const hGear = readHShifterGear(shifterConfig);
           if (hGear > 0) {
             gearRef.current.gearNum = hGear;
             gearRef.current.current = gearToValue(hGear);

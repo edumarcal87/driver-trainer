@@ -4,6 +4,7 @@ import { PROGRAMS } from './data/programs';
 import { CAR_PROFILES } from './data/carProfiles';
 import { parseCSV, detectBrakeZones, zoneToExercise } from './utils/telemetry';
 import { getDefaultPedalConfig } from './utils/gamepad';
+import { detectWheelProfile, getWheelDefaultConfig, getWheelShifterConfig, saveWheelCalibration, loadWheelCalibration } from './utils/wheelProfiles';
 import ExerciseScreen from './components/ExerciseScreen';
 import ConfigScreen from './components/ConfigScreen';
 import ProgressScreen from './components/ProgressScreen';
@@ -134,9 +135,11 @@ export default function App() {
   const [history, setHistory] = useState(() => loadStored('history', []));
   const [gpConnected, setGpConnected] = useState(false);
   const [gpName, setGpName] = useState('');
+  const [wheelProfile, setWheelProfile] = useState(null);
+  const [shifterConfig, setShifterConfig] = useState({ upshift: 4, downshift: 5, hShifterBase: 12, hShifterReverse: 18 });
   const [inputMode, setInputMode] = useState(() => loadStored('inputMode', 'keyboard'));
   const [inputFilter, setInputFilter] = useState('all');
-  const [carProfile, setCarProfile] = useState(CAR_PROFILES[0]); // default
+  const [carProfile, setCarProfile] = useState(CAR_PROFILES[0]);
   const [telemZones, setTelemZones] = useState([]);
   const [telemFile, setTelemFile] = useState('');
   const [sessionLog, setSessionLog] = useState(() => loadStored('sessionLog', []));
@@ -147,13 +150,54 @@ export default function App() {
   useEffect(() => { try { localStorage.setItem('bt_inputMode', JSON.stringify(inputMode)); } catch {} }, [inputMode]);
   useEffect(() => { try { localStorage.setItem('bt_sessionLog', JSON.stringify(sessionLog)); } catch {} }, [sessionLog]);
 
+  // Save wheel calibration when pedalConfigs change and a wheel is connected
   useEffect(() => {
-    const onC = e => { setGpConnected(true); setGpName(e.gamepad.id); setInputMode('gamepad'); };
-    const onD = () => { setGpConnected(false); setGpName(''); };
-    window.addEventListener('gamepadconnected', onC); window.addEventListener('gamepaddisconnected', onD);
+    if (gpName && gpConnected) saveWheelCalibration(gpName, pedalConfigs);
+  }, [pedalConfigs, gpName, gpConnected]);
+
+  useEffect(() => {
+    const handleConnect = (e) => {
+      const id = e.gamepad.id;
+      setGpConnected(true);
+      setGpName(id);
+      setInputMode('gamepad');
+
+      // Auto-detect wheel profile
+      const profile = detectWheelProfile(id);
+      setWheelProfile(profile);
+
+      // Load saved calibration or use wheel defaults
+      const savedCalib = loadWheelCalibration(id);
+      if (savedCalib) {
+        setPedalConfigs(savedCalib);
+      } else if (profile) {
+        setPedalConfigs(profile.defaultConfig);
+      }
+
+      // Set shifter config
+      if (profile) {
+        setShifterConfig(profile.shifter);
+      } else {
+        setShifterConfig(getWheelShifterConfig(id));
+      }
+    };
+    const handleDisconnect = () => { setGpConnected(false); setGpName(''); setWheelProfile(null); };
+
+    window.addEventListener('gamepadconnected', handleConnect);
+    window.addEventListener('gamepaddisconnected', handleDisconnect);
+
+    // Check already connected
     const gps = navigator.getGamepads();
-    for (const gp of gps) { if (gp) { setGpConnected(true); setGpName(gp.id); setInputMode('gamepad'); break; } }
-    return () => { window.removeEventListener('gamepadconnected', onC); window.removeEventListener('gamepaddisconnected', onD); };
+    for (const gp of gps) {
+      if (gp) {
+        handleConnect({ gamepad: gp });
+        break;
+      }
+    }
+    return () => {
+      window.removeEventListener('gamepadconnected', handleConnect);
+      window.removeEventListener('gamepaddisconnected', handleDisconnect);
+    };
   }, []);
 
   const handleResult = useCallback((exId, sc, analysis) => {
@@ -219,7 +263,7 @@ export default function App() {
         </div>
       </div>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <StatusBadge connected={gpConnected} />
+        <StatusBadge connected={gpConnected} wheelName={wheelProfile?.model?.split(' / ')[0] || (gpConnected ? 'CONECTADO' : '')} />
         <button onClick={() => setScreen('config')} style={{ ...btn, padding: '7px 10px', fontSize: 16, lineHeight: 1, borderRadius: '50%', width: 36, height: 36 }}>⚙</button>
       </div>
     </div>
@@ -231,14 +275,14 @@ export default function App() {
   // ── All other screens with global header ──
   const renderScreen = () => {
     if (screen === 'config') return <ConfigScreen onBack={() => setScreen('menu')} gpConnected={gpConnected} gpName={gpName} pedalConfigs={pedalConfigs} setPedalConfigs={setPedalConfigs} />;
-    if (screen === 'exercise') return <ExerciseScreen exercise={selectedEx} onBack={() => setScreen('menu')} inputMode={inputMode} pedalConfigs={pedalConfigs} onResult={handleResult} carProfile={carProfile} sessionLog={sessionLog} />;
+    if (screen === 'exercise') return <ExerciseScreen exercise={selectedEx} onBack={() => setScreen('menu')} inputMode={inputMode} pedalConfigs={pedalConfigs} onResult={handleResult} carProfile={carProfile} sessionLog={sessionLog} shifterConfig={shifterConfig} />;
     if (screen === 'progress') return <ProgressScreen sessionHistory={sessionLog} onBack={() => setScreen('menu')} carProfile={carProfile} setCarProfile={setCarProfile} />;
     if (screen === 'programs') return <ProgramsScreen onBack={() => setScreen('menu')} onStartSession={startProgramSession} sessionLog={sessionLog} initialProgram={initialProgramForScreen} carProfile={carProfile} setCarProfile={setCarProfile} />;
     if (screen === 'program_session' && activeProgram) return (
       <ProgramSessionScreen
         program={activeProgram} weekIdx={activeWeekIdx} sessionIdx={activeSessionIdx}
         onBack={() => { setInitialProgramForScreen(activeProgram); setScreen('programs'); }} onResult={handleResult}
-        inputMode={inputMode} pedalConfigs={pedalConfigs} carProfile={carProfile} sessionLog={sessionLog}
+        inputMode={inputMode} pedalConfigs={pedalConfigs} carProfile={carProfile} sessionLog={sessionLog} shifterConfig={shifterConfig}
       />
     );
     return null; // menu renders below

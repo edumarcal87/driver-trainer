@@ -60,7 +60,7 @@ export function Legend({ pedalType = 'brake' }) {
   );
 }
 
-export function StatusBadge({ connected }) {
+export function StatusBadge({ connected, wheelName }) {
   return (
     <span style={{
       fontSize: 11, fontFamily: 'var(--font-mono)', padding: '5px 14px', borderRadius: 20, fontWeight: 500,
@@ -68,7 +68,7 @@ export function StatusBadge({ connected }) {
       color: connected ? 'var(--accent-throttle)' : 'var(--text-muted)',
       border: `1.5px solid ${connected ? '#27ae6030' : 'var(--border)'}`,
     }}>
-      {connected ? '● CONECTADO' : '○ SEM PEDAL'}
+      {connected ? `● ${wheelName || 'CONECTADO'}` : '○ SEM PEDAL'}
     </span>
   );
 }
