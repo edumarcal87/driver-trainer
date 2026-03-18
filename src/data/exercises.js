@@ -1,3 +1,5 @@
+import { INTERLAGOS_EXERCISES } from './interlagos';
+
 export const BRAKE_EXERCISES = [
   { id:'b_threshold', name:'Threshold braking', desc:'Frenagem forte e constante — máxima desaceleração', icon:'█',
     curve:t=>(t<.08?t/.08:t<.85?1:1-(t-.85)/.15), duration:3000, diff:1 },
@@ -164,7 +166,7 @@ export const COMBINED_EXERCISES = [
     duration: 5000, diff: 3 },
 ];
 
-export const ALL_EXERCISES = [...BRAKE_EXERCISES, ...THROTTLE_EXERCISES, ...CLUTCH_EXERCISES, ...STEERING_EXERCISES, ...COMBINED_EXERCISES];
+export const ALL_EXERCISES = [...BRAKE_EXERCISES, ...THROTTLE_EXERCISES, ...CLUTCH_EXERCISES, ...STEERING_EXERCISES, ...COMBINED_EXERCISES, ...INTERLAGOS_EXERCISES];
 
 export const EXERCISE_CATEGORIES = [
   { key:'brake', label:'Freio', color:'#ff4757', exercises:BRAKE_EXERCISES },

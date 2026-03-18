@@ -157,6 +157,7 @@ export default function App() {
   const [activeProgram, setActiveProgram] = useState(null);
   const [activeWeekIdx, setActiveWeekIdx] = useState(0);
   const [activeSessionIdx, setActiveSessionIdx] = useState(0);
+  const [initialProgramForScreen, setInitialProgramForScreen] = useState(null);
 
   const startProgramSession = (program, weekIdx, sessionIdx) => {
     setActiveProgram(program);
@@ -165,16 +166,21 @@ export default function App() {
     setScreen('program_session');
   };
 
+  const openPrograms = (program) => {
+    setInitialProgramForScreen(program || null);
+    setScreen('programs');
+  };
+
   // ── Screen routing ──
   if (screen === 'wizard') return <SetupWizard onComplete={() => setScreen('menu')} gpConnected={gpConnected} gpName={gpName} pedalConfigs={pedalConfigs} setPedalConfigs={setPedalConfigs} />;
   if (screen === 'config') return <ConfigScreen onBack={() => setScreen('menu')} gpConnected={gpConnected} gpName={gpName} pedalConfigs={pedalConfigs} setPedalConfigs={setPedalConfigs} />;
   if (screen === 'exercise') return <ExerciseScreen exercise={selectedEx} onBack={() => setScreen('menu')} inputMode={inputMode} pedalConfigs={pedalConfigs} onResult={handleResult} />;
   if (screen === 'progress') return <ProgressScreen sessionHistory={sessionLog} onBack={() => setScreen('menu')} />;
-  if (screen === 'programs') return <ProgramsScreen onBack={() => setScreen('menu')} onStartSession={startProgramSession} sessionLog={sessionLog} />;
+  if (screen === 'programs') return <ProgramsScreen onBack={() => setScreen('menu')} onStartSession={startProgramSession} sessionLog={sessionLog} initialProgram={initialProgramForScreen} />;
   if (screen === 'program_session' && activeProgram) return (
     <ProgramSessionScreen
       program={activeProgram} weekIdx={activeWeekIdx} sessionIdx={activeSessionIdx}
-      onBack={() => setScreen('programs')} onResult={handleResult}
+      onBack={() => { setInitialProgramForScreen(activeProgram); setScreen('programs'); }} onResult={handleResult}
       inputMode={inputMode} pedalConfigs={pedalConfigs}
     />
   );
@@ -229,7 +235,7 @@ export default function App() {
             <span style={{ fontSize: 16 }}>🎯</span>
             <h2 style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '.3px' }}>PROGRAMAS DE TREINO</h2>
           </div>
-          <button onClick={() => setScreen('programs')} style={{ ...btn, fontSize: 10, padding: '5px 14px', color: '#2980b9', borderColor: '#2980b930' }}>VER TODOS →</button>
+          <button onClick={() => openPrograms()} style={{ ...btn, fontSize: 10, padding: '5px 14px', color: '#2980b9', borderColor: '#2980b930' }}>VER TODOS →</button>
         </div>
         <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 6, scrollSnapType: 'x mandatory' }}>
           {PROGRAMS.map((prog) => {
@@ -237,7 +243,7 @@ export default function App() {
             const next = getNextSession(prog);
             const isComplete = !next;
             return (
-              <div key={prog.id} onClick={() => setScreen('programs')}
+              <div key={prog.id} onClick={() => openPrograms(prog)}
                 style={{
                   minWidth: 200, maxWidth: 220, flex: '0 0 auto', scrollSnapAlign: 'start',
                   background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)',
@@ -342,7 +348,7 @@ export default function App() {
           <div style={{ flex: 1 }}>
             <h2 style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)', color: '#009739', letterSpacing: '.3px' }}>INTERLAGOS — VOLTA COMPLETA</h2>
           </div>
-          <button onClick={() => setScreen('programs')} style={{ ...btn, fontSize: 10, padding: '5px 12px', color: '#009739', borderColor: '#00973930' }}>VER PROGRAMA →</button>
+          <button onClick={() => openPrograms(PROGRAMS.find(p => p.id === 'prog_interlagos'))} style={{ ...btn, fontSize: 10, padding: '5px 12px', color: '#009739', borderColor: '#00973930' }}>VER PROGRAMA →</button>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 10 }}>
           {exercises.filter(ex => ex.track === 'interlagos').map(ex => (

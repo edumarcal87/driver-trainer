@@ -35,8 +35,8 @@ function findCurrentSession(program, sessionLog) {
   return null; // All complete
 }
 
-export default function ProgramsScreen({ onBack, onStartSession, sessionLog }) {
-  const [selectedProgram, setSelectedProgram] = useState(null);
+export default function ProgramsScreen({ onBack, onStartSession, sessionLog, initialProgram }) {
+  const [selectedProgram, setSelectedProgram] = useState(initialProgram || null);
 
   // ── Program list ──
   if (!selectedProgram) {
