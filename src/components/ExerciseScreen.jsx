@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Chart from './Chart';
 import CombinedChart from './CombinedChart';
+import TutorialOverlay from './TutorialOverlay';
 import { PedalBar, DifficultyDots, Legend, GradeDisplay, StatCard, SegmentBar, TipCard } from './UI';
 import { makeCurvePoints, calcScore, analyzePerformance } from '../utils/scoring';
 import { readPedal, readSteering } from '../utils/gamepad';
+import { TUTORIALS, LIVE_TIPS, getLiveTip } from '../data/tutorials';
 
 const btnS = { padding: '5px 14px', fontSize: 12, borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-body)' };
 
@@ -39,6 +41,21 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
   const [combinedScores, setCombinedScores] = useState({});
   const [showFeedback, setShowFeedback] = useState(false);
 
+  // Tutorial: show on first encounter
+  const tutorialKey = `bt_tutorial_${exercise.id}`;
+  const [showTutorial, setShowTutorial] = useState(() => {
+    if (!TUTORIALS[exercise.id]) return false;
+    return !localStorage.getItem(tutorialKey);
+  });
+
+  // Speed control: 1 = normal, 2 = slow motion
+  const [speedMultiplier, setSpeedMultiplier] = useState(1);
+
+  // Live coaching tip
+  const [liveTip, setLiveTip] = useState(null);
+  const liveTipRef = useRef(null);
+  const prevTargetRef = useRef(0);
+
   const runRef = useRef(false), startRef = useRef(0), afRef = useRef(null);
   // Single refs
   const userRef = useRef([]), inputRef = useRef(initVal);
@@ -47,7 +64,7 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
   const keysRef = useRef({ up: false, down: false, left: false, right: false });
 
   const LEAD_IN_MS = 1500;
-  const totalDuration = exercise.duration + LEAD_IN_MS;
+  const totalDuration = (exercise.duration + LEAD_IN_MS) * speedMultiplier;
   const leadInRatio = LEAD_IN_MS / totalDuration;
 
   // Generate target points with lead-in flat zone at the start
@@ -163,6 +180,22 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
 
     setProgress(t);
 
+    // Live coaching tip (throttled to every ~200ms)
+    if (!isCombined && t > 0.05) {
+      const now = Date.now();
+      if (!liveTipRef.current || now - liveTipRef.current > 200) {
+        liveTipRef.current = now;
+        // Get target value at current t
+        const tIdx = Math.min(Math.floor(t * 200), 199);
+        const targetVal = targetPts?.[tIdx]?.v ?? 0;
+        const prevTarget = prevTargetRef.current;
+        const userVal = inputRef.current;
+        const tipKey = getLiveTip(targetVal, userVal, t, prevTarget);
+        setLiveTip(tipKey ? LIVE_TIPS[tipKey] : null);
+        prevTargetRef.current = targetVal;
+      }
+    }
+
     if (t >= 1) {
       runRef.current = false; setRunning(false);
 
@@ -202,6 +235,7 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
     setScore(null); setAnalysis(null); setShowFeedback(false); setCombinedScores({});
     setUserPts([]); userRef.current = []; inputRef.current = isSteering ? 0.5 : 0;
     setCurrentInput(isSteering ? 0.5 : 0); setProgress(0);
+    setLiveTip(null); liveTipRef.current = null; prevTargetRef.current = 0;
     // Combined reset
     userMapRef.current = {}; inputsRef.current = {};
     const initInputs = {};
@@ -235,6 +269,15 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
 
   return (
     <div style={{ maxWidth: 720, width: '100%' }}>
+      {/* Tutorial overlay */}
+      {showTutorial && (
+        <TutorialOverlay
+          exerciseId={exercise.id}
+          onClose={() => { setShowTutorial(false); localStorage.setItem(tutorialKey, '1'); }}
+          onSlowMode={() => { setShowTutorial(false); localStorage.setItem(tutorialKey, '1'); setSpeedMultiplier(2); }}
+        />
+      )}
+
       {/* Header */}
       <div className="animate-in" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1rem' }}>
         <button onClick={() => { runRef.current = false; setRunning(false); onBack(); }} style={btnS}>← VOLTAR</button>
@@ -243,7 +286,26 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
           <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{exercise.desc}</p>
         </div>
         {exercise.diff && <DifficultyDots level={exercise.diff} />}
+        {TUTORIALS[exercise.id] && (
+          <button onClick={() => setShowTutorial(true)} style={{ ...btnS, fontSize: 10, padding: '4px 10px', color: '#2980b9', borderColor: '#2980b930' }} title="Ver tutorial">?</button>
+        )}
       </div>
+
+      {/* Speed indicator */}
+      {speedMultiplier > 1 && (
+        <div className="animate-in" style={{
+          display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', marginBottom: 10,
+          background: '#e4f0f9', borderRadius: 10, border: '1px solid #2980b920',
+        }}>
+          <span style={{ fontSize: 14 }}>🐢</span>
+          <span style={{ fontSize: 11, color: '#2980b9', fontWeight: 600, fontFamily: 'var(--font-condensed)', letterSpacing: '.3px', flex: 1 }}>
+            CÂMERA LENTA — velocidade {Math.round(100 / speedMultiplier)}%
+          </span>
+          <button onClick={() => setSpeedMultiplier(1)} style={{ ...btnS, fontSize: 10, padding: '3px 10px', color: '#2980b9', borderColor: '#2980b930' }}>
+            VELOCIDADE NORMAL
+          </button>
+        </div>
+      )}
 
       {/* Chart */}
       <div className="animate-in animate-in-delay-1" style={{ position: 'relative', background: 'var(--bg-panel)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', padding: '12px 8px 8px', marginBottom: 12 }}>
@@ -259,6 +321,18 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
         )}
       </div>
 
+      {/* Live coaching tip */}
+      {running && liveTip && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8, padding: '7px 14px', marginBottom: 8,
+          background: liveTip.color + '10', borderRadius: 10, border: `1px solid ${liveTip.color}20`,
+          transition: 'all .15s',
+        }}>
+          <span style={{ fontSize: 14 }}>{liveTip.icon}</span>
+          <span style={{ fontSize: 12, color: liveTip.color, fontWeight: 600, fontFamily: 'var(--font-condensed)', letterSpacing: '.3px' }}>{liveTip.text}</span>
+        </div>
+      )}
+
       {/* Input bars */}
       <div className="animate-in animate-in-delay-2" style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
         {isCombined ? combinedKeys.map(key => (
@@ -271,12 +345,24 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
       {/* Controls */}
       <div className="animate-in animate-in-delay-3" style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
         {!running && !showFeedback && (
-          <button onClick={startRun} style={{
-            padding: '8px 24px', fontSize: 13, borderRadius: 10, fontWeight: 600, fontFamily: 'var(--font-display)', letterSpacing: '.5px',
-            border: '1px solid var(--accent-throttle)', background: 'var(--accent-throttle-glow)', color: 'var(--accent-throttle)', cursor: 'pointer',
-          }}>
-            {score !== null ? 'TENTAR DE NOVO' : 'INICIAR'}
-          </button>
+          <>
+            <button onClick={startRun} style={{
+              padding: '8px 24px', fontSize: 13, borderRadius: 10, fontWeight: 600, fontFamily: 'var(--font-display)', letterSpacing: '.5px',
+              border: '1px solid var(--accent-throttle)', background: 'var(--accent-throttle-glow)', color: 'var(--accent-throttle)', cursor: 'pointer',
+            }}>
+              {score !== null ? 'TENTAR DE NOVO' : 'INICIAR'}
+            </button>
+            {!running && score === null && (
+              <button onClick={() => setSpeedMultiplier(speedMultiplier === 1 ? 2 : 1)} style={{
+                ...btnS, fontSize: 10, padding: '6px 12px',
+                color: speedMultiplier > 1 ? '#2980b9' : 'var(--text-muted)',
+                borderColor: speedMultiplier > 1 ? '#2980b940' : 'var(--border)',
+                background: speedMultiplier > 1 ? '#e4f0f9' : 'transparent',
+              }}>
+                🐢 {speedMultiplier > 1 ? 'LENTO' : 'CÂMERA LENTA'}
+              </button>
+            )}
+          </>
         )}
         {running && (
           <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', letterSpacing: '.5px' }}>
