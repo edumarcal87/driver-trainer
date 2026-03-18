@@ -211,7 +211,7 @@ export default function App() {
     <div style={{ maxWidth: 780, width: '100%' }}>
       {/* ── Header ── */}
       <div className="animate-in" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+        <div onClick={() => setScreen('menu')} style={{ display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer' }}>
           <div style={{ width: 48, height: 48, borderRadius: 12, border: '2px solid var(--accent-brake)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <svg width="30" height="30" viewBox="0 0 56 56"><path d="M8 44 Q10 20, 18 14 Q24 10, 30 22 Q34 30, 38 28 Q42 26, 44 14" fill="none" stroke="#e74c3c" strokeWidth="3" strokeLinecap="round"/><circle cx="8" cy="44" r="3.5" fill="#e74c3c"/><circle cx="30" cy="22" r="3" fill="#27ae60"/><circle cx="44" cy="14" r="2.5" fill="#f39c12"/></svg>
           </div>
@@ -229,7 +229,7 @@ export default function App() {
       </div>
 
       {/* ── Programs section ── */}
-      <div className="animate-in animate-in-delay-1" style={{ marginBottom: '1.25rem' }}>
+      <div className="animate-in animate-in-delay-1" style={{ marginBottom: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 16 }}>🎯</span>
@@ -237,67 +237,142 @@ export default function App() {
           </div>
           <button onClick={() => openPrograms()} style={{ ...btn, fontSize: 10, padding: '5px 14px', color: '#2980b9', borderColor: '#2980b930' }}>VER TODOS →</button>
         </div>
-        <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 6, scrollSnapType: 'x mandatory' }}>
-          {PROGRAMS.map((prog) => {
-            const pr = getProgramProgress(prog);
-            const next = getNextSession(prog);
-            const isComplete = !next;
-            return (
-              <div key={prog.id} onClick={() => openPrograms(prog)}
-                style={{
-                  minWidth: 200, maxWidth: 220, flex: '0 0 auto', scrollSnapAlign: 'start',
-                  background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)',
-                  boxShadow: 'var(--shadow-card)', padding: '14px 16px', cursor: 'pointer',
-                  borderTop: `3px solid ${prog.color}40`,
-                  transition: 'box-shadow .2s, border-color .2s',
-                }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    {prog.level === 'Pista Real' ? (
-                      <svg width="20" height="20" viewBox="0 0 32 32" fill="none" style={{ flexShrink: 0 }}>
-                        <circle cx="16" cy="16" r="14" fill={prog.color} opacity=".12" stroke={prog.color} strokeWidth="1"/>
-                        <path d="M13 13 Q16 10 19 13 Q22 16 19 19 Q16 22 13 19 Q10 16 13 13" fill="none" stroke={prog.color} strokeWidth="2" strokeLinecap="round"/>
-                      </svg>
-                    ) : (
-                      <span style={{ fontSize: 18 }}>{prog.icon}</span>
-                    )}
+        <div style={{ position: 'relative' }}>
+          <div style={{
+            display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 8, scrollSnapType: 'x mandatory',
+            scrollbarWidth: 'thin', scrollbarColor: 'var(--border) transparent',
+            WebkitOverflowScrolling: 'touch',
+            maskImage: 'linear-gradient(to right, black 90%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(to right, black 90%, transparent 100%)',
+          }}>
+            {PROGRAMS.filter(p => p.level !== 'Pista Real').map((prog) => {
+              const pr = getProgramProgress(prog);
+              const next = getNextSession(prog);
+              const isComplete = !next;
+              return (
+                <div key={prog.id} onClick={() => openPrograms(prog)}
+                  style={{
+                    minWidth: 200, maxWidth: 220, flex: '0 0 auto', scrollSnapAlign: 'start',
+                    background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)',
+                    boxShadow: 'var(--shadow-card)', padding: '14px 16px', cursor: 'pointer',
+                    borderTop: `3px solid ${prog.color}40`,
+                    transition: 'box-shadow .2s, border-color .2s',
+                  }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                    <span style={{ fontSize: 18 }}>{prog.icon}</span>
                     <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-display)', color: prog.color }}>{prog.name}</span>
                   </div>
-                </div>
-                <p style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.3, marginBottom: 8, minHeight: 26 }}>{prog.desc.substring(0, 60)}...</p>
-                {/* Progress bar */}
-                <div style={{ marginBottom: 6 }}>
-                  <div style={{ height: 4, background: 'var(--bg-inset)', borderRadius: 2, overflow: 'hidden', border: '1px solid var(--border)' }}>
-                    <div style={{ width: `${pr.pct}%`, height: '100%', background: prog.color, borderRadius: 2, transition: 'width .4s' }} />
+                  <p style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.3, marginBottom: 8, minHeight: 26 }}>{prog.desc.substring(0, 60)}...</p>
+                  <div style={{ marginBottom: 6 }}>
+                    <div style={{ height: 4, background: 'var(--bg-inset)', borderRadius: 2, overflow: 'hidden', border: '1px solid var(--border)' }}>
+                      <div style={{ width: `${pr.pct}%`, height: '100%', background: prog.color, borderRadius: 2, transition: 'width .4s' }} />
+                    </div>
                   </div>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-                    {pr.done}/{pr.total} sessões
-                  </span>
-                  {isComplete ? (
-                    <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: '#27ae60', fontWeight: 600 }}>✓ COMPLETO</span>
-                  ) : pr.pct > 0 ? (
-                    <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: prog.color, fontWeight: 600 }}>{pr.pct}%</span>
-                  ) : (
-                    <span style={{
-                      fontSize: 8, fontFamily: 'var(--font-mono)', padding: '2px 8px', borderRadius: 8,
-                      background: prog.color + '12', color: prog.color, fontWeight: 600, letterSpacing: '.3px',
-                    }}>{prog.level.toUpperCase()}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{pr.done}/{pr.total} sessões</span>
+                    {isComplete ? (
+                      <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: '#27ae60', fontWeight: 600 }}>✓ COMPLETO</span>
+                    ) : pr.pct > 0 ? (
+                      <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: prog.color, fontWeight: 600 }}>{pr.pct}%</span>
+                    ) : (
+                      <span style={{ fontSize: 8, fontFamily: 'var(--font-mono)', padding: '2px 8px', borderRadius: 8, background: prog.color + '12', color: prog.color, fontWeight: 600, letterSpacing: '.3px' }}>{prog.level.toUpperCase()}</span>
+                    )}
+                  </div>
+                  {next && (
+                    <div style={{ marginTop: 8, padding: '6px 10px', background: prog.color + '08', borderRadius: 8, border: `1px solid ${prog.color}15`, fontSize: 10, color: prog.color, fontWeight: 500 }}>
+                      Próximo: {next.title}
+                    </div>
                   )}
                 </div>
-                {/* Next session hint */}
-                {next && (
-                  <div style={{
-                    marginTop: 8, padding: '6px 10px', background: prog.color + '08', borderRadius: 8,
-                    border: `1px solid ${prog.color}15`, fontSize: 10, color: prog.color, fontWeight: 500,
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Track scenarios section ── */}
+      <div className="animate-in animate-in-delay-2" style={{ marginBottom: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="14" fill="#009739" opacity=".12" stroke="#009739" strokeWidth="1.5"/>
+              <path d="M13 13 Q16 10 19 13 Q22 16 19 19 Q16 22 13 19 Q10 16 13 13" fill="none" stroke="#009739" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+            <h2 style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '.3px' }}>VOLTAS COMPLETAS</h2>
+          </div>
+        </div>
+        <div style={{ position: 'relative' }}>
+          <div style={{
+            display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 8, scrollSnapType: 'x mandatory',
+            scrollbarWidth: 'thin', scrollbarColor: 'var(--border) transparent',
+            WebkitOverflowScrolling: 'touch',
+            maskImage: 'linear-gradient(to right, black 90%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(to right, black 90%, transparent 100%)',
+          }}>
+            {PROGRAMS.filter(p => p.level === 'Pista Real').map((prog) => {
+              const pr = getProgramProgress(prog);
+              const next = getNextSession(prog);
+              const isComplete = !next;
+              return (
+                <div key={prog.id} onClick={() => openPrograms(prog)}
+                  style={{
+                    minWidth: 240, maxWidth: 280, flex: '0 0 auto', scrollSnapAlign: 'start',
+                    background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)',
+                    boxShadow: 'var(--shadow-card)', padding: '16px 18px', cursor: 'pointer',
+                    borderTop: `3px solid ${prog.color}40`,
+                    transition: 'box-shadow .2s, border-color .2s',
+                    position: 'relative', overflow: 'hidden',
                   }}>
-                    Próximo: {next.title}
+                  {/* Track silhouette background */}
+                  <svg width="80" height="80" viewBox="0 0 80 80" fill="none" style={{ position: 'absolute', right: -5, top: -5, opacity: 0.05 }}>
+                    <path d="M30 20 Q50 10 60 25 Q70 40 55 55 Q40 70 25 60 Q10 50 20 35 Q25 25 30 20" fill={prog.color} stroke={prog.color} strokeWidth="3"/>
+                  </svg>
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                      <svg width="28" height="28" viewBox="0 0 32 32" fill="none" style={{ flexShrink: 0 }}>
+                        <circle cx="16" cy="16" r="14" fill={prog.color} opacity=".12" stroke={prog.color} strokeWidth="1.5"/>
+                        <path d="M13 13 Q16 10 19 13 Q22 16 19 19 Q16 22 13 19 Q10 16 13 13" fill="none" stroke={prog.color} strokeWidth="2" strokeLinecap="round"/>
+                      </svg>
+                      <div>
+                        <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', color: prog.color, display: 'block' }}>{prog.name}</span>
+                        <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', letterSpacing: '.3px' }}>
+                          {prog.weeks.reduce((s, w) => s + w.sessions.length, 0)} sessões · {prog.weeks.length} setores
+                        </span>
+                      </div>
+                    </div>
+                    <p style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.4, marginBottom: 10 }}>{prog.desc}</p>
+                    <div style={{ marginBottom: 6 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                        <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>PROGRESSO</span>
+                        <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: prog.color, fontWeight: 600 }}>{pr.pct}%</span>
+                      </div>
+                      <div style={{ height: 5, background: 'var(--bg-inset)', borderRadius: 3, overflow: 'hidden', border: '1px solid var(--border)' }}>
+                        <div style={{ width: `${pr.pct}%`, height: '100%', background: prog.color, borderRadius: 3, transition: 'width .4s' }} />
+                      </div>
+                    </div>
+                    {next ? (
+                      <div style={{ padding: '6px 10px', background: prog.color + '08', borderRadius: 8, border: `1px solid ${prog.color}15`, fontSize: 10, color: prog.color, fontWeight: 500 }}>
+                        Próximo: {next.title}
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: '#27ae60', fontWeight: 600 }}>✓ VOLTA COMPLETA DOMINADA</span>
+                    )}
                   </div>
-                )}
-              </div>
-            );
-          })}
+                </div>
+              );
+            })}
+            {/* Coming soon placeholder */}
+            <div style={{
+              minWidth: 200, flex: '0 0 auto', scrollSnapAlign: 'start',
+              background: 'var(--bg-inset)', border: '2px dashed var(--border)', borderRadius: 'var(--radius-lg)',
+              padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              textAlign: 'center', opacity: 0.6,
+            }}>
+              <span style={{ fontSize: 24, marginBottom: 8 }}>🏗️</span>
+              <span style={{ fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-display)', color: 'var(--text-muted)' }}>MAIS PISTAS</span>
+              <span style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>Em breve...</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -333,30 +408,6 @@ export default function App() {
             {m === 'keyboard' ? 'TECLADO ↑↓' : 'PEDAL / G29'}
           </button>
         ))}
-      </div>
-
-      {/* ── Interlagos section ── */}
-      <div className="animate-in" style={{ marginTop: 8 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, marginTop: 20 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: '#00973912', border: '1.5px solid #00973925', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-              <path d="M16 2 L14 6 L10 5 L9 9 L5 10 L6 14 L2 16 L6 18 L5 22 L9 23 L10 27 L14 26 L16 30 L18 26 L22 27 L23 23 L27 22 L26 18 L30 16 L26 14 L27 10 L23 9 L22 5 L18 6 Z" fill="#009739" opacity=".15" stroke="#009739" strokeWidth="1"/>
-              <circle cx="16" cy="16" r="6" fill="none" stroke="#009739" strokeWidth="1.5"/>
-              <path d="M13 13 Q16 10 19 13 Q22 16 19 19 Q16 22 13 19 Q10 16 13 13" fill="none" stroke="#009739" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-          </div>
-          <div style={{ flex: 1 }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)', color: '#009739', letterSpacing: '.3px' }}>INTERLAGOS — VOLTA COMPLETA</h2>
-          </div>
-          <button onClick={() => openPrograms(PROGRAMS.find(p => p.id === 'prog_interlagos'))} style={{ ...btn, fontSize: 10, padding: '5px 12px', color: '#009739', borderColor: '#00973930' }}>VER PROGRAMA →</button>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 10 }}>
-          {exercises.filter(ex => ex.track === 'interlagos').map(ex => (
-            <ExerciseCard key={ex.id} ex={ex} best={bests[ex.id]}
-              attempts={sessionLog.filter(s => s.exId === ex.id).length}
-              onOpen={() => openExercise(ex)} />
-          ))}
-        </div>
       </div>
 
       {/* ── Free practice header ── */}
