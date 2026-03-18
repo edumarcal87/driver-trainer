@@ -107,44 +107,55 @@ export const TUTORIALS = {
 
 // Live coaching tips shown DURING exercise based on real-time performance
 export const LIVE_TIPS = {
-  too_early: { text: 'Você está adiantado — segure um pouco', color: '#f39c12', icon: '⏩' },
-  too_late: { text: 'Está atrasado — reaja mais rápido', color: '#e74c3c', icon: '⏪' },
   too_strong: { text: 'Pressão demais — alivie o pedal', color: '#e74c3c', icon: '⬆️' },
   too_weak: { text: 'Pressão insuficiente — pise mais', color: '#f39c12', icon: '⬇️' },
+  too_late: { text: 'Reaja mais rápido — a curva já subiu', color: '#e74c3c', icon: '⏪' },
+  too_early: { text: 'Cedo demais — espere a curva subir', color: '#f39c12', icon: '⏩' },
   good: { text: 'Boa! Mantenha assim', color: '#27ae60', icon: '✓' },
   great: { text: 'Excelente precisão!', color: '#27ae60', icon: '★' },
   release_slow: { text: 'Solte mais rápido', color: '#f39c12', icon: '↓' },
-  release_fast: { text: 'Solte mais devagar — suavidade!', color: '#2980b9', icon: '〰️' },
+  hold_steady: { text: 'Mantenha firme — não oscile', color: '#2980b9', icon: '〰️' },
 };
 
 /**
  * Analyze real-time input vs target and return a tip key.
- * Called every ~200ms during exercise.
+ * ALWAYS returns a tip when outside tolerance zone.
  */
-export function getLiveTip(targetVal, userVal, progress, prevTargetVal) {
+export function getLiveTip(targetVal, userVal, progress, leadInRatio, recentDiffs) {
+  // No tips during lead-in zone
+  if (progress < (leadInRatio || 0.15) + 0.03) return null;
+
+  // No tips at the very end
+  if (progress > 0.95) return null;
+
   const diff = userVal - targetVal;
-  const absDiff = Math.abs(diff);
-  const slope = targetVal - (prevTargetVal ?? targetVal);
 
-  // During lead-in, no tips
-  if (progress < 0.15) return null;
+  // Use average of recent diffs for stability (avoid flickering)
+  const diffs = Array.isArray(recentDiffs) && recentDiffs.length > 0 ? recentDiffs : [diff];
+  const avgDiff = diffs.reduce((s, d) => s + d, 0) / diffs.length;
+  const avgAbsDiff = Math.abs(avgDiff);
 
-  // Great accuracy
-  if (absDiff < 0.04) return 'great';
-  if (absDiff < 0.08) return 'good';
+  // Excellent tracking (within tolerance band ~0.08)
+  if (avgAbsDiff < 0.05) return 'great';
+  if (avgAbsDiff < 0.08) return 'good';
 
-  // Directional feedback
-  if (diff > 0.15) return 'too_strong';
-  if (diff < -0.15) return 'too_weak';
+  // ── Outside tolerance — ALWAYS give corrective feedback ──
 
-  // Timing: if target is rising and user hasn't started
-  if (slope > 0.01 && userVal < 0.1 && targetVal > 0.2) return 'too_late';
-  // If target is still low but user is already high
-  if (slope < 0.005 && targetVal < 0.15 && userVal > 0.3) return 'too_early';
+  // Target is near zero and user is pressing (too early / should release)
+  if (targetVal < 0.08 && userVal > 0.2) return 'too_early';
 
-  // Release feedback
-  if (slope < -0.01 && diff > 0.12) return 'release_slow';
-  if (slope < -0.01 && diff < -0.12) return 'release_fast';
+  // Target is high and user hasn't moved (too late / not reacting)
+  if (targetVal > 0.3 && userVal < 0.1) return 'too_late';
 
-  return null;
+  // Target is dropping but user is still high (slow to release)
+  if (targetVal < 0.15 && userVal > 0.3) return 'release_slow';
+
+  // User is above target
+  if (avgDiff > 0.08) return 'too_strong';
+
+  // User is below target
+  if (avgDiff < -0.08) return 'too_weak';
+
+  // Fallback — moderate deviation, encourage steadiness
+  return 'hold_steady';
 }
