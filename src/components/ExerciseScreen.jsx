@@ -8,6 +8,7 @@ import { readPedal, readSteering, readShifterButtons, readHShifterGear } from '.
 import { TUTORIALS, LIVE_TIPS, getLiveTip } from '../data/tutorials';
 import { gearToValue } from '../data/gears';
 import { applyProfile, applyProfileToCurves, getProfileDuration } from '../data/carProfiles';
+import { shareResult, downloadShareCard } from '../utils/shareCard';
 
 const btnS = { padding: '5px 14px', fontSize: 12, borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-body)' };
 
@@ -723,9 +724,38 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
             {analysis.tips.map((tip, i) => <TipCard key={i} type={tip.type} text={tip.text} />)}
           </div>
 
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <button onClick={startRun} style={{ padding: '8px 20px', fontSize: 12, borderRadius: 8, fontWeight: 500, border: '1px solid var(--accent-throttle)', background: 'var(--accent-throttle-glow)', color: 'var(--accent-throttle)', cursor: 'pointer' }}>Tentar de novo</button>
             <button onClick={() => { setShowFeedback(false); onBack(); }} style={btnS}>Outro exercício</button>
+            <div style={{ flex: 1 }} />
+            <button onClick={() => {
+              const hist = (sessionLog || []).filter(e => e.exId === exercise.id);
+              const best = hist.length > 0 ? Math.max(...hist.map(e => e.score)) : analysis.overall;
+              const prev = hist.length > 1 ? hist.slice(1) : [];
+              let trend = 0;
+              if (prev.length >= 2) {
+                const r = prev.slice(0, Math.ceil(prev.length / 2));
+                const o = prev.slice(Math.ceil(prev.length / 2));
+                trend = Math.round(r.reduce((s,e)=>s+e.score,0)/r.length - o.reduce((s,e)=>s+e.score,0)/o.length);
+              }
+              shareResult({
+                exerciseName: exercise.name,
+                score: analysis.overall,
+                grade: analysis.grade,
+                best,
+                attempts: hist.length,
+                segments: analysis.segments,
+                carProfile,
+                trend,
+                isNewBest: analysis.overall >= best,
+              });
+            }} style={{
+              ...btnS, fontSize: 11, padding: '6px 14px',
+              color: '#8e44ad', borderColor: '#8e44ad30', background: '#f3e8f9',
+              fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4,
+            }}>
+              📤 Compartilhar
+            </button>
           </div>
         </div>
       )}
