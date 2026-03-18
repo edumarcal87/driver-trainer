@@ -165,6 +165,62 @@ export const COMBINED_EXERCISES = [
       throttle: t => (t<.4?0:t<.9?Math.pow((t-.4)/.5,1.3):1),
     },
     duration: 5000, diff: 3 },
+
+  // ── Combined with gear shifting ──
+  { id:'x_upshift_accel', name:'Aceleração com trocas', desc:'Acelerador a fundo + subida de marchas no timing certo', icon:'⬆️🔥',
+    pedal:'combined',
+    curves: {
+      gear: t => {
+        if(t<.15)return 1/6;if(t<.30)return 2/6;if(t<.48)return 3/6;if(t<.66)return 4/6;if(t<.82)return 5/6;return 1;
+      },
+      throttle: t => {
+        const shifts=[.15,.30,.48,.66,.82];
+        for(const s of shifts){if(t>s-.02&&t<s+.02)return .3;}
+        return t<.05?t/.05:1;
+      },
+    },
+    duration: 5500, diff: 2 },
+  { id:'x_brake_downshift_corner', name:'Frenagem + redução + curva', desc:'Freie, reduza marchas e entre na curva — o combo completo', icon:'🔻🏎️',
+    pedal:'combined',
+    curves: {
+      gear: t => {
+        if(t<.05)return 5/6;if(t<.18)return 4/6;if(t<.32)return 3/6;if(t<.48)return 2/6;return 2/6;
+      },
+      brake: t => {
+        if(t<.04)return t/.04;if(t<.15)return 1;if(t<.45)return 1-(t-.15)/.3;return 0;
+      },
+      steering: t => {
+        if(t<.2)return .5;if(t<.45)return .5-((t-.2)/.25)*.3;if(t<.7)return .2;if(t<.9)return .2+((t-.7)/.2)*.3;return .5;
+      },
+      throttle: t => {
+        if(t<.5)return 0;if(t<.85)return Math.pow((t-.5)/.35,1.2);return 1;
+      },
+    },
+    duration: 6000, diff: 3 },
+  { id:'x_launch_with_shifts', name:'Largada com trocas rápidas', desc:'Largada: embreagem + acelerador + 1ª→2ª→3ª com timing perfeito', icon:'🏁⚡',
+    pedal:'combined',
+    curves: {
+      gear: t => {
+        if(t<.20)return 1/6;if(t<.45)return 2/6;if(t<.72)return 3/6;return 4/6;
+      },
+      clutch: t => {
+        if(t<.02)return 1;if(t<.12)return 1-(t-.02)/.1;
+        const shifts=[.20,.45,.72];
+        for(const s of shifts){
+          if(t>s-.03&&t<s-.01)return(t-(s-.03))/.02;
+          if(t>=s-.01&&t<s+.01)return 1;
+          if(t>=s+.01&&t<s+.03)return 1-(t-(s+.01))/.02;
+        }
+        return 0;
+      },
+      throttle: t => {
+        if(t<.02)return 0;if(t<.08)return(t-.02)/.06*.7;
+        const shifts=[.20,.45,.72];
+        for(const s of shifts){if(t>s-.02&&t<s+.02)return .25;}
+        return Math.min(1,.7+t*.4);
+      },
+    },
+    duration: 6000, diff: 3 },
 ];
 
 export const ALL_EXERCISES = [...BRAKE_EXERCISES, ...THROTTLE_EXERCISES, ...CLUTCH_EXERCISES, ...STEERING_EXERCISES, ...COMBINED_EXERCISES, ...INTERLAGOS_EXERCISES, ...ALL_GEAR_EXERCISES];
@@ -174,9 +230,9 @@ export const EXERCISE_CATEGORIES = [
   { key:'throttle', label:'Acelerador', color:'#2ed573', exercises:THROTTLE_EXERCISES },
   { key:'clutch', label:'Embreagem', color:'#ffa502', exercises:CLUTCH_EXERCISES },
   { key:'steering', label:'Volante', color:'#3b82f6', exercises:STEERING_EXERCISES },
-  { key:'combined', label:'Combinado', color:'#a855f7', exercises:COMBINED_EXERCISES },
   { key:'sequential', label:'Câmbio Sequencial', color:'#e67e22', exercises:SEQUENTIAL_EXERCISES },
   { key:'hpattern', label:'Câmbio H-Pattern', color:'#d35400', exercises:HPATTERN_EXERCISES },
+  { key:'combined', label:'Combinado', color:'#a855f7', exercises:COMBINED_EXERCISES },
 ];
 
 export const TOLERANCE = 0.12;
