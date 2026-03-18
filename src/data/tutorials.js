@@ -3,7 +3,12 @@
  * Shown on first encounter with each exercise type.
  */
 
-export const TUTORIALS = {
+import { INTERLAGOS_TUTORIALS } from './interlagos';
+import { SPA_TUTORIALS } from './spa';
+import { MONZA_TUTORIALS } from './monza';
+import { SILVERSTONE_TUTORIALS } from './silverstone';
+
+const BASE_TUTORIALS = {
   b_threshold: {
     title: 'O que é Threshold Braking?',
     paragraphs: [
@@ -258,6 +263,14 @@ export const TUTORIALS = {
     diagram: 'progressive',
     tips: ['Freio moderado', 'Desvio suave para a direita', 'Sem acelerador no pit'],
   },
+};
+
+export const TUTORIALS = {
+  ...BASE_TUTORIALS,
+  ...INTERLAGOS_TUTORIALS,
+  ...SPA_TUTORIALS,
+  ...MONZA_TUTORIALS,
+  ...SILVERSTONE_TUTORIALS,
 };
 
 // Live coaching tips shown DURING exercise based on real-time performance

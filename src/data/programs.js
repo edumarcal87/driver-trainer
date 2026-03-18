@@ -403,4 +403,111 @@ export const PROGRAMS = [
       },
     ]
   },
+
+  // ── Spa-Francorchamps ──
+  {
+    id: 'prog_spa',
+    name: 'Spa-Francorchamps',
+    desc: 'Treine cada setor do circuito belga. Eau Rouge, Blanchimont e Bus Stop.',
+    icon: '🇧🇪',
+    color: '#e74c3c',
+    level: 'Pista Real',
+    filterEnabled: true,
+    weeks: [
+      {
+        title: 'Setor 1 — La Source e Eau Rouge',
+        sessions: [
+          { title: 'La Source', exercises: ['spa_t1_la_source', 'spa_t1_la_source'], minScore: 40, desc: 'Hairpin de direita após a reta', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Eau Rouge / Raidillon', exercises: ['spa_t3_eau_rouge', 'spa_t3_eau_rouge'], minScore: 40, desc: 'O S mais famoso do mundo', inputs: ['throttle', 'steering'] },
+          { title: 'Les Combes', exercises: ['spa_t5_les_combes', 'spa_t5_les_combes'], minScore: 40, desc: 'Chicane no topo da colina', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Setor 1 completo', exercises: ['spa_t1_la_source', 'spa_t3_eau_rouge', 'spa_t5_les_combes'], minScore: 38, desc: 'As 3 curvas do setor 1', inputs: ['brake', 'throttle', 'steering'] },
+        ]
+      },
+      {
+        title: 'Setor 2 — Pouhon e Stavelot',
+        sessions: [
+          { title: 'Pouhon', exercises: ['spa_t11_pouhon', 'spa_t11_pouhon'], minScore: 40, desc: 'Curva dupla de alta velocidade', inputs: ['throttle', 'steering'] },
+          { title: 'Stavelot', exercises: ['spa_t13_stavelot', 'spa_t13_stavelot'], minScore: 40, desc: 'Curva de direita em subida', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Setor 2 completo', exercises: ['spa_t11_pouhon', 'spa_t13_stavelot'], minScore: 38, desc: 'Pouhon + Stavelot', inputs: ['brake', 'throttle', 'steering'] },
+        ]
+      },
+      {
+        title: 'Setor 3 — Blanchimont e Bus Stop',
+        sessions: [
+          { title: 'Blanchimont', exercises: ['spa_t17_blanchimont', 'spa_t17_blanchimont'], minScore: 40, desc: 'Curva rápida de esquerda — coragem', inputs: ['throttle', 'steering'] },
+          { title: 'Bus Stop Chicane', exercises: ['spa_t18_bus_stop', 'spa_t18_bus_stop'], minScore: 40, desc: 'Chicane final antes da reta', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Setor 3 completo', exercises: ['spa_t17_blanchimont', 'spa_t18_bus_stop'], minScore: 38, desc: 'Blanchimont + Bus Stop', inputs: ['brake', 'throttle', 'steering'] },
+        ]
+      },
+    ]
+  },
+
+  // ── Monza ──
+  {
+    id: 'prog_monza',
+    name: 'Monza — Templo da Velocidade',
+    desc: 'Frenagens pesadas e chicanes rápidas no circuito mais veloz do calendário.',
+    icon: '🇮🇹',
+    color: '#27ae60',
+    level: 'Pista Real',
+    filterEnabled: true,
+    weeks: [
+      {
+        title: 'Setor 1 — Chicanes e Curva Grande',
+        sessions: [
+          { title: 'Rettifilo (Chicane 1)', exercises: ['mza_t1_rettifilo', 'mza_t1_rettifilo'], minScore: 38, desc: 'A frenagem mais pesada do calendário', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Curva Grande', exercises: ['mza_t3_curva_grande', 'mza_t3_curva_grande'], minScore: 42, desc: 'Alta velocidade com gás parcial', inputs: ['throttle', 'steering'] },
+          { title: 'Roggia (Chicane 2)', exercises: ['mza_t5_roggia', 'mza_t5_roggia'], minScore: 38, desc: 'Segunda chicane — esquerda-direita', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Setor 1 completo', exercises: ['mza_t1_rettifilo', 'mza_t3_curva_grande', 'mza_t5_roggia'], minScore: 36, desc: 'Chicanes + Curva Grande', inputs: ['brake', 'throttle', 'steering'] },
+        ]
+      },
+      {
+        title: 'Setor 2 — Lesmos e Ascari',
+        sessions: [
+          { title: 'Lesmo 1', exercises: ['mza_t7_lesmo1', 'mza_t7_lesmo1'], minScore: 40, desc: 'Curva em descida — cuidado', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Lesmo 2', exercises: ['mza_t8_lesmo2', 'mza_t8_lesmo2'], minScore: 40, desc: 'Mais apertada — saída crucial', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Ascari', exercises: ['mza_t9_ascari', 'mza_t9_ascari'], minScore: 38, desc: 'S em 3 partes — ritmo', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Setor 2 completo', exercises: ['mza_t7_lesmo1', 'mza_t8_lesmo2', 'mza_t9_ascari'], minScore: 36, desc: 'Lesmos + Ascari', inputs: ['brake', 'throttle', 'steering'] },
+        ]
+      },
+      {
+        title: 'Setor 3 — Parabolica',
+        sessions: [
+          { title: 'Parabolica', exercises: ['mza_t11_parabolica', 'mza_t11_parabolica'], minScore: 40, desc: 'A curva mais importante de Monza', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Volta simulada', exercises: ['mza_t1_rettifilo', 'mza_t5_roggia', 'mza_t7_lesmo1', 'mza_t9_ascari', 'mza_t11_parabolica'], minScore: 35, desc: 'Todas as curvas chave em sequência', inputs: ['brake', 'throttle', 'steering'] },
+        ]
+      },
+    ]
+  },
+
+  // ── Silverstone ──
+  {
+    id: 'prog_silverstone',
+    name: 'Silverstone — Casa da F1',
+    desc: 'Curvas rápidas e o lendário complexo Maggotts-Becketts. A pista dos corajosos.',
+    icon: '🇬🇧',
+    color: '#2980b9',
+    level: 'Pista Real',
+    filterEnabled: true,
+    weeks: [
+      {
+        title: 'Setor 2 — Copse e Maggotts-Becketts',
+        sessions: [
+          { title: 'Copse', exercises: ['slv_t9_copse', 'slv_t9_copse'], minScore: 42, desc: 'Curva rápida de direita — coragem', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Maggotts-Becketts-Chapel', exercises: ['slv_t10_maggotts', 'slv_t10_maggotts'], minScore: 35, desc: 'O complexo mais famoso — fluidez total', inputs: ['throttle', 'steering'] },
+          { title: 'Stowe', exercises: ['slv_t14_stowe', 'slv_t14_stowe'], minScore: 40, desc: 'Frenagem forte de alta velocidade', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Setor rápido completo', exercises: ['slv_t9_copse', 'slv_t10_maggotts', 'slv_t14_stowe'], minScore: 36, desc: 'Copse → Maggotts → Stowe', inputs: ['brake', 'throttle', 'steering'] },
+        ]
+      },
+      {
+        title: 'Setor 3 — Vale, Abbey e Luffield',
+        sessions: [
+          { title: 'Vale-Club', exercises: ['slv_t15_vale', 'slv_t15_vale'], minScore: 42, desc: 'Chicane lenta — precisão', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Abbey', exercises: ['slv_t17_abbey', 'slv_t17_abbey'], minScore: 42, desc: 'Curva rápida de direita', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Luffield', exercises: ['slv_t18_luffield', 'slv_t18_luffield'], minScore: 40, desc: 'Hairpin — saída para a reta', inputs: ['brake', 'throttle', 'steering'] },
+          { title: 'Setor lento completo', exercises: ['slv_t15_vale', 'slv_t17_abbey', 'slv_t18_luffield'], minScore: 38, desc: 'Vale → Abbey → Luffield', inputs: ['brake', 'throttle', 'steering'] },
+        ]
+      },
+    ]
+  },
 ];
