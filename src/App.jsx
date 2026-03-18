@@ -10,6 +10,7 @@ import ConfigScreen from './components/ConfigScreen';
 import ProgressScreen from './components/ProgressScreen';
 import ProgramsScreen from './components/ProgramsScreen';
 import ProgramSessionScreen from './components/ProgramSessionScreen';
+import GamepadDiagnostics from './components/GamepadDiagnostics';
 import SetupWizard from './components/SetupWizard';
 import { BrakeIcon, ThrottleIcon, ClutchIcon, SteeringIcon } from './components/SetupWizard';
 import { DifficultyDots, StatusBadge, CategoryBadge, LevelBadge, ScoreRing } from './components/UI';
@@ -264,6 +265,7 @@ export default function App() {
       </div>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <StatusBadge connected={gpConnected} wheelName={wheelProfile?.model?.split(' / ')[0] || (gpConnected ? 'CONECTADO' : '')} />
+        <button onClick={() => setScreen('diagnostics')} title="Diagnóstico de Gamepad" style={{ ...btn, padding: '7px 10px', fontSize: 14, lineHeight: 1, borderRadius: '50%', width: 36, height: 36 }}>🔧</button>
         <button onClick={() => setScreen('config')} style={{ ...btn, padding: '7px 10px', fontSize: 16, lineHeight: 1, borderRadius: '50%', width: 36, height: 36 }}>⚙</button>
       </div>
     </div>
@@ -275,6 +277,7 @@ export default function App() {
   // ── All other screens with global header ──
   const renderScreen = () => {
     if (screen === 'config') return <ConfigScreen onBack={() => setScreen('menu')} gpConnected={gpConnected} gpName={gpName} pedalConfigs={pedalConfigs} setPedalConfigs={setPedalConfigs} />;
+    if (screen === 'diagnostics') return <GamepadDiagnostics onBack={() => setScreen('menu')} pedalConfigs={pedalConfigs} />;
     if (screen === 'exercise') return <ExerciseScreen exercise={selectedEx} onBack={() => setScreen('menu')} inputMode={inputMode} pedalConfigs={pedalConfigs} onResult={handleResult} carProfile={carProfile} sessionLog={sessionLog} shifterConfig={shifterConfig} />;
     if (screen === 'progress') return <ProgressScreen sessionHistory={sessionLog} onBack={() => setScreen('menu')} carProfile={carProfile} setCarProfile={setCarProfile} />;
     if (screen === 'programs') return <ProgramsScreen onBack={() => setScreen('menu')} onStartSession={startProgramSession} sessionLog={sessionLog} initialProgram={initialProgramForScreen} carProfile={carProfile} setCarProfile={setCarProfile} />;
