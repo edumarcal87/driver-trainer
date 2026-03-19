@@ -20,7 +20,7 @@ import PremiumGate from './components/PremiumGate';
 import SetupWizard from './components/SetupWizard';
 import { BrakeIcon, ThrottleIcon, ClutchIcon, SteeringIcon } from './components/SetupWizard';
 import { DifficultyDots, StatusBadge, CategoryBadge, LevelBadge, ScoreRing } from './components/UI';
-import { submitToLeaderboard, submitChallengeEntry, getActiveChallenge } from './lib/community';
+import { submitToLeaderboard, submitChallengeEntry, getActiveChallenges } from './lib/community';
 
 const btn = { padding: '7px 16px', fontSize: 12, borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 500, boxShadow: '0 1px 2px rgba(0,0,0,0.04)' };
 const CAT_HEX = { brake: '#e74c3c', throttle: '#27ae60', clutch: '#f39c12', steering: '#2980b9', combined: '#8e44ad', sequential: '#00bcd4', hpattern: '#5c6bc0' };
@@ -238,10 +238,12 @@ export default function App({ onGoToLanding }) {
       saveSessionResult(user.id, logEntry).catch(() => {});
       // Submit to leaderboard
       submitToLeaderboard(user.id, exId, sc, carProfile?.id || 'default', profile?.display_name, profile?.avatar_url).catch(() => {});
-      // Submit to active challenge if matching
-      getActiveChallenge().then(ch => {
-        if (ch && ch.exercise_id === exId) {
-          submitChallengeEntry(ch.id, user.id, sc, profile?.display_name, profile?.avatar_url).catch(() => {});
+      // Submit to active challenges if matching
+      getActiveChallenges().then(challenges => {
+        for (const ch of challenges) {
+          if (ch.exercise_id === exId) {
+            submitChallengeEntry(ch.id, user.id, sc, carProfile?.id || 'default', profile?.display_name, profile?.avatar_url).catch(() => {});
+          }
         }
       }).catch(() => {});
     }
@@ -328,7 +330,7 @@ export default function App({ onGoToLanding }) {
         />
       </PremiumGate>
     );
-    if (screen === 'community') return <CommunityScreen onBack={() => setScreen('menu')} onStartExercise={(ex) => { setSelectedEx(ex); setScreen('exercise'); }} />;
+    if (screen === 'community') return <CommunityScreen onBack={() => setScreen('menu')} onStartExercise={(ex) => { setSelectedEx(ex); setScreen('exercise'); }} onLogin={onGoToLanding} />;
     return null; // menu renders below
   };
 
