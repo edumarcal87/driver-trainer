@@ -10,10 +10,12 @@ export default function UserMenu({ onLogin }) {
   if (!isLoggedIn) {
     return (
       <button onClick={onLogin} style={{
-        padding: '6px 14px', fontSize: 11, borderRadius: 20, fontWeight: 600,
-        fontFamily: 'var(--font-condensed)', letterSpacing: '.3px',
-        border: '1.5px solid var(--accent-brake)', background: 'var(--accent-brake-light)', color: 'var(--accent-brake)',
-        cursor: 'pointer', boxShadow: '0 1px 3px rgba(231,76,60,0.1)',
+        padding: '8px 18px', fontSize: 12, borderRadius: 20, fontWeight: 700,
+        fontFamily: 'var(--font-display)', letterSpacing: '.5px',
+        border: '2px solid var(--accent-brake)', background: 'var(--accent-brake)',
+        color: '#fff', cursor: 'pointer',
+        boxShadow: '0 2px 8px rgba(231,76,60,0.25)',
+        transition: 'all .15s',
       }}>
         ENTRAR
       </button>
@@ -26,7 +28,7 @@ export default function UserMenu({ onLogin }) {
   const planColor = isPremiumUser ? '#f1c40f' : '#2980b9';
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', zIndex: 1000 }}>
       <button onClick={() => setOpen(!open)} style={{
         display: 'flex', alignItems: 'center', gap: 8, padding: '4px 12px 4px 4px',
         borderRadius: 20, border: '1.5px solid var(--border)', background: 'var(--bg-card)',
@@ -50,13 +52,13 @@ export default function UserMenu({ onLogin }) {
       {/* Dropdown */}
       {open && (
         <>
-          <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 99 }} />
+          <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 999 }} />
           <div style={{
-            position: 'absolute', top: '100%', right: 0, marginTop: 6, minWidth: 200,
+            position: 'absolute', top: '100%', right: 0, marginTop: 6, minWidth: 220,
             background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 12,
-            boxShadow: '0 4px 20px rgba(0,0,0,0.08)', zIndex: 100, overflow: 'hidden',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12)', zIndex: 1000, overflow: 'hidden',
           }}>
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
               <p style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-display)' }}>{displayName}</p>
               <p style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>{user?.email}</p>
               <span style={{

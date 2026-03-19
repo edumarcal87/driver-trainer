@@ -289,9 +289,9 @@ export default function App() {
       </div>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <StatusBadge connected={gpConnected} wheelName={wheelProfile?.model?.split(' / ')[0] || (gpConnected ? 'CONECTADO' : '')} />
-        <UserMenu onLogin={() => setScreen('login')} />
         <button onClick={() => setScreen('diagnostics')} title="Diagnóstico de Gamepad" style={{ ...btn, padding: '7px 10px', fontSize: 14, lineHeight: 1, borderRadius: '50%', width: 36, height: 36 }}>🔧</button>
         <button onClick={() => setScreen('config')} style={{ ...btn, padding: '7px 10px', fontSize: 16, lineHeight: 1, borderRadius: '50%', width: 36, height: 36 }}>⚙</button>
+        <UserMenu onLogin={() => setScreen('login')} />
       </div>
     </div>
   );

@@ -1,73 +1,118 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../lib/AuthContext';
 
 /**
- * Wraps content that requires premium access.
- * Shows a lock overlay for free users.
+ * PremiumGate v2 — shows content normally with a banner at the top.
+ * Users can browse programs/sessions but starting exercises is blocked.
  * 
- * Usage:
- *   <PremiumGate feature="Cenários Reais">
- *     <ProgramsScreen ... />
- *   </PremiumGate>
+ * Usage in screens: call usePremiumCheck() to know if user can start.
+ * Usage as wrapper: <PremiumGate> shows banner + children fully visible.
  */
 export default function PremiumGate({ children, feature, onLogin }) {
   const { isLoggedIn, isPremiumUser } = useAuth();
 
-  // Premium users or admins → show content
   if (isPremiumUser) return children;
 
-  // Free content or not logged in → show upgrade prompt
   return (
-    <div style={{ position: 'relative' }}>
-      {/* Blurred preview */}
-      <div style={{ filter: 'blur(3px)', opacity: 0.4, pointerEvents: 'none', userSelect: 'none' }}>
-        {children}
-      </div>
-
-      {/* Lock overlay */}
+    <div>
+      {/* Premium banner at top */}
       <div style={{
-        position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(240, 239, 232, 0.85)', borderRadius: 'var(--radius-lg)',
+        display: 'flex', alignItems: 'center', gap: 12, padding: '12px 18px', marginBottom: 16,
+        background: 'linear-gradient(135deg, #f1c40f08, #f39c1208)', borderRadius: 'var(--radius-lg)',
+        border: '1.5px solid #f1c40f25',
       }}>
-        <div style={{ textAlign: 'center', maxWidth: 320, padding: '2rem' }}>
-          <span style={{ fontSize: 40, display: 'block', marginBottom: 12 }}>🔒</span>
-          <h3 style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', marginBottom: 8 }}>
+        <span style={{ fontSize: 22 }}>⭐</span>
+        <div style={{ flex: 1 }}>
+          <p style={{ fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-display)', color: '#b7950b' }}>
             Conteúdo Premium
-          </h3>
-          <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>
-            {feature ? `"${feature}" é` : 'Este conteúdo é'} exclusivo para assinantes Premium.
-            Faça upgrade para desbloquear todos os programas de treino e cenários reais.
           </p>
-
-          {!isLoggedIn ? (
-            <button onClick={onLogin} style={{
-              padding: '10px 28px', fontSize: 13, borderRadius: 10, fontWeight: 700,
-              fontFamily: 'var(--font-display)', letterSpacing: '.3px',
-              border: '1.5px solid var(--accent-brake)', background: 'var(--accent-brake-light)', color: 'var(--accent-brake)',
-              cursor: 'pointer',
-            }}>
-              ENTRAR / CRIAR CONTA
-            </button>
-          ) : (
-            <button style={{
-              padding: '10px 28px', fontSize: 13, borderRadius: 10, fontWeight: 700,
-              fontFamily: 'var(--font-display)', letterSpacing: '.3px',
-              border: '1.5px solid #f1c40f', background: '#f1c40f12', color: '#b7950b',
-              cursor: 'pointer',
-            }}>
-              ⭐ UPGRADE PARA PREMIUM
-            </button>
-          )}
+          <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+            {feature ? `"${feature}" é exclusivo` : 'Este conteúdo é exclusivo'} para assinantes. Você pode explorar, mas precisa de Premium para treinar.
+          </p>
         </div>
+        {!isLoggedIn ? (
+          <button onClick={onLogin} style={{
+            padding: '8px 18px', fontSize: 11, borderRadius: 10, fontWeight: 700,
+            fontFamily: 'var(--font-display)', letterSpacing: '.3px',
+            border: '2px solid #e74c3c', background: '#e74c3c', color: '#fff',
+            cursor: 'pointer', boxShadow: '0 2px 8px rgba(231,76,60,0.2)', flexShrink: 0,
+          }}>
+            ENTRAR
+          </button>
+        ) : (
+          <button style={{
+            padding: '8px 18px', fontSize: 11, borderRadius: 10, fontWeight: 700,
+            fontFamily: 'var(--font-display)', letterSpacing: '.3px',
+            border: '1.5px solid #f1c40f', background: '#f1c40f15', color: '#b7950b',
+            cursor: 'pointer', flexShrink: 0,
+          }}>
+            ⭐ UPGRADE
+          </button>
+        )}
       </div>
+
+      {/* Content rendered normally */}
+      {children}
     </div>
   );
 }
 
 /**
- * Simple hook-based check (for conditional rendering without overlay).
+ * Hook for components to check premium access.
+ * Use this in ProgramsScreen / ProgramSessionScreen to block "INICIAR".
  */
 export function usePremiumCheck() {
   const { isPremiumUser, isLoggedIn } = useAuth();
   return { canAccessPremium: isPremiumUser, isLoggedIn };
+}
+
+/**
+ * Small lock badge for session buttons.
+ */
+export function PremiumLockButton({ onClick, onLogin, children, style }) {
+  const { isPremiumUser, isLoggedIn } = useAuth();
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  if (isPremiumUser) {
+    return <button onClick={onClick} style={style}>{children}</button>;
+  }
+
+  return (
+    <div style={{ position: 'relative', display: 'inline-block' }}>
+      <button onClick={() => setShowTooltip(true)} style={{
+        ...style, opacity: 0.7, position: 'relative',
+      }}>
+        🔒 {children}
+      </button>
+      {showTooltip && (
+        <>
+          <div onClick={() => setShowTooltip(false)} style={{ position: 'fixed', inset: 0, zIndex: 998 }} />
+          <div style={{
+            position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
+            marginBottom: 8, padding: '12px 16px', minWidth: 220, textAlign: 'center',
+            background: 'var(--bg-card)', border: '1.5px solid #f1c40f30', borderRadius: 12,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.1)', zIndex: 999,
+          }}>
+            <p style={{ fontSize: 11, fontWeight: 600, color: '#b7950b', marginBottom: 8 }}>⭐ Conteúdo Premium</p>
+            <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 10, lineHeight: 1.4 }}>
+              Faça upgrade para acessar programas de treino e cenários reais.
+            </p>
+            {!isLoggedIn ? (
+              <button onClick={() => { setShowTooltip(false); onLogin?.(); }} style={{
+                padding: '6px 16px', fontSize: 11, borderRadius: 8, fontWeight: 700,
+                border: '1.5px solid #e74c3c', background: '#e74c3c', color: '#fff',
+                cursor: 'pointer', fontFamily: 'var(--font-display)',
+              }}>ENTRAR</button>
+            ) : (
+              <button style={{
+                padding: '6px 16px', fontSize: 11, borderRadius: 8, fontWeight: 700,
+                border: '1.5px solid #f1c40f', background: '#f1c40f15', color: '#b7950b',
+                cursor: 'pointer', fontFamily: 'var(--font-display)',
+              }}>⭐ UPGRADE</button>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
 }
