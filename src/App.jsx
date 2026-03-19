@@ -123,7 +123,7 @@ function SectionHeader({ category, exerciseCount }) {
   );
 }
 
-export default function App() {
+export default function App({ onGoToLanding }) {
   const { user, profile, isLoggedIn, isPremiumUser, loading: authLoading } = useAuth();
 
   const loadStored = (key, fallback) => {
