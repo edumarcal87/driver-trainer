@@ -1,7 +1,7 @@
 {
   "name": "brake-trainer",
-  "version": "1.0.0",
-  "description": "Ferramenta de treino de frenagem para sim racing — Logitech G29 + telemetria CSV",
+  "version": "2.0.0",
+  "description": "Ferramenta de treino para sim racing — pedais, volante, câmbio. Suporte G29, T300, Fanatec.",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

@@ -5,12 +5,18 @@ import { CAR_PROFILES } from './data/carProfiles';
 import { parseCSV, detectBrakeZones, zoneToExercise } from './utils/telemetry';
 import { getDefaultPedalConfig } from './utils/gamepad';
 import { detectWheelProfile, getWheelDefaultConfig, getWheelShifterConfig, saveWheelCalibration, loadWheelCalibration } from './utils/wheelProfiles';
+import { useAuth } from './lib/AuthContext';
+import { isSupabaseConfigured } from './lib/supabase';
+import { saveSessionResult, syncSessionLogs, savePreferences } from './lib/dataSync';
 import ExerciseScreen from './components/ExerciseScreen';
 import ConfigScreen from './components/ConfigScreen';
 import ProgressScreen from './components/ProgressScreen';
 import ProgramsScreen from './components/ProgramsScreen';
 import ProgramSessionScreen from './components/ProgramSessionScreen';
 import GamepadDiagnostics from './components/GamepadDiagnostics';
+import LoginScreen from './components/LoginScreen';
+import UserMenu from './components/UserMenu';
+import PremiumGate from './components/PremiumGate';
 import SetupWizard from './components/SetupWizard';
 import { BrakeIcon, ThrottleIcon, ClutchIcon, SteeringIcon } from './components/SetupWizard';
 import { DifficultyDots, StatusBadge, CategoryBadge, LevelBadge, ScoreRing } from './components/UI';
@@ -118,6 +124,8 @@ function SectionHeader({ category, exerciseCount }) {
 }
 
 export default function App() {
+  const { user, profile, isLoggedIn, isPremiumUser, loading: authLoading } = useAuth();
+
   const loadStored = (key, fallback) => {
     try { const v = localStorage.getItem(`bt_${key}`); return v ? JSON.parse(v) : fallback; }
     catch { return fallback; }
@@ -150,6 +158,16 @@ export default function App() {
   useEffect(() => { try { localStorage.setItem('bt_history', JSON.stringify(history)); } catch {} }, [history]);
   useEffect(() => { try { localStorage.setItem('bt_inputMode', JSON.stringify(inputMode)); } catch {} }, [inputMode]);
   useEffect(() => { try { localStorage.setItem('bt_sessionLog', JSON.stringify(sessionLog)); } catch {} }, [sessionLog]);
+
+  // Cloud sync on login
+  useEffect(() => {
+    if (!user?.id || !isSupabaseConfigured()) return;
+    syncSessionLogs(user.id, sessionLog).then(merged => {
+      if (merged && merged.length !== sessionLog.length) {
+        setSessionLog(merged);
+      }
+    });
+  }, [user?.id]);
 
   // Save wheel calibration when pedalConfigs change and a wheel is connected
   useEffect(() => {
@@ -205,14 +223,20 @@ export default function App() {
     setBests(p => ({ ...p, [exId]: Math.max(p[exId] || 0, sc) }));
     const ex = exercises.find(e => e.id === exId);
     setHistory(p => [{ name: ex?.name || exId, score: sc }, ...p.slice(0, 29)]);
-    setSessionLog(prev => [...prev, {
+    const logEntry = {
       exId, exName: ex?.name || exId, pedal: ex?.pedal || 'brake', diff: ex?.diff,
       score: sc, grade: analysis?.grade, consistency: analysis?.stats?.consistency,
       peakAccuracy: analysis?.stats?.peakAccuracy, peakTimingDelta: analysis?.stats?.peakTimingDelta,
       segments: analysis?.segments, timestamp: Date.now(),
       carProfileId: carProfile?.id || 'default',
-    }]);
-  }, [exercises, carProfile]);
+    };
+    setSessionLog(prev => [...prev, logEntry]);
+
+    // Save to cloud if logged in
+    if (user?.id) {
+      saveSessionResult(user.id, logEntry).catch(() => {});
+    }
+  }, [exercises, carProfile, user?.id]);
 
   const handleFile = useCallback(file => {
     const r = new FileReader();
@@ -265,6 +289,7 @@ export default function App() {
       </div>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <StatusBadge connected={gpConnected} wheelName={wheelProfile?.model?.split(' / ')[0] || (gpConnected ? 'CONECTADO' : '')} />
+        <UserMenu onLogin={() => setScreen('login')} />
         <button onClick={() => setScreen('diagnostics')} title="Diagnóstico de Gamepad" style={{ ...btn, padding: '7px 10px', fontSize: 14, lineHeight: 1, borderRadius: '50%', width: 36, height: 36 }}>🔧</button>
         <button onClick={() => setScreen('config')} style={{ ...btn, padding: '7px 10px', fontSize: 16, lineHeight: 1, borderRadius: '50%', width: 36, height: 36 }}>⚙</button>
       </div>
@@ -274,19 +299,28 @@ export default function App() {
   // ── Wizard (no header) ──
   if (screen === 'wizard') return <SetupWizard onComplete={() => setScreen('menu')} gpConnected={gpConnected} gpName={gpName} pedalConfigs={pedalConfigs} setPedalConfigs={setPedalConfigs} />;
 
+  // ── Login screen (no header) ──
+  if (screen === 'login') return <LoginScreen onSkip={() => setScreen('menu')} />;
+
   // ── All other screens with global header ──
   const renderScreen = () => {
     if (screen === 'config') return <ConfigScreen onBack={() => setScreen('menu')} gpConnected={gpConnected} gpName={gpName} pedalConfigs={pedalConfigs} setPedalConfigs={setPedalConfigs} />;
     if (screen === 'diagnostics') return <GamepadDiagnostics onBack={() => setScreen('menu')} pedalConfigs={pedalConfigs} />;
     if (screen === 'exercise') return <ExerciseScreen exercise={selectedEx} onBack={() => setScreen('menu')} inputMode={inputMode} pedalConfigs={pedalConfigs} onResult={handleResult} carProfile={carProfile} sessionLog={sessionLog} shifterConfig={shifterConfig} />;
     if (screen === 'progress') return <ProgressScreen sessionHistory={sessionLog} onBack={() => setScreen('menu')} carProfile={carProfile} setCarProfile={setCarProfile} />;
-    if (screen === 'programs') return <ProgramsScreen onBack={() => setScreen('menu')} onStartSession={startProgramSession} sessionLog={sessionLog} initialProgram={initialProgramForScreen} carProfile={carProfile} setCarProfile={setCarProfile} />;
+    if (screen === 'programs') return (
+      <PremiumGate feature="Programas de Treino" onLogin={() => setScreen('login')}>
+        <ProgramsScreen onBack={() => setScreen('menu')} onStartSession={startProgramSession} sessionLog={sessionLog} initialProgram={initialProgramForScreen} carProfile={carProfile} setCarProfile={setCarProfile} />
+      </PremiumGate>
+    );
     if (screen === 'program_session' && activeProgram) return (
-      <ProgramSessionScreen
-        program={activeProgram} weekIdx={activeWeekIdx} sessionIdx={activeSessionIdx}
-        onBack={() => { setInitialProgramForScreen(activeProgram); setScreen('programs'); }} onResult={handleResult}
-        inputMode={inputMode} pedalConfigs={pedalConfigs} carProfile={carProfile} sessionLog={sessionLog} shifterConfig={shifterConfig}
-      />
+      <PremiumGate feature={activeProgram.name} onLogin={() => setScreen('login')}>
+        <ProgramSessionScreen
+          program={activeProgram} weekIdx={activeWeekIdx} sessionIdx={activeSessionIdx}
+          onBack={() => { setInitialProgramForScreen(activeProgram); setScreen('programs'); }} onResult={handleResult}
+          inputMode={inputMode} pedalConfigs={pedalConfigs} carProfile={carProfile} sessionLog={sessionLog} shifterConfig={shifterConfig}
+        />
+      </PremiumGate>
     );
     return null; // menu renders below
   };
