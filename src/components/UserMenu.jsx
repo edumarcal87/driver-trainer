@@ -3,7 +3,7 @@ import { signOut } from '../lib/auth';
 import { useAuth } from '../lib/AuthContext';
 import { getPlanLabel, isPremium } from '../lib/auth';
 
-export default function UserMenu({ onLogin }) {
+export default function UserMenu({ onLogin, onLogout }) {
   const { user, profile, isLoggedIn, isPremiumUser } = useAuth();
   const [open, setOpen] = useState(false);
 
@@ -79,7 +79,7 @@ export default function UserMenu({ onLogin }) {
               </button>
             )}
 
-            <button onClick={async () => { await signOut(); setOpen(false); }} style={{
+            <button onClick={async () => { await signOut(); setOpen(false); onLogout?.(); }} style={{
               width: '100%', padding: '10px 16px', border: 'none', background: 'transparent',
               fontSize: 12, color: '#e74c3c', cursor: 'pointer', fontFamily: 'var(--font-body)',
               textAlign: 'left',

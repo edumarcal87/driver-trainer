@@ -14,7 +14,6 @@ import ProgressScreen from './components/ProgressScreen';
 import ProgramsScreen from './components/ProgramsScreen';
 import ProgramSessionScreen from './components/ProgramSessionScreen';
 import GamepadDiagnostics from './components/GamepadDiagnostics';
-import LoginScreen from './components/LoginScreen';
 import UserMenu from './components/UserMenu';
 import PremiumGate from './components/PremiumGate';
 import SetupWizard from './components/SetupWizard';
@@ -291,16 +290,13 @@ export default function App({ onGoToLanding }) {
         <StatusBadge connected={gpConnected} wheelName={wheelProfile?.model?.split(' / ')[0] || (gpConnected ? 'CONECTADO' : '')} />
         <button onClick={() => setScreen('diagnostics')} title="Diagnóstico de Gamepad" style={{ ...btn, padding: '7px 10px', fontSize: 14, lineHeight: 1, borderRadius: '50%', width: 36, height: 36 }}>🔧</button>
         <button onClick={() => setScreen('config')} style={{ ...btn, padding: '7px 10px', fontSize: 16, lineHeight: 1, borderRadius: '50%', width: 36, height: 36 }}>⚙</button>
-        <UserMenu onLogin={() => setScreen('login')} />
+        <UserMenu onLogin={() => setScreen('login')} onLogout={onGoToLanding} />
       </div>
     </div>
   );
 
   // ── Wizard (no header) ──
   if (screen === 'wizard') return <SetupWizard onComplete={() => setScreen('menu')} gpConnected={gpConnected} gpName={gpName} pedalConfigs={pedalConfigs} setPedalConfigs={setPedalConfigs} />;
-
-  // ── Login screen (no header) ──
-  if (screen === 'login') return <LoginScreen onSkip={() => setScreen('menu')} />;
 
   // ── All other screens with global header ──
   const renderScreen = () => {

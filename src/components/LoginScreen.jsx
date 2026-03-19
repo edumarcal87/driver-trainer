@@ -154,14 +154,11 @@ export default function LoginScreen({ onSkip }) {
         </div>
       </div>
 
-      {/* Skip button */}
+      {/* Back to landing */}
       <div className="animate-in animate-in-delay-2" style={{ textAlign: 'center', marginTop: 20 }}>
         <button onClick={onSkip} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
-          Continuar sem conta →
+          ← Voltar para a página inicial
         </button>
-        <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6 }}>
-          Treino livre funciona sem login. Crie uma conta para salvar progresso e acessar conteúdo premium.
-        </p>
       </div>
     </div>
   );
