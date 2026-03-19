@@ -14,11 +14,13 @@ import ProgressScreen from './components/ProgressScreen';
 import ProgramsScreen from './components/ProgramsScreen';
 import ProgramSessionScreen from './components/ProgramSessionScreen';
 import GamepadDiagnostics from './components/GamepadDiagnostics';
+import CommunityScreen from './components/CommunityScreen';
 import UserMenu from './components/UserMenu';
 import PremiumGate from './components/PremiumGate';
 import SetupWizard from './components/SetupWizard';
 import { BrakeIcon, ThrottleIcon, ClutchIcon, SteeringIcon } from './components/SetupWizard';
 import { DifficultyDots, StatusBadge, CategoryBadge, LevelBadge, ScoreRing } from './components/UI';
+import { submitToLeaderboard, submitChallengeEntry, getActiveChallenge } from './lib/community';
 
 const btn = { padding: '7px 16px', fontSize: 12, borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 500, boxShadow: '0 1px 2px rgba(0,0,0,0.04)' };
 const CAT_HEX = { brake: '#e74c3c', throttle: '#27ae60', clutch: '#f39c12', steering: '#2980b9', combined: '#8e44ad', sequential: '#00bcd4', hpattern: '#5c6bc0' };
@@ -234,8 +236,16 @@ export default function App({ onGoToLanding }) {
     // Save to cloud if logged in
     if (user?.id) {
       saveSessionResult(user.id, logEntry).catch(() => {});
+      // Submit to leaderboard
+      submitToLeaderboard(user.id, exId, sc, carProfile?.id || 'default', profile?.display_name, profile?.avatar_url).catch(() => {});
+      // Submit to active challenge if matching
+      getActiveChallenge().then(ch => {
+        if (ch && ch.exercise_id === exId) {
+          submitChallengeEntry(ch.id, user.id, sc, profile?.display_name, profile?.avatar_url).catch(() => {});
+        }
+      }).catch(() => {});
     }
-  }, [exercises, carProfile, user?.id]);
+  }, [exercises, carProfile, user?.id, profile]);
 
   const handleFile = useCallback(file => {
     const r = new FileReader();
@@ -318,6 +328,7 @@ export default function App({ onGoToLanding }) {
         />
       </PremiumGate>
     );
+    if (screen === 'community') return <CommunityScreen onBack={() => setScreen('menu')} onStartExercise={(ex) => { setSelectedEx(ex); setScreen('exercise'); }} />;
     return null; // menu renders below
   };
 
@@ -520,6 +531,7 @@ export default function App({ onGoToLanding }) {
             <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{totalAttempts} treinos</span>
           </div>
           <button onClick={() => setScreen('progress')} style={{ ...btn, borderColor: '#8e44ad30', color: '#8e44ad', background: '#f3e8f9', fontWeight: 600, fontSize: 11 }}>EVOLUÇÃO</button>
+          <button onClick={() => setScreen('community')} style={{ ...btn, borderColor: '#f1c40f40', color: '#b7950b', background: '#f1c40f10', fontWeight: 600, fontSize: 11 }}>🏆 RANKING</button>
         </div>
       )}
 
