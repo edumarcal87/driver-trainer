@@ -20,7 +20,7 @@ import PremiumGate from './components/PremiumGate';
 import SetupWizard from './components/SetupWizard';
 import { BrakeIcon, ThrottleIcon, ClutchIcon, SteeringIcon } from './components/SetupWizard';
 import { DifficultyDots, StatusBadge, CategoryBadge, LevelBadge, ScoreRing } from './components/UI';
-import { submitToLeaderboard, submitChallengeEntry, getActiveChallenges } from './lib/community';
+import { submitToLeaderboard, submitChallengeEntry, getActiveChallenges, getLeaderboard, getUserRank } from './lib/community';
 
 const btn = { padding: '7px 16px', fontSize: 12, borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 500, boxShadow: '0 1px 2px rgba(0,0,0,0.04)' };
 const CAT_HEX = { brake: '#e74c3c', throttle: '#27ae60', clutch: '#f39c12', steering: '#2980b9', combined: '#8e44ad', sequential: '#00bcd4', hpattern: '#5c6bc0' };
@@ -348,7 +348,6 @@ export default function App({ onGoToLanding }) {
   const totalAttempts = sessionLog.length;
   const sessionAvg = totalAttempts > 0 ? Math.round(sessionLog.reduce((s, e) => s + e.score, 0) / totalAttempts) : 0;
 
-  // Program progress helper
   const getProgramProgress = (prog) => {
     let total = 0, done = 0;
     for (const w of prog.weeks) for (const s of w.sessions) {
@@ -358,7 +357,6 @@ export default function App({ onGoToLanding }) {
     return { total, done, pct: total > 0 ? Math.round((done / total) * 100) : 0 };
   };
 
-  // Find next session for a program
   const getNextSession = (prog) => {
     for (const w of prog.weeks) for (const s of w.sessions) {
       if (!s.exercises.every(exId => sessionLog.filter(e => e.exId === exId).reduce((mx, e) => Math.max(mx, e.score), 0) >= s.minScore)) return s;
@@ -366,329 +364,284 @@ export default function App({ onGoToLanding }) {
     return null;
   };
 
+  // Ranking sidebar state
+  const [sidebarBoard, setSidebarBoard] = useState([]);
+  const [sidebarExId, setSidebarExId] = useState('b_trail');
+  const [sidebarRank, setSidebarRank] = useState(null);
+  const [sidebarChallenge, setSidebarChallenge] = useState(null);
+
+  useEffect(() => {
+    getLeaderboard(sidebarExId, 'all', 5).then(setSidebarBoard);
+    if (user?.id) getUserRank(user.id, sidebarExId, 'default').then(setSidebarRank);
+  }, [sidebarExId, user?.id, sessionLog.length]);
+
+  useEffect(() => {
+    getActiveChallenges().then(chs => setSidebarChallenge(chs?.[0] || null));
+  }, []);
+
+  const sidebarExInfo = ALL_EXERCISES.find(e => e.id === sidebarExId);
+  const SIDEBAR_EXERCISES = ['b_trail', 'x_heel_toe', 'b_threshold', 'x_full_corner', 'ilg_t12_juncao'];
+
+  const TRACK_META = {
+    prog_interlagos: { flag: '🇧🇷', highlights: 'Senna S, Junção...' },
+    prog_spa: { flag: '🇧🇪', highlights: 'Eau Rouge, Bus Stop...' },
+    prog_monza: { flag: '🇮🇹', highlights: 'Parabolica, Lesmos...' },
+    prog_silverstone: { flag: '🇬🇧', highlights: 'Maggotts, Copse...' },
+  };
+
   return (
-    <div style={{ maxWidth: 780, width: '100%' }}>
-      {/* ── Header ── */}
+    <div style={{ maxWidth: 900, width: '100%' }}>
       <div style={{ position: 'relative', zIndex: 900 }}>
         <GlobalHeader />
       </div>
 
-      {/* ── Programs section ── */}
-      <div className="animate-in animate-in-delay-1" style={{ marginBottom: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 16 }}>🎯</span>
-            <h2 style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '.3px' }}>PROGRAMAS DE TREINO</h2>
-          </div>
-          <button onClick={() => openPrograms()} style={{ ...btn, fontSize: 10, padding: '5px 14px', color: '#2980b9', borderColor: '#2980b930' }}>VER TODOS →</button>
-        </div>
-        <div style={{ position: 'relative' }}>
-          <div style={{
-            display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 8, scrollSnapType: 'x mandatory',
-            scrollbarWidth: 'thin', scrollbarColor: 'var(--border) transparent',
-            WebkitOverflowScrolling: 'touch',
-            maskImage: 'linear-gradient(to right, black 90%, transparent 100%)',
-            WebkitMaskImage: 'linear-gradient(to right, black 90%, transparent 100%)',
-          }}>
-            {PROGRAMS.filter(p => p.level !== 'Pista Real').map((prog) => {
-              const pr = getProgramProgress(prog);
-              const next = getNextSession(prog);
-              const isComplete = !next;
-              return (
-                <div key={prog.id} onClick={() => openPrograms(prog)}
-                  style={{
-                    minWidth: 200, maxWidth: 220, flex: '0 0 auto', scrollSnapAlign: 'start',
-                    background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)',
-                    boxShadow: 'var(--shadow-card)', padding: '14px 16px', cursor: 'pointer',
-                    borderTop: `3px solid ${prog.color}40`,
-                    transition: 'box-shadow .2s, border-color .2s',
-                  }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                    <span style={{ fontSize: 18 }}>{prog.icon}</span>
-                    <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-display)', color: prog.color }}>{prog.name}</span>
-                  </div>
-                  <p style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.3, marginBottom: 8, minHeight: 26 }}>{prog.desc.substring(0, 60)}...</p>
-                  <div style={{ marginBottom: 6 }}>
-                    <div style={{ height: 4, background: 'var(--bg-inset)', borderRadius: 2, overflow: 'hidden', border: '1px solid var(--border)' }}>
-                      <div style={{ width: `${pr.pct}%`, height: '100%', background: prog.color, borderRadius: 2, transition: 'width .4s' }} />
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{pr.done}/{pr.total} sessões</span>
-                    {isComplete ? (
-                      <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: '#27ae60', fontWeight: 600 }}>✓ COMPLETO</span>
-                    ) : pr.pct > 0 ? (
-                      <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: prog.color, fontWeight: 600 }}>{pr.pct}%</span>
-                    ) : (
-                      <span style={{ fontSize: 8, fontFamily: 'var(--font-mono)', padding: '2px 8px', borderRadius: 8, background: prog.color + '12', color: prog.color, fontWeight: 600, letterSpacing: '.3px' }}>{prog.level.toUpperCase()}</span>
-                    )}
-                  </div>
-                  {next && (
-                    <div style={{ marginTop: 8, padding: '6px 10px', background: prog.color + '08', borderRadius: 8, border: `1px solid ${prog.color}15`, fontSize: 10, color: prog.color, fontWeight: 500 }}>
-                      Próximo: {next.title}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 220px', gap: 0 }}>
+        {/* ═══ LEFT: Main content ═══ */}
+        <div style={{ paddingRight: 16 }}>
 
-      {/* ── Track scenarios section ── */}
-      <div className="animate-in animate-in-delay-2" style={{ marginBottom: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
-              <circle cx="16" cy="16" r="14" fill="#009739" opacity=".12" stroke="#009739" strokeWidth="1.5"/>
-              <path d="M13 13 Q16 10 19 13 Q22 16 19 19 Q16 22 13 19 Q10 16 13 13" fill="none" stroke="#009739" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-            <h2 style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '.3px' }}>CENÁRIOS REAIS</h2>
-          </div>
-        </div>
-        <div style={{ position: 'relative' }}>
-          <div style={{
-            display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 8, scrollSnapType: 'x mandatory',
-            scrollbarWidth: 'thin', scrollbarColor: 'var(--border) transparent',
-            WebkitOverflowScrolling: 'touch',
-            maskImage: 'linear-gradient(to right, black 90%, transparent 100%)',
-            WebkitMaskImage: 'linear-gradient(to right, black 90%, transparent 100%)',
-          }}>
-            {PROGRAMS.filter(p => p.level === 'Pista Real').map((prog) => {
-              const pr = getProgramProgress(prog);
-              const next = getNextSession(prog);
-              const isComplete = !next;
-              return (
-                <div key={prog.id} onClick={() => openPrograms(prog)}
-                  style={{
-                    minWidth: 240, maxWidth: 280, flex: '0 0 auto', scrollSnapAlign: 'start',
-                    background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)',
-                    boxShadow: 'var(--shadow-card)', padding: '16px 18px', cursor: 'pointer',
-                    borderTop: `3px solid ${prog.color}40`,
-                    transition: 'box-shadow .2s, border-color .2s',
-                    position: 'relative', overflow: 'hidden',
-                  }}>
-                  {/* Track silhouette background */}
-                  <svg width="80" height="80" viewBox="0 0 80 80" fill="none" style={{ position: 'absolute', right: -5, top: -5, opacity: 0.05 }}>
-                    <path d="M30 20 Q50 10 60 25 Q70 40 55 55 Q40 70 25 60 Q10 50 20 35 Q25 25 30 20" fill={prog.color} stroke={prog.color} strokeWidth="3"/>
-                  </svg>
-                  <div style={{ position: 'relative' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                      <svg width="28" height="28" viewBox="0 0 32 32" fill="none" style={{ flexShrink: 0 }}>
-                        <circle cx="16" cy="16" r="14" fill={prog.color} opacity=".12" stroke={prog.color} strokeWidth="1.5"/>
-                        <path d="M13 13 Q16 10 19 13 Q22 16 19 19 Q16 22 13 19 Q10 16 13 13" fill="none" stroke={prog.color} strokeWidth="2" strokeLinecap="round"/>
-                      </svg>
-                      <div>
-                        <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', color: prog.color, display: 'block' }}>{prog.name}</span>
-                        <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', letterSpacing: '.3px' }}>
-                          {prog.weeks.reduce((s, w) => s + w.sessions.length, 0)} sessões · {prog.weeks.length} setores
-                        </span>
-                      </div>
-                    </div>
-                    <p style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.4, marginBottom: 10 }}>{prog.desc}</p>
-                    <div style={{ marginBottom: 6 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                        <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>PROGRESSO</span>
-                        <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: prog.color, fontWeight: 600 }}>{pr.pct}%</span>
-                      </div>
-                      <div style={{ height: 5, background: 'var(--bg-inset)', borderRadius: 3, overflow: 'hidden', border: '1px solid var(--border)' }}>
-                        <div style={{ width: `${pr.pct}%`, height: '100%', background: prog.color, borderRadius: 3, transition: 'width .4s' }} />
-                      </div>
-                    </div>
-                    {next ? (
-                      <div style={{ padding: '6px 10px', background: prog.color + '08', borderRadius: 8, border: `1px solid ${prog.color}15`, fontSize: 10, color: prog.color, fontWeight: 500 }}>
-                        Próximo: {next.title}
-                      </div>
-                    ) : (
-                      <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: '#27ae60', fontWeight: 600 }}>✓ CENÁRIO DOMINADO</span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-            {/* Coming soon placeholder */}
-            <div style={{
-              minWidth: 200, flex: '0 0 auto', scrollSnapAlign: 'start',
-              background: 'var(--bg-inset)', border: '2px dashed var(--border)', borderRadius: 'var(--radius-lg)',
-              padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              textAlign: 'center', opacity: 0.6,
-            }}>
-              <span style={{ fontSize: 24, marginBottom: 8 }}>🏗️</span>
-              <span style={{ fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-display)', color: 'var(--text-muted)' }}>MAIS CIRCUITOS</span>
-              <span style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>Em breve...</span>
+          {totalAttempts > 0 && (
+            <div className="animate-in" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', marginBottom: 12, boxShadow: 'var(--shadow-card)' }}>
+              <span style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.5px' }}>SESSÃO:</span>
+              <span style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)', color: sessionAvg >= 70 ? 'var(--accent-throttle)' : 'var(--accent-clutch)' }}>{sessionAvg}%</span>
+              <div style={{ flex: 1, maxWidth: 140, height: 4, background: 'var(--bg-inset)', borderRadius: 2, overflow: 'hidden', border: '1px solid var(--border)' }}>
+                <div style={{ width: `${sessionAvg}%`, height: '100%', background: sessionAvg >= 70 ? '#27ae60' : '#f39c12', borderRadius: 2 }} />
+              </div>
+              <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{totalAttempts}x</span>
+              <button onClick={() => setScreen('progress')} style={{ ...btn, borderColor: '#8e44ad30', color: '#8e44ad', fontWeight: 600, fontSize: 10, padding: '4px 10px', marginLeft: 'auto' }}>EVOLUÇÃO</button>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Session summary ── */}
-      {totalAttempts > 0 && (
-        <div className="card animate-in animate-in-delay-2" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '12px 18px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1 }}>
-            <span style={{ fontSize: 11, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '1px' }}>SESSÃO:</span>
-            <span style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)', color: sessionAvg >= 70 ? 'var(--accent-throttle)' : 'var(--accent-clutch)' }}>{sessionAvg}%</span>
-            <div style={{ flex: 1, maxWidth: 160, height: 5, background: 'var(--bg-inset)', borderRadius: 3, overflow: 'hidden', border: '1px solid var(--border)' }}>
-              <div style={{ width: `${sessionAvg}%`, height: '100%', background: sessionAvg >= 70 ? 'linear-gradient(90deg, #27ae60, #2ecc71)' : 'linear-gradient(90deg, #f39c12, #e67e22)', borderRadius: 3 }} />
-            </div>
-            <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{totalAttempts} treinos</span>
-          </div>
-          <button onClick={() => setScreen('progress')} style={{ ...btn, borderColor: '#8e44ad30', color: '#8e44ad', background: '#f3e8f9', fontWeight: 600, fontSize: 11 }}>EVOLUÇÃO</button>
-          <button onClick={() => setScreen('community')} style={{ ...btn, borderColor: '#f1c40f40', color: '#b7950b', background: '#f1c40f10', fontWeight: 600, fontSize: 11 }}>🏆 RANKING</button>
-        </div>
-      )}
-
-      {/* ── Controls row ── */}
-      <div className="animate-in animate-in-delay-1" style={{ display: 'flex', gap: 6, marginBottom: '0.5rem', marginTop: totalAttempts > 0 ? 0 : '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-        {['keyboard', 'gamepad'].map(m => (
-          <button key={m} onClick={() => { if (m === 'gamepad' && !gpConnected) return; setInputMode(m); }}
-            disabled={m === 'gamepad' && !gpConnected}
-            style={{
-              padding: '6px 16px', fontSize: 11, borderRadius: 20, fontWeight: 600, fontFamily: 'var(--font-condensed)', letterSpacing: '.5px',
-              border: `1.5px solid ${inputMode === m ? 'var(--accent-steering)' : 'var(--border)'}`,
-              background: inputMode === m ? 'var(--accent-steering-light)' : 'var(--bg-card)',
-              color: inputMode === m ? 'var(--accent-steering)' : 'var(--text-muted)',
-              opacity: m === 'gamepad' && !gpConnected ? .4 : 1,
-              cursor: m === 'gamepad' && !gpConnected ? 'not-allowed' : 'pointer',
-              boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
-            }}>
-            {m === 'keyboard' ? 'TECLADO ↑↓' : 'PEDAL / G29'}
-          </button>
-        ))}
-      </div>
-
-      {/* ── Car profile selector ── */}
-      <div className="card animate-in animate-in-delay-1" style={{ padding: '12px 16px', marginBottom: '0.75rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <span style={{ fontSize: 13 }}>🏎️</span>
-          <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '.3px', color: 'var(--text-secondary)' }}>PERFIL DO CARRO</span>
-          {carProfile.id !== 'default' && (
-            <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', padding: '2px 8px', borderRadius: 8, background: carProfile.color + '15', color: carProfile.color, fontWeight: 600 }}>
-              {carProfile.icon} {carProfile.name.toUpperCase()}
-            </span>
           )}
-        </div>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {CAR_PROFILES.map(p => {
-            const active = carProfile.id === p.id;
-            return (
-              <button key={p.id} onClick={() => setCarProfile(p)}
-                style={{
-                  padding: '8px 14px', fontSize: 11, borderRadius: 12, fontWeight: active ? 700 : 500,
-                  fontFamily: 'var(--font-condensed)', letterSpacing: '.3px', cursor: 'pointer',
-                  border: `1.5px solid ${active ? p.color : 'var(--border)'}`,
-                  background: active ? p.color + '15' : 'var(--bg-card)',
-                  color: active ? p.color : 'var(--text-muted)',
-                  boxShadow: active ? `0 2px 8px ${p.color}20` : '0 1px 2px rgba(0,0,0,0.03)',
-                  transition: 'all .15s',
-                }}>
-                <span style={{ marginRight: 4 }}>{p.icon}</span> {p.name}
-                {active && <span style={{ marginLeft: 6, fontSize: 9, opacity: 0.7 }}>✓</span>}
-              </button>
-            );
-          })}
-        </div>
-        {carProfile.id !== 'default' && (
-          <p style={{ fontSize: 10, color: carProfile.color, marginTop: 8, fontFamily: 'var(--font-condensed)', letterSpacing: '.3px' }}>
-            {carProfile.desc}
-          </p>
-        )}
-      </div>
 
-      {/* ── Free practice header ── */}
-      <div className="animate-in" style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, marginTop: 8 }}>
-        <span style={{ fontSize: 14 }}>🏎️</span>
-        <h2 style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '.3px', color: 'var(--text-secondary)' }}>TREINO LIVRE</h2>
-        <div style={{ flex: 1, height: 1, background: 'var(--border)', marginLeft: 8 }} />
-      </div>
-
-      {/* ── Input complexity filter ── */}
-      <div className="animate-in" style={{ display: 'flex', gap: 5, marginBottom: '1rem', flexWrap: 'wrap' }}>
-        {[
-          { key: 'all', label: 'TODOS', icon: '🎮' },
-          { key: 'pedals', label: 'FREIO + ACEL', icon: '🦶' },
-          { key: 'pedals_steering', label: '+ VOLANTE', icon: '🎡' },
-          { key: 'pedals_steering_gear', label: '+ CÂMBIO', icon: '⚙️' },
-        ].map(f => (
-          <button key={f.key} onClick={() => setInputFilter(f.key)}
-            style={{
-              padding: '5px 12px', fontSize: 10, borderRadius: 16, fontWeight: 600,
-              fontFamily: 'var(--font-condensed)', letterSpacing: '.5px', cursor: 'pointer',
-              border: `1.5px solid ${inputFilter === f.key ? 'var(--accent-steering)' : 'var(--border)'}`,
-              background: inputFilter === f.key ? 'var(--accent-steering-light)' : 'var(--bg-card)',
-              color: inputFilter === f.key ? 'var(--accent-steering)' : 'var(--text-muted)',
-              boxShadow: inputFilter === f.key ? '0 1px 4px rgba(41,128,185,0.1)' : '0 1px 2px rgba(0,0,0,0.03)',
-            }}>
-            {f.icon} {f.label}
-          </button>
-        ))}
-      </div>
-
-      {/* ── Exercise sections by category ── */}
-      {EXERCISE_CATEGORIES.map(cat => {
-        // Apply input filter
-        const filterAllowed = {
-          all: true,
-          pedals: ['brake', 'throttle', 'combined'].includes(cat.key),
-          pedals_steering: ['brake', 'throttle', 'clutch', 'steering', 'combined'].includes(cat.key),
-          pedals_steering_gear: true,
-        };
-        if (!filterAllowed[inputFilter]) return null;
-
-        const catExercises = exercises.filter(ex => {
-          if (ex.track) return false;
-          const p = ex.pedal || 'brake';
-          if (p !== cat.key) return false;
-          // For combined exercises, filter by which inputs they actually use
-          if (p === 'combined' && ex.curves && inputFilter !== 'all') {
-            const keys = Object.keys(ex.curves);
-            const hasSteering = keys.includes('steering');
-            const hasGear = keys.includes('gear');
-            if (inputFilter === 'pedals' && (hasSteering || hasGear)) return false;
-            if (inputFilter === 'pedals_steering' && hasGear) return false;
-          }
-          return true;
-        });
-        if (catExercises.length === 0) return null;
-        return (
-          <div key={cat.key} className="animate-in">
-            <SectionHeader category={cat} exerciseCount={catExercises.length} />
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 10 }}>
-              {catExercises.map(ex => (
-                <ExerciseCard key={ex.id} ex={ex} best={bests[ex.id]}
-                  attempts={sessionLog.filter(s => s.exId === ex.id).length}
-                  onOpen={() => openExercise(ex)} />
-              ))}
+          {/* Treino livre grid */}
+          <div className="animate-in animate-in-delay-1">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+              <span style={{ fontSize: 13 }}>🏎️</span>
+              <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)', letterSpacing: '.3px' }}>TREINO LIVRE</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 14 }}>
+              {EXERCISE_CATEGORIES.map(cat => {
+                const count = exercises.filter(ex => !ex.track && (ex.pedal || 'brake') === cat.key).length;
+                if (count === 0) return null;
+                return (
+                  <div key={cat.key} style={{ padding: '10px 12px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', borderTop: `2.5px solid ${cat.color}`, cursor: 'pointer', boxShadow: 'var(--shadow-card)' }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-display)' }}>{cat.label}</span>
+                    <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{count} exercícios</p>
+                  </div>
+                );
+              })}
             </div>
           </div>
-        );
-      })}
 
-      {/* ── History ── */}
-      {history.length > 0 && (
-        <div className="animate-in" style={{ marginTop: '1.5rem' }}>
-          <p style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '1px', marginBottom: 8, fontWeight: 500 }}>HISTÓRICO RECENTE</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-            {history.slice(0, 12).map((h, i) => (
-              <span key={i} style={{
-                fontSize: 10, fontFamily: 'var(--font-mono)', padding: '3px 10px', borderRadius: 10, fontWeight: 500,
-                background: h.score >= 80 ? '#e6f5ec' : h.score >= 50 ? '#fef5e1' : '#fde8e6',
-                color: h.score >= 80 ? '#1e7a47' : h.score >= 50 ? '#b7791f' : '#c0392b',
-                border: `1px solid ${h.score >= 80 ? '#27ae6020' : h.score >= 50 ? '#f39c1220' : '#e74c3c20'}`,
-              }}>
-                {h.name.split(' ')[0]} {h.score}%
-              </span>
+          {/* Programas de treino */}
+          <div className="animate-in animate-in-delay-2">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 13 }}>🎯</span>
+                <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)', letterSpacing: '.3px' }}>PROGRAMAS DE TREINO</span>
+              </div>
+              <button onClick={() => openPrograms()} style={{ ...btn, fontSize: 9, padding: '4px 10px', color: '#2980b9', borderColor: '#2980b930' }}>VER TODOS →</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
+              {PROGRAMS.filter(p => p.level !== 'Pista Real').slice(0, 4).map(prog => {
+                const pr = getProgramProgress(prog);
+                const next = getNextSession(prog);
+                return (
+                  <div key={prog.id} onClick={() => openPrograms(prog)} style={{ padding: '12px 14px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', cursor: 'pointer', boxShadow: 'var(--shadow-card)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                      <div style={{ width: 10, height: 10, borderRadius: '50%', background: prog.color, flexShrink: 0 }} />
+                      <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-display)', color: prog.color }}>{prog.name}</span>
+                    </div>
+                    <p style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.3, marginBottom: 6, minHeight: 26 }}>{prog.desc.substring(0, 55)}...</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                      <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{pr.done}/{pr.total} sessões</span>
+                      <span style={{ fontSize: 8, fontFamily: 'var(--font-mono)', padding: '2px 6px', borderRadius: 6, background: prog.color + '12', color: prog.color, fontWeight: 600 }}>{prog.level.toUpperCase()}</span>
+                    </div>
+                    {next && (
+                      <div style={{ padding: '4px 8px', background: prog.color + '08', borderRadius: 6, border: `1px solid ${prog.color}12`, fontSize: 10, color: prog.color }}>Próximo: {next.title}</div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Cenários Reais */}
+          <div className="animate-in animate-in-delay-3">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 13 }}>🏁</span>
+                <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)', letterSpacing: '.3px' }}>CENÁRIOS REAIS</span>
+              </div>
+              <button onClick={() => openPrograms()} style={{ ...btn, fontSize: 9, padding: '4px 10px', color: '#2980b9', borderColor: '#2980b930' }}>VER TODOS →</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
+              {PROGRAMS.filter(p => p.level === 'Pista Real').map(prog => {
+                const meta = TRACK_META[prog.id] || {};
+                const corners = prog.weeks.reduce((s, w) => s + w.sessions.length, 0);
+                return (
+                  <div key={prog.id} onClick={() => openPrograms(prog)} style={{ padding: '12px 14px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', cursor: 'pointer', boxShadow: 'var(--shadow-card)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <span style={{ fontSize: 18 }}>{meta.flag || prog.icon}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-display)', color: prog.color }}>{prog.name}</span>
+                    </div>
+                    <p style={{ fontSize: 10, color: 'var(--text-muted)' }}>{corners} cenários · {meta.highlights || prog.desc.substring(0, 30)}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Input filter + car profile + exercise cards */}
+          <div className="animate-in animate-in-delay-4" style={{ display: 'flex', gap: 5, marginBottom: 8, flexWrap: 'wrap' }}>
+            {[
+              { key: 'all', label: 'TODOS', icon: '🎮' },
+              { key: 'pedals', label: 'FREIO+ACEL', icon: '🦶' },
+              { key: 'pedals_steering', label: '+VOLANTE', icon: '🎡' },
+              { key: 'pedals_steering_gear', label: '+CÂMBIO', icon: '⚙️' },
+            ].map(f => (
+              <button key={f.key} onClick={() => setInputFilter(f.key)} style={{
+                padding: '4px 10px', fontSize: 10, borderRadius: 14, fontWeight: 600, fontFamily: 'var(--font-condensed)', cursor: 'pointer',
+                border: `1.5px solid ${inputFilter === f.key ? 'var(--accent-steering)' : 'var(--border)'}`,
+                background: inputFilter === f.key ? 'var(--accent-steering-light)' : 'var(--bg-card)',
+                color: inputFilter === f.key ? 'var(--accent-steering)' : 'var(--text-muted)',
+              }}>{f.icon} {f.label}</button>
             ))}
           </div>
-        </div>
-      )}
+          <div className="animate-in animate-in-delay-4" style={{ display: 'flex', gap: 5, marginBottom: '1rem', flexWrap: 'wrap' }}>
+            {CAR_PROFILES.map(p => {
+              const active = carProfile.id === p.id;
+              return (
+                <button key={p.id} onClick={() => setCarProfile(p)} style={{
+                  padding: '5px 12px', fontSize: 10, borderRadius: 12, fontWeight: active ? 700 : 500, fontFamily: 'var(--font-condensed)', cursor: 'pointer',
+                  border: `1.5px solid ${active ? p.color : 'var(--border)'}`, background: active ? p.color + '15' : 'var(--bg-card)', color: active ? p.color : 'var(--text-muted)',
+                }}>{p.icon} {p.name}</button>
+              );
+            })}
+          </div>
 
-      {/* ── Footer ── */}
-      <div style={{ marginTop: '2rem', padding: '12px 0', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          {EXERCISE_CATEGORIES.map(cat => {
+            const filterAllowed = { all: true, pedals: ['brake','throttle','combined'].includes(cat.key), pedals_steering: ['brake','throttle','clutch','steering','combined'].includes(cat.key), pedals_steering_gear: true };
+            if (!filterAllowed[inputFilter]) return null;
+            const catExercises = exercises.filter(ex => {
+              if (ex.track) return false;
+              const p = ex.pedal || 'brake';
+              if (p !== cat.key) return false;
+              if (p === 'combined' && ex.curves && inputFilter !== 'all') {
+                const keys = Object.keys(ex.curves);
+                if (inputFilter === 'pedals' && (keys.includes('steering') || keys.includes('gear'))) return false;
+                if (inputFilter === 'pedals_steering' && keys.includes('gear')) return false;
+              }
+              return true;
+            });
+            if (catExercises.length === 0) return null;
+            return (
+              <div key={cat.key} className="animate-in">
+                <SectionHeader category={cat} exerciseCount={catExercises.length} />
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 10 }}>
+                  {catExercises.map(ex => (
+                    <ExerciseCard key={ex.id} ex={ex} best={bests[ex.id]} attempts={sessionLog.filter(s => s.exId === ex.id).length} onOpen={() => openExercise(ex)} />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+
+          {history.length > 0 && (
+            <div className="animate-in" style={{ marginTop: '1rem' }}>
+              <p style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '1px', marginBottom: 6 }}>HISTÓRICO RECENTE</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                {history.slice(0, 10).map((h, i) => (
+                  <span key={i} style={{ fontSize: 10, fontFamily: 'var(--font-mono)', padding: '3px 8px', borderRadius: 8, background: h.score >= 80 ? '#e6f5ec' : h.score >= 50 ? '#fef5e1' : '#fde8e6', color: h.score >= 80 ? '#1e7a47' : h.score >= 50 ? '#b7791f' : '#c0392b', border: `1px solid ${h.score >= 80 ? '#27ae6020' : h.score >= 50 ? '#f39c1220' : '#e74c3c20'}` }}>
+                    {h.name.split(' ')[0]} {h.score}%
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ═══ RIGHT: Ranking sidebar ═══ */}
+        <div style={{ borderLeft: '1.5px solid var(--border)', background: 'var(--bg-inset)', borderRadius: '0 var(--radius-lg) var(--radius-lg) 0', padding: '12px 14px' }}>
+          <div className="animate-in" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+            <span style={{ fontSize: 14 }}>🏆</span>
+            <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)', color: '#b7950b', letterSpacing: '.3px' }}>RANKING</span>
+          </div>
+
+          {sidebarRank && (
+            <div className="animate-in" style={{ padding: '10px', background: 'var(--bg-card)', border: '1.5px solid #f1c40f25', borderRadius: 10, marginBottom: 10 }}>
+              <p style={{ fontSize: 9, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.3px', marginBottom: 6 }}>SUA POSIÇÃO</p>
+              <div style={{ textAlign: 'center' }}>
+                <span style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)', color: '#b7950b' }}>
+                  {sidebarRank.rank <= 3 ? ['🥇','🥈','🥉'][sidebarRank.rank-1] : `${sidebarRank.rank}º`}
+                </span>
+                <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{sidebarExInfo?.name || ''}</p>
+                <p style={{ fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-display)', color: '#27ae60', marginTop: 2 }}>{sidebarRank.score}%</p>
+              </div>
+            </div>
+          )}
+
+          <div className="animate-in animate-in-delay-1" style={{ display: 'flex', gap: 3, flexWrap: 'wrap', marginBottom: 8 }}>
+            {SIDEBAR_EXERCISES.map(id => {
+              const ex = ALL_EXERCISES.find(e => e.id === id);
+              if (!ex) return null;
+              return (
+                <button key={id} onClick={() => setSidebarExId(id)} style={{
+                  padding: '3px 7px', fontSize: 8, borderRadius: 6, fontFamily: 'var(--font-condensed)', cursor: 'pointer',
+                  border: `1px solid ${sidebarExId === id ? '#2980b9' : 'var(--border)'}`,
+                  background: sidebarExId === id ? '#2980b910' : 'transparent',
+                  color: sidebarExId === id ? '#2980b9' : 'var(--text-muted)',
+                  fontWeight: sidebarExId === id ? 700 : 400,
+                }}>{ex.name.length > 12 ? ex.name.substring(0, 12) + '…' : ex.name}</button>
+              );
+            })}
+          </div>
+
+          <div className="animate-in animate-in-delay-1" style={{ marginBottom: 10 }}>
+            <p style={{ fontSize: 9, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', marginBottom: 4 }}>TOP 5 — {(sidebarExInfo?.name || '').toUpperCase()}</p>
+            {sidebarBoard.length === 0 ? (
+              <p style={{ fontSize: 10, color: 'var(--text-muted)', textAlign: 'center', padding: '10px 0' }}>Nenhum score ainda</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {sidebarBoard.map((entry, i) => {
+                  const isMe = entry.user_id === user?.id;
+                  return (
+                    <div key={entry.user_id} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 6px', borderRadius: 6, background: isMe ? '#2980b908' : 'var(--bg-card)', border: isMe ? '1px solid #2980b920' : '1px solid transparent' }}>
+                      <span style={{ width: 16, textAlign: 'center', fontSize: i < 3 ? 13 : 10, fontWeight: 700, fontFamily: 'var(--font-display)' }}>{['🥇','🥈','🥉'][i] || `${i+1}º`}</span>
+                      <span style={{ flex: 1, fontSize: 11, fontWeight: isMe ? 700 : 400, color: isMe ? '#2980b9' : 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.display_name || 'Piloto'}</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)', color: entry.score >= 90 ? '#f1c40f' : entry.score >= 70 ? '#27ae60' : '#f39c12' }}>{entry.score}%</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {sidebarChallenge && (
+            <div className="animate-in animate-in-delay-2" style={{ padding: '10px', background: '#e74c3c05', border: '1.5px solid #e74c3c18', borderRadius: 10, marginBottom: 10 }}>
+              <p style={{ fontSize: 9, fontFamily: 'var(--font-condensed)', color: '#e74c3c', fontWeight: 600 }}>⚡ DESAFIO DA SEMANA</p>
+              <p style={{ fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-display)', marginTop: 4 }}>{sidebarChallenge.exercise_name}</p>
+              <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{(sidebarChallenge.description || '').substring(0, 50)}...</p>
+              <div style={{ display: 'flex', gap: 3, marginTop: 6 }}>
+                <span style={{ fontSize: 8, padding: '2px 5px', borderRadius: 4, background: '#27ae6010', color: '#27ae60' }}>🟢</span>
+                <span style={{ fontSize: 8, padding: '2px 5px', borderRadius: 4, background: '#f39c1210', color: '#f39c12' }}>🟡</span>
+                <span style={{ fontSize: 8, padding: '2px 5px', borderRadius: 4, background: '#e74c3c10', color: '#e74c3c' }}>🔴</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+                <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{Math.max(0, Math.floor((new Date(sidebarChallenge.ends_at) - new Date()) / 864e5))}d restantes</span>
+                <button onClick={() => setScreen('community')} style={{ fontSize: 9, padding: '4px 10px', borderRadius: 6, background: '#e74c3c', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>PARTICIPAR</button>
+              </div>
+            </div>
+          )}
+
+          <button onClick={() => setScreen('community')} style={{ width: '100%', fontSize: 10, padding: '8px', borderRadius: 8, border: '1.5px solid #f1c40f30', background: '#f1c40f08', color: '#b7950b', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-display)', textAlign: 'center' }}>VER RANKING COMPLETO →</button>
+        </div>
+      </div>
+
+      <div style={{ marginTop: '1.5rem', padding: '12px 0', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <svg width="20" height="20" viewBox="0 0 56 56"><path d="M8 44 Q10 20, 18 14 Q24 10, 30 22 Q34 30, 38 28 Q42 26, 44 14" fill="none" stroke="#e74c3c" strokeWidth="3" strokeLinecap="round"/><circle cx="8" cy="44" r="3" fill="#e74c3c"/><circle cx="30" cy="22" r="2.5" fill="#27ae60"/><circle cx="44" cy="14" r="2" fill="#f39c12"/></svg>
           <span style={{ fontSize: 11, fontFamily: 'var(--font-display)', color: 'var(--text-muted)', fontWeight: 500 }}>DRIVER TRAINER</span>
         </div>
-        <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>v1.0 · Do pedal ao pódio</span>
+        <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>v2.0 · Do pedal ao pódio</span>
       </div>
     </div>
   );
