@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { PROGRAMS } from '../data/programs';
 import { CAR_PROFILES } from '../data/carProfiles';
+import { PremiumLockButton } from './PremiumGate';
 import { ScoreRing, DifficultyDots } from './UI';
 
 const btn = { padding: '7px 16px', fontSize: 12, borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 500, boxShadow: '0 1px 2px rgba(0,0,0,0.04)' };
@@ -36,7 +37,7 @@ function findCurrentSession(program, sessionLog) {
   return null; // All complete
 }
 
-export default function ProgramsScreen({ onBack, onStartSession, sessionLog, initialProgram, carProfile, setCarProfile }) {
+export default function ProgramsScreen({ onBack, onStartSession, sessionLog, initialProgram, carProfile, setCarProfile, onLogin }) {
   const [selectedProgram, setSelectedProgram] = useState(initialProgram || null);
   const [programFilter, setProgramFilter] = useState('all'); // all | pedals | pedals_steering | pedals_steering_gear
 
@@ -277,22 +278,22 @@ export default function ProgramsScreen({ onBack, onStartSession, sessionLog, ini
                     </div>
 
                     {isUnlocked && !allPassed && (
-                      <button onClick={() => onStartSession(prog, wi, si)} style={{
+                      <PremiumLockButton onClick={() => onStartSession(prog, wi, si)} onLogin={onLogin} style={{
                         padding: '8px 20px', fontSize: 12, borderRadius: 10, fontWeight: 700, fontFamily: 'var(--font-display)',
                         border: `1.5px solid ${prog.color}`, background: prog.color + '12', color: prog.color, cursor: 'pointer',
                         boxShadow: `0 1px 4px ${prog.color}15`, width: '100%',
                       }}>
-                        {isCurrent ? 'INICIAR SESSÃO' : 'INICIAR SESSÃO'}
-                      </button>
+                        INICIAR SESSÃO
+                      </PremiumLockButton>
                     )}
                     {allPassed && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: '#27ae60', fontWeight: 600 }}>✓ COMPLETA</span>
-                        <button onClick={() => onStartSession(prog, wi, si)} style={{
+                        <PremiumLockButton onClick={() => onStartSession(prog, wi, si)} onLogin={onLogin} style={{
                           padding: '7px 18px', fontSize: 11, borderRadius: 10, fontWeight: 700, fontFamily: 'var(--font-display)',
                           border: `1.5px solid ${prog.color}40`, background: prog.color + '08', color: prog.color, cursor: 'pointer',
                           marginLeft: 'auto', boxShadow: `0 1px 3px ${prog.color}10`,
-                        }}>🔄 REPETIR SESSÃO</button>
+                        }}>🔄 REPETIR SESSÃO</PremiumLockButton>
                       </div>
                     )}
                   </div>
