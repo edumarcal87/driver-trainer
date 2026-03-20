@@ -170,6 +170,21 @@ export default function App({ onGoToLanding }) {
     });
   }, [user?.id]);
 
+  // Ranking sidebar state (must be before any early returns)
+  const [sidebarBoard, setSidebarBoard] = useState([]);
+  const [sidebarExId, setSidebarExId] = useState('b_trail');
+  const [sidebarRank, setSidebarRank] = useState(null);
+  const [sidebarChallenge, setSidebarChallenge] = useState(null);
+
+  useEffect(() => {
+    getLeaderboard(sidebarExId, 'all', 5).then(setSidebarBoard);
+    if (user?.id) getUserRank(user.id, sidebarExId, 'default').then(setSidebarRank);
+  }, [sidebarExId, user?.id, sessionLog.length]);
+
+  useEffect(() => {
+    getActiveChallenges().then(chs => setSidebarChallenge(chs?.[0] || null));
+  }, []);
+
   // Save wheel calibration when pedalConfigs change and a wheel is connected
   useEffect(() => {
     if (gpName && gpConnected) saveWheelCalibration(gpName, pedalConfigs);
@@ -364,21 +379,7 @@ export default function App({ onGoToLanding }) {
     return null;
   };
 
-  // Ranking sidebar state
-  const [sidebarBoard, setSidebarBoard] = useState([]);
-  const [sidebarExId, setSidebarExId] = useState('b_trail');
-  const [sidebarRank, setSidebarRank] = useState(null);
-  const [sidebarChallenge, setSidebarChallenge] = useState(null);
-
-  useEffect(() => {
-    getLeaderboard(sidebarExId, 'all', 5).then(setSidebarBoard);
-    if (user?.id) getUserRank(user.id, sidebarExId, 'default').then(setSidebarRank);
-  }, [sidebarExId, user?.id, sessionLog.length]);
-
-  useEffect(() => {
-    getActiveChallenges().then(chs => setSidebarChallenge(chs?.[0] || null));
-  }, []);
-
+  // Ranking sidebar helpers
   const sidebarExInfo = ALL_EXERCISES.find(e => e.id === sidebarExId);
   const SIDEBAR_EXERCISES = ['b_trail', 'x_heel_toe', 'b_threshold', 'x_full_corner', 'ilg_t12_juncao'];
 
