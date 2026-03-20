@@ -169,3 +169,109 @@ input[type="checkbox"] {
 .card-interactive:hover {
   border-color: var(--border-hover);
 }
+
+/* ═══ Responsive layout classes ═══ */
+.layout-main {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 0;
+}
+.layout-left {
+  padding-right: 16px;
+}
+.layout-sidebar {
+  border-left: 1.5px solid var(--border);
+  background: var(--bg-inset);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  padding: 12px 14px;
+}
+.grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.grid-exercises {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+/* Landing page nav */
+.landing-nav-links { display: flex; gap: 8px; align-items: center; }
+.landing-hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.landing-stats { display: flex; gap: 40px; justify-content: center; flex-wrap: wrap; }
+.landing-features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.landing-tracks-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.landing-steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+.landing-testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.landing-pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+
+/* ═══ Mobile: < 768px ═══ */
+@media (max-width: 767px) {
+  #root {
+    padding: 1rem 0.5rem;
+  }
+
+  /* Main layout: stack vertically */
+  .layout-main {
+    grid-template-columns: 1fr;
+  }
+  .layout-left {
+    padding-right: 0;
+  }
+  .layout-sidebar {
+    border-left: none;
+    border-top: 1.5px solid var(--border);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    margin-top: 12px;
+  }
+
+  /* 2-col grids → single column on small screens */
+  .grid-2col {
+    grid-template-columns: 1fr;
+  }
+
+  /* Exercise cards: single column */
+  .grid-exercises {
+    grid-template-columns: 1fr;
+  }
+
+  /* Session bar: wrap */
+  .session-bar {
+    flex-wrap: wrap;
+    gap: 6px !important;
+  }
+
+  /* Header: compact */
+  .global-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .global-header-right {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  /* Landing page adjustments */
+  .landing-nav-links a { display: none; }
+  .landing-stats { gap: 20px; }
+  .landing-features-grid { grid-template-columns: 1fr; }
+  .landing-tracks-grid { grid-template-columns: 1fr 1fr; }
+  .landing-pricing-grid { grid-template-columns: 1fr; }
+}
+
+/* ═══ Tablet: 768px - 1024px ═══ */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .layout-main {
+    grid-template-columns: 1fr 200px;
+  }
+  .grid-exercises {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}
+
+/* ═══ Very small screens: < 400px ═══ */
+@media (max-width: 399px) {
+  .landing-tracks-grid { grid-template-columns: 1fr; }
+  .landing-hero-btns { flex-direction: column; align-items: center; }
+  .landing-stats { gap: 16px; }
+}

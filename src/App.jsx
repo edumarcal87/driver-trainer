@@ -301,7 +301,7 @@ export default function App({ onGoToLanding }) {
 
   // ── Global Header component ──
   const GlobalHeader = () => (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', position: 'relative', zIndex: 900 }}>
+    <div className="global-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', position: 'relative', zIndex: 900 }}>
       <div onClick={() => setScreen('menu')} style={{ display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer' }}>
         <div style={{ width: 42, height: 42, borderRadius: 10, border: '2px solid var(--accent-brake)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <svg width="26" height="26" viewBox="0 0 56 56"><path d="M8 44 Q10 20, 18 14 Q24 10, 30 22 Q34 30, 38 28 Q42 26, 44 14" fill="none" stroke="#e74c3c" strokeWidth="3" strokeLinecap="round"/><circle cx="8" cy="44" r="3.5" fill="#e74c3c"/><circle cx="30" cy="22" r="3" fill="#27ae60"/><circle cx="44" cy="14" r="2.5" fill="#f39c12"/></svg>
@@ -313,7 +313,7 @@ export default function App({ onGoToLanding }) {
           <p style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', letterSpacing: '2px', marginTop: 1 }}>DO PEDAL AO PÓDIO</p>
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <div className="global-header-right" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <StatusBadge connected={gpConnected} wheelName={wheelProfile?.model?.split(' / ')[0] || (gpConnected ? 'CONECTADO' : '')} />
         <button onClick={() => setScreen('diagnostics')} title="Diagnóstico de Gamepad" style={{ ...btn, padding: '7px 10px', fontSize: 14, lineHeight: 1, borderRadius: '50%', width: 36, height: 36 }}>🔧</button>
         <button onClick={() => setScreen('config')} style={{ ...btn, padding: '7px 10px', fontSize: 16, lineHeight: 1, borderRadius: '50%', width: 36, height: 36 }}>⚙</button>
@@ -396,12 +396,12 @@ export default function App({ onGoToLanding }) {
         <GlobalHeader />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 220px', gap: 0 }}>
+      <div className="layout-main">
         {/* ═══ LEFT: Main content ═══ */}
-        <div style={{ paddingRight: 16 }}>
+        <div className="layout-left">
 
           {totalAttempts > 0 && (
-            <div className="animate-in" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', marginBottom: 12, boxShadow: 'var(--shadow-card)' }}>
+            <div className="animate-in session-bar" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', marginBottom: 12, boxShadow: 'var(--shadow-card)' }}>
               <span style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.5px' }}>SESSÃO:</span>
               <span style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)', color: sessionAvg >= 70 ? 'var(--accent-throttle)' : 'var(--accent-clutch)' }}>{sessionAvg}%</span>
               <div style={{ flex: 1, maxWidth: 140, height: 4, background: 'var(--bg-inset)', borderRadius: 2, overflow: 'hidden', border: '1px solid var(--border)' }}>
@@ -419,7 +419,7 @@ export default function App({ onGoToLanding }) {
               <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)', letterSpacing: '.3px' }}>TREINO LIVRE</span>
               <span style={{ fontSize: 8, padding: '2px 8px', borderRadius: 6, background: '#27ae6012', color: '#27ae60', fontWeight: 700, fontFamily: 'var(--font-mono)', letterSpacing: '.3px' }}>GRATUITO</span>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 14 }}>
+            <div className="grid-2col" style={{ gap: 6, marginBottom: 14 }}>
               {EXERCISE_CATEGORIES.map(cat => {
                 const count = exercises.filter(ex => !ex.track && (ex.pedal || 'brake') === cat.key).length;
                 if (count === 0) return null;
@@ -444,7 +444,7 @@ export default function App({ onGoToLanding }) {
               </div>
               <button onClick={() => openPrograms()} style={{ ...btn, fontSize: 9, padding: '4px 10px', color: '#2980b9', borderColor: '#2980b930' }}>VER TODOS →</button>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
+            <div className="grid-2col" style={{ gap: 8, marginBottom: 14 }}>
               {PROGRAMS.filter(p => p.level !== 'Pista Real').slice(0, 4).map(prog => {
                 const pr = getProgramProgress(prog);
                 const next = getNextSession(prog);
@@ -478,7 +478,7 @@ export default function App({ onGoToLanding }) {
               </div>
               <button onClick={() => openPrograms()} style={{ ...btn, fontSize: 9, padding: '4px 10px', color: '#2980b9', borderColor: '#2980b930' }}>VER TODOS →</button>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
+            <div className="grid-2col" style={{ gap: 8, marginBottom: 14 }}>
               {PROGRAMS.filter(p => p.level === 'Pista Real').map(prog => {
                 const meta = TRACK_META[prog.id] || {};
                 const corners = prog.weeks.reduce((s, w) => s + w.sessions.length, 0);
@@ -542,7 +542,7 @@ export default function App({ onGoToLanding }) {
             return (
               <div key={cat.key} id={`cat-${cat.key}`} className="animate-in" style={{ scrollMarginTop: 20 }}>
                 <SectionHeader category={cat} exerciseCount={catExercises.length} />
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 10 }}>
+                <div className="grid-exercises">
                   {catExercises.map(ex => (
                     <ExerciseCard key={ex.id} ex={ex} best={bests[ex.id]} attempts={sessionLog.filter(s => s.exId === ex.id).length} onOpen={() => openExercise(ex)} />
                   ))}
@@ -566,7 +566,7 @@ export default function App({ onGoToLanding }) {
         </div>
 
         {/* ═══ RIGHT: Ranking sidebar ═══ */}
-        <div style={{ borderLeft: '1.5px solid var(--border)', background: 'var(--bg-inset)', borderRadius: '0 var(--radius-lg) var(--radius-lg) 0', padding: '12px 14px' }}>
+        <div className="layout-sidebar">
           <div className="animate-in" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
             <span style={{ fontSize: 14 }}>🏆</span>
             <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)', color: '#b7950b', letterSpacing: '.3px' }}>RANKING</span>

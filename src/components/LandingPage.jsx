@@ -79,7 +79,7 @@ export default function LandingPage({ onEnterApp }) {
               </span>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div className="landing-nav-links">
             <a href="#features" style={{ fontSize: 12, color: '#5a5a5a', textDecoration: 'none', padding: '6px 12px', fontWeight: 500 }}>Recursos</a>
             <a href="#tracks" style={{ fontSize: 12, color: '#5a5a5a', textDecoration: 'none', padding: '6px 12px', fontWeight: 500 }}>Circuitos</a>
             <a href="#pricing" style={{ fontSize: 12, color: '#5a5a5a', textDecoration: 'none', padding: '6px 12px', fontWeight: 500 }}>Planos</a>
@@ -136,7 +136,7 @@ export default function LandingPage({ onEnterApp }) {
             Cenários de pistas reais. Suporte a todos os principais volantes do mercado.
           </p>
 
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div className="landing-hero-btns">
             <button onClick={onEnterApp} style={{
               padding: '14px 36px', fontSize: 15, borderRadius: 12, fontWeight: 700,
               fontFamily: "'Oxanium', sans-serif", letterSpacing: '.5px',
@@ -160,7 +160,7 @@ export default function LandingPage({ onEnterApp }) {
           </div>
 
           {/* Stats bar */}
-          <div style={{ display: 'flex', gap: 40, justifyContent: 'center', marginTop: 48, flexWrap: 'wrap' }}>
+          <div className="landing-stats" style={{ marginTop: 48 }}>
             {[
               { num: '50+', label: 'Exercícios' },
               { num: '34', label: 'Cenários de pista' },
@@ -188,7 +188,7 @@ export default function LandingPage({ onEnterApp }) {
             Tudo que você precisa para evoluir
           </h2>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+        <div className="landing-features-grid">
           {FEATURES.map((f, i) => (
             <div key={i} style={{
               padding: '24px', background: '#fff', borderRadius: 16, border: '1.5px solid #e0dfd8',
@@ -221,7 +221,7 @@ export default function LandingPage({ onEnterApp }) {
               Cada curva baseada em telemetria real. Treine o S do Senna, Eau Rouge e Maggotts-Becketts.
             </p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
+          <div className="landing-tracks-grid">
             {TRACKS.map((t, i) => (
               <div key={i} style={{
                 padding: '28px 24px', background: '#f0efe8', borderRadius: 16, border: '1.5px solid #e0dfd8',
@@ -249,7 +249,7 @@ export default function LandingPage({ onEnterApp }) {
             3 passos para evoluir
           </h2>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 24 }}>
+        <div className="landing-steps-grid">
           {[
             { step: '01', title: 'Conecte seu volante', desc: 'Plug and play. O app detecta automaticamente G29, T300, Fanatec e outros. Ou use o teclado para começar.', color: '#e74c3c' },
             { step: '02', title: 'Escolha o exercício', desc: 'Treino livre, programas guiados ou cenários de pistas reais. Filtre por tipo de input e perfil de carro.', color: '#27ae60' },
@@ -282,7 +282,7 @@ export default function LandingPage({ onEnterApp }) {
               O que dizem os pilotos
             </h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
+          <div className="landing-testimonials-grid">
             {TESTIMONIALS.map((t, i) => (
               <div key={i} style={{ padding: '24px', background: '#f0efe8', borderRadius: 16, border: '1.5px solid #e0dfd8' }}>
                 <p style={{ fontSize: 13, color: '#5a5a5a', lineHeight: 1.6, fontStyle: 'italic', marginBottom: 16 }}>"{t.text}"</p>
@@ -313,7 +313,7 @@ export default function LandingPage({ onEnterApp }) {
             Escolha seu plano
           </h2>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20 }}>
+        <div className="landing-pricing-grid">
           {PLANS.map((p, i) => (
             <div key={i} style={{
               padding: '32px 28px', background: '#fff', borderRadius: 20,
