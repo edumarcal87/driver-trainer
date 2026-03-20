@@ -15,6 +15,7 @@ import ProgramsScreen from './components/ProgramsScreen';
 import ProgramSessionScreen from './components/ProgramSessionScreen';
 import GamepadDiagnostics from './components/GamepadDiagnostics';
 import CommunityScreen from './components/CommunityScreen';
+import OnboardingTour, { isOnboardingDone } from './components/OnboardingTour';
 import UserMenu from './components/UserMenu';
 import PremiumGate from './components/PremiumGate';
 import SetupWizard from './components/SetupWizard';
@@ -153,6 +154,7 @@ export default function App({ onGoToLanding }) {
   const [telemZones, setTelemZones] = useState([]);
   const [telemFile, setTelemFile] = useState('');
   const [sessionLog, setSessionLog] = useState(() => loadStored('sessionLog', []));
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => { try { localStorage.setItem('bt_pedalConfigs', JSON.stringify(pedalConfigs)); } catch {} }, [pedalConfigs]);
   useEffect(() => { try { localStorage.setItem('bt_bests', JSON.stringify(bests)); } catch {} }, [bests]);
@@ -169,6 +171,14 @@ export default function App({ onGoToLanding }) {
       }
     });
   }, [user?.id]);
+
+  // Onboarding: show tour on first visit when on menu screen
+  useEffect(() => {
+    if (screen === 'menu' && !isOnboardingDone() && sessionLog.length === 0) {
+      const timer = setTimeout(() => setShowOnboarding(true), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [screen]);
 
   // Ranking sidebar state (must be before any early returns)
   const [sidebarBoard, setSidebarBoard] = useState([]);
@@ -313,7 +323,7 @@ export default function App({ onGoToLanding }) {
           <p style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', letterSpacing: '2px', marginTop: 1 }}>DO PEDAL AO PÓDIO</p>
         </div>
       </div>
-      <div className="global-header-right" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <div className="global-header-right" data-tour="header-right" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <StatusBadge connected={gpConnected} wheelName={wheelProfile?.model?.split(' / ')[0] || (gpConnected ? 'CONECTADO' : '')} />
         <button onClick={() => setScreen('diagnostics')} title="Diagnóstico de Gamepad" style={{ ...btn, padding: '7px 10px', fontSize: 14, lineHeight: 1, borderRadius: '50%', width: 36, height: 36 }}>🔧</button>
         <button onClick={() => setScreen('config')} style={{ ...btn, padding: '7px 10px', fontSize: 16, lineHeight: 1, borderRadius: '50%', width: 36, height: 36 }}>⚙</button>
@@ -392,6 +402,7 @@ export default function App({ onGoToLanding }) {
 
   return (
     <div style={{ maxWidth: 900, width: '100%' }}>
+      {showOnboarding && <OnboardingTour show={showOnboarding} onComplete={() => setShowOnboarding(false)} />}
       <div style={{ position: 'relative', zIndex: 900 }}>
         <GlobalHeader />
       </div>
@@ -413,7 +424,7 @@ export default function App({ onGoToLanding }) {
           )}
 
           {/* Treino livre grid */}
-          <div className="animate-in animate-in-delay-1">
+          <div className="animate-in animate-in-delay-1" data-tour="treino-livre">
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
               <span style={{ fontSize: 13 }}>🏎️</span>
               <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)', letterSpacing: '.3px' }}>TREINO LIVRE</span>
@@ -435,7 +446,7 @@ export default function App({ onGoToLanding }) {
           </div>
 
           {/* Programas de treino */}
-          <div className="animate-in animate-in-delay-2">
+          <div className="animate-in animate-in-delay-2" data-tour="programas">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ fontSize: 13 }}>🎯</span>
@@ -566,7 +577,7 @@ export default function App({ onGoToLanding }) {
         </div>
 
         {/* ═══ RIGHT: Ranking sidebar ═══ */}
-        <div className="layout-sidebar">
+        <div className="layout-sidebar" data-tour="ranking">
           <div className="animate-in" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
             <span style={{ fontSize: 14 }}>🏆</span>
             <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)', color: '#b7950b', letterSpacing: '.3px' }}>RANKING</span>
