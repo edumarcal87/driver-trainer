@@ -417,13 +417,15 @@ export default function App({ onGoToLanding }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
               <span style={{ fontSize: 13 }}>🏎️</span>
               <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)', letterSpacing: '.3px' }}>TREINO LIVRE</span>
+              <span style={{ fontSize: 8, padding: '2px 8px', borderRadius: 6, background: '#27ae6012', color: '#27ae60', fontWeight: 700, fontFamily: 'var(--font-mono)', letterSpacing: '.3px' }}>GRATUITO</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 14 }}>
               {EXERCISE_CATEGORIES.map(cat => {
                 const count = exercises.filter(ex => !ex.track && (ex.pedal || 'brake') === cat.key).length;
                 if (count === 0) return null;
                 return (
-                  <div key={cat.key} style={{ padding: '10px 12px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', borderTop: `2.5px solid ${cat.color}`, cursor: 'pointer', boxShadow: 'var(--shadow-card)' }}>
+                  <div key={cat.key} onClick={() => { const el = document.getElementById(`cat-${cat.key}`); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+                    style={{ padding: '10px 12px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', borderTop: `2.5px solid ${cat.color}`, cursor: 'pointer', boxShadow: 'var(--shadow-card)', transition: 'border-color .15s' }}>
                     <span style={{ fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-display)' }}>{cat.label}</span>
                     <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{count} exercícios</p>
                   </div>
@@ -438,6 +440,7 @@ export default function App({ onGoToLanding }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ fontSize: 13 }}>🎯</span>
                 <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)', letterSpacing: '.3px' }}>PROGRAMAS DE TREINO</span>
+                <span style={{ fontSize: 8, padding: '2px 8px', borderRadius: 6, background: '#f1c40f12', color: '#b7950b', fontWeight: 700, fontFamily: 'var(--font-mono)', letterSpacing: '.3px' }}>PREMIUM</span>
               </div>
               <button onClick={() => openPrograms()} style={{ ...btn, fontSize: 9, padding: '4px 10px', color: '#2980b9', borderColor: '#2980b930' }}>VER TODOS →</button>
             </div>
@@ -471,6 +474,7 @@ export default function App({ onGoToLanding }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ fontSize: 13 }}>🏁</span>
                 <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)', letterSpacing: '.3px' }}>CENÁRIOS REAIS</span>
+                <span style={{ fontSize: 8, padding: '2px 8px', borderRadius: 6, background: '#f1c40f12', color: '#b7950b', fontWeight: 700, fontFamily: 'var(--font-mono)', letterSpacing: '.3px' }}>PREMIUM</span>
               </div>
               <button onClick={() => openPrograms()} style={{ ...btn, fontSize: 9, padding: '4px 10px', color: '#2980b9', borderColor: '#2980b930' }}>VER TODOS →</button>
             </div>
@@ -478,11 +482,12 @@ export default function App({ onGoToLanding }) {
               {PROGRAMS.filter(p => p.level === 'Pista Real').map(prog => {
                 const meta = TRACK_META[prog.id] || {};
                 const corners = prog.weeks.reduce((s, w) => s + w.sessions.length, 0);
+                const shortName = prog.name.split('—')[0].split('—')[0].trim();
                 return (
                   <div key={prog.id} onClick={() => openPrograms(prog)} style={{ padding: '12px 14px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', cursor: 'pointer', boxShadow: 'var(--shadow-card)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                      <span style={{ fontSize: 18 }}>{meta.flag || prog.icon}</span>
-                      <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-display)', color: prog.color }}>{prog.name}</span>
+                      <span style={{ fontSize: 20, lineHeight: 1 }}>{meta.flag || prog.icon}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-display)', color: prog.color }}>{shortName}</span>
                     </div>
                     <p style={{ fontSize: 10, color: 'var(--text-muted)' }}>{corners} cenários · {meta.highlights || prog.desc.substring(0, 30)}</p>
                   </div>
@@ -535,7 +540,7 @@ export default function App({ onGoToLanding }) {
             });
             if (catExercises.length === 0) return null;
             return (
-              <div key={cat.key} className="animate-in">
+              <div key={cat.key} id={`cat-${cat.key}`} className="animate-in" style={{ scrollMarginTop: 20 }}>
                 <SectionHeader category={cat} exerciseCount={catExercises.length} />
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 10 }}>
                   {catExercises.map(ex => (

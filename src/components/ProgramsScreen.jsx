@@ -70,7 +70,7 @@ export default function ProgramsScreen({ onBack, onStartSession, sessionLog, ini
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: 10 }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                      <span style={{ fontSize: 22 }}>{prog.icon}</span>
+                      <span style={{ fontSize: 26, lineHeight: 1 }}>{prog.icon}</span>
                       <span style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)', color: prog.color }}>{prog.name}</span>
                     </div>
                     <span style={{
