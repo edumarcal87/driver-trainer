@@ -174,8 +174,8 @@ export default function App({ onGoToLanding }) {
 
   // Onboarding: show tour on first visit when on menu screen
   useEffect(() => {
-    if (screen === 'menu' && !isOnboardingDone() && sessionLog.length === 0) {
-      const timer = setTimeout(() => setShowOnboarding(true), 600);
+    if (screen === 'menu' && !isOnboardingDone() && !showOnboarding) {
+      const timer = setTimeout(() => setShowOnboarding(true), 800);
       return () => clearTimeout(timer);
     }
   }, [screen]);
@@ -401,8 +401,9 @@ export default function App({ onGoToLanding }) {
   };
 
   return (
-    <div style={{ maxWidth: 900, width: '100%' }}>
+    <>
       {showOnboarding && <OnboardingTour show={showOnboarding} onComplete={() => setShowOnboarding(false)} />}
+      <div style={{ maxWidth: 900, width: '100%' }}>
       <div style={{ position: 'relative', zIndex: 900 }}>
         <GlobalHeader />
       </div>
@@ -661,5 +662,6 @@ export default function App({ onGoToLanding }) {
         <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>v2.0 · Do pedal ao pódio</span>
       </div>
     </div>
+    </>
   );
 }

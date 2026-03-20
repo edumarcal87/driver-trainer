@@ -1,80 +1,43 @@
-import React, { useState, useEffect, useRef } from 'react';
-
-/**
- * OnboardingTour — 5-step interactive walkthrough for first-time users.
- * Highlights areas of the UI with a spotlight overlay.
- * Shows only once per user (stored in localStorage).
- */
+import React, { useState, useEffect } from 'react';
 
 const STEPS = [
-  {
-    target: null, // No highlight — welcome modal
-    title: 'Bem-vindo ao Driver Trainer! 🏎️',
-    desc: 'Vamos fazer um tour rápido para você conhecer a plataforma e começar a treinar como profissional.',
-    icon: '👋',
-    position: 'center',
-  },
-  {
-    target: '[data-tour="treino-livre"]',
-    title: 'Treino Livre — Gratuito',
-    desc: 'Aqui ficam todas as categorias de exercícios: freio, acelerador, volante, câmbio e mais. Clique em uma categoria para ver os exercícios disponíveis.',
-    icon: '🏎️',
-    position: 'bottom',
-  },
-  {
-    target: '[data-tour="programas"]',
-    title: 'Programas de Treino — Premium ⭐',
-    desc: 'Programas guiados com sessões progressivas. Ideal para evoluir de forma estruturada. Disponível no plano Premium.',
-    icon: '🎯',
-    position: 'bottom',
-  },
-  {
-    target: '[data-tour="ranking"]',
-    title: 'Ranking e Desafios 🏆',
-    desc: 'Veja sua posição no ranking global, compare com outros pilotos e participe dos desafios semanais.',
-    icon: '🏆',
-    position: 'left',
-  },
-  {
-    target: '[data-tour="header-right"]',
-    title: 'Conecte seu Volante 🎮',
-    desc: 'Conecte seu volante USB (G29, T300, Fanatec, etc.) e o app detecta automaticamente. Use o ícone ⚙ para calibrar ou 🔧 para diagnóstico.',
-    icon: '🔧',
-    position: 'bottom',
-  },
+  { target: null, title: 'Bem-vindo ao Driver Trainer! 🏎️', desc: 'Vamos fazer um tour rápido para você conhecer a plataforma e começar a treinar como profissional.', icon: '👋' },
+  { target: '[data-tour="treino-livre"]', title: 'Treino Livre — Gratuito', desc: 'Todas as categorias de exercícios: freio, acelerador, volante, câmbio e mais. Clique em uma categoria para rolar até os exercícios.', icon: '🏎️' },
+  { target: '[data-tour="programas"]', title: 'Programas de Treino ⭐', desc: 'Programas guiados com sessões progressivas para evoluir de forma estruturada. Disponível no plano Premium.', icon: '🎯' },
+  { target: '[data-tour="ranking"]', title: 'Ranking e Desafios', desc: 'Sua posição no ranking global, top pilotos e desafios semanais. Compete com a comunidade!', icon: '🏆' },
+  { target: '[data-tour="header-right"]', title: 'Conecte seu Volante', desc: 'Conecte um volante USB (G29, T300, Fanatec...) e o app detecta automaticamente. Use ⚙ para calibrar ou 🔧 para diagnóstico.', icon: '🎮' },
 ];
 
 const STORAGE_KEY = 'bt_onboarding_done';
 
 export default function OnboardingTour({ show, onComplete }) {
   const [step, setStep] = useState(0);
-  const [targetRect, setTargetRect] = useState(null);
+  const [rect, setRect] = useState(null);
   const [visible, setVisible] = useState(show);
-  const tooltipRef = useRef(null);
 
+  // Find and scroll to target element
   useEffect(() => {
     if (!visible) return;
     const s = STEPS[step];
-    if (!s.target) {
-      setTargetRect(null);
-      return;
-    }
-    const el = document.querySelector(s.target);
-    if (el) {
-      const rect = el.getBoundingClientRect();
-      setTargetRect({
-        top: rect.top + window.scrollY,
-        left: rect.left + window.scrollX,
-        width: rect.width,
-        height: rect.height,
-      });
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else {
-      setTargetRect(null);
-    }
+    if (!s.target) { setRect(null); return; }
+    // Small delay to let scroll finish
+    const findEl = () => {
+      const el = document.querySelector(s.target);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Wait for scroll to settle then measure
+        setTimeout(() => {
+          const r = el.getBoundingClientRect();
+          setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+        }, 400);
+      } else {
+        setRect(null);
+      }
+    };
+    findEl();
   }, [step, visible]);
 
-  // Reposition on scroll/resize
+  // Update rect on scroll/resize
   useEffect(() => {
     if (!visible) return;
     const update = () => {
@@ -82,13 +45,8 @@ export default function OnboardingTour({ show, onComplete }) {
       if (!s?.target) return;
       const el = document.querySelector(s.target);
       if (el) {
-        const rect = el.getBoundingClientRect();
-        setTargetRect({
-          top: rect.top + window.scrollY,
-          left: rect.left + window.scrollX,
-          width: rect.width,
-          height: rect.height,
-        });
+        const r = el.getBoundingClientRect();
+        setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
       }
     };
     window.addEventListener('scroll', update, { passive: true });
@@ -102,95 +60,74 @@ export default function OnboardingTour({ show, onComplete }) {
     onComplete?.();
   };
 
-  const next = () => {
-    if (step >= STEPS.length - 1) { finish(); return; }
-    setStep(step + 1);
-  };
-
-  const prev = () => {
-    if (step > 0) setStep(step - 1);
-  };
-
-  const skip = () => finish();
-
   if (!visible) return null;
 
   const s = STEPS[step];
-  const isCenter = s.position === 'center' || !targetRect;
+  const isCenter = !s.target || !rect;
+  const pad = 8;
+  const tw = Math.min(340, window.innerWidth - 32);
 
-  // Tooltip position
-  let tooltipStyle = {};
+  // Tooltip position (all fixed/viewport-relative)
+  let tipTop, tipLeft;
   if (isCenter) {
-    tooltipStyle = {
-      position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-      zIndex: 10002,
-    };
+    tipTop = '50%'; tipLeft = '50%';
   } else {
-    const pad = 12;
-    const tw = Math.min(340, window.innerWidth - 32);
-    if (s.position === 'bottom') {
-      tooltipStyle = {
-        position: 'absolute',
-        top: targetRect.top + targetRect.height + pad,
-        left: Math.max(16, Math.min(targetRect.left, window.innerWidth - tw - 16)),
-        zIndex: 10002,
-      };
-    } else if (s.position === 'left') {
-      tooltipStyle = {
-        position: 'absolute',
-        top: targetRect.top,
-        left: Math.max(16, targetRect.left - tw - pad),
-        zIndex: 10002,
-      };
-    } else if (s.position === 'top') {
-      tooltipStyle = {
-        position: 'absolute',
-        top: targetRect.top - pad - 200,
-        left: Math.max(16, Math.min(targetRect.left, window.innerWidth - tw - 16)),
-        zIndex: 10002,
-      };
+    // Try below the target
+    const below = rect.top + rect.height + pad;
+    const above = rect.top - pad - 220;
+    const leftOfTarget = rect.left - tw - pad;
+
+    if (below + 220 < window.innerHeight) {
+      tipTop = below;
+      tipLeft = Math.max(16, Math.min(rect.left, window.innerWidth - tw - 16));
+    } else if (above > 0) {
+      tipTop = above;
+      tipLeft = Math.max(16, Math.min(rect.left, window.innerWidth - tw - 16));
+    } else if (leftOfTarget > 0) {
+      tipTop = Math.max(16, rect.top);
+      tipLeft = leftOfTarget;
+    } else {
+      tipTop = Math.max(16, rect.top + rect.height + pad);
+      tipLeft = 16;
     }
   }
 
   return (
-    <>
-      {/* Overlay */}
-      <div style={{
-        position: 'fixed', inset: 0, zIndex: 10000,
-        background: 'rgba(0,0,0,0.55)', transition: 'opacity .3s',
-      }} onClick={skip} />
+    <div style={{ position: 'fixed', inset: 0, zIndex: 10000 }}>
+      {/* Dark overlay with SVG cutout for spotlight */}
+      <svg style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', zIndex: 10000 }}>
+        <defs>
+          <mask id="onboarding-mask">
+            <rect width="100%" height="100%" fill="white" />
+            {rect && (
+              <rect x={rect.left - pad} y={rect.top - pad} width={rect.width + pad * 2} height={rect.height + pad * 2} rx="12" fill="black" />
+            )}
+          </mask>
+        </defs>
+        <rect width="100%" height="100%" fill="rgba(0,0,0,0.6)" mask="url(#onboarding-mask)" />
+      </svg>
 
-      {/* Spotlight cutout */}
-      {targetRect && (
+      {/* Spotlight ring */}
+      {rect && (
         <div style={{
-          position: 'absolute',
-          top: targetRect.top - 6,
-          left: targetRect.left - 6,
-          width: targetRect.width + 12,
-          height: targetRect.height + 12,
-          borderRadius: 14,
-          boxShadow: '0 0 0 9999px rgba(0,0,0,0.55)',
-          zIndex: 10001,
-          pointerEvents: 'none',
-          transition: 'all .4s cubic-bezier(.4,0,.2,1)',
-        }}>
-          {/* Pulse ring */}
-          <div style={{
-            position: 'absolute', inset: -4, borderRadius: 18,
-            border: '2px solid #e74c3c', opacity: 0.6,
-            animation: 'onboarding-pulse 2s ease-in-out infinite',
-          }} />
-        </div>
+          position: 'fixed',
+          top: rect.top - pad - 2, left: rect.left - pad - 2,
+          width: rect.width + pad * 2 + 4, height: rect.height + pad * 2 + 4,
+          borderRadius: 14, border: '2px solid #e74c3c', opacity: 0.7,
+          zIndex: 10001, pointerEvents: 'none',
+          animation: 'onboarding-pulse 2s ease-in-out infinite',
+        }} />
       )}
 
       {/* Tooltip */}
-      <div ref={tooltipRef} style={{
-        ...tooltipStyle,
-        width: Math.min(340, window.innerWidth - 32),
+      <div style={{
+        position: 'fixed',
+        top: isCenter ? tipTop : tipTop, left: isCenter ? tipLeft : tipLeft,
+        transform: isCenter ? 'translate(-50%, -50%)' : 'none',
+        width: tw, zIndex: 10002,
         background: '#fff', borderRadius: 16,
-        boxShadow: '0 8px 40px rgba(0,0,0,0.2)',
-        border: '1.5px solid #e0dfd8',
-        overflow: 'hidden',
+        boxShadow: '0 8px 40px rgba(0,0,0,0.25)',
+        border: '1.5px solid #e0dfd8', overflow: 'hidden',
       }}>
         {/* Progress bar */}
         <div style={{ height: 3, background: '#f0efe8' }}>
@@ -198,7 +135,6 @@ export default function OnboardingTour({ show, onComplete }) {
         </div>
 
         <div style={{ padding: '20px 22px' }}>
-          {/* Icon + step count */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <span style={{ fontSize: 28 }}>{s.icon}</span>
             <span style={{ fontSize: 10, fontFamily: "'Barlow Condensed', sans-serif", color: '#9a9a90', letterSpacing: '.5px' }}>
@@ -206,7 +142,6 @@ export default function OnboardingTour({ show, onComplete }) {
             </span>
           </div>
 
-          {/* Content */}
           <h3 style={{ fontSize: 16, fontWeight: 700, fontFamily: "'Oxanium', sans-serif", color: '#1a1a1a', marginBottom: 8 }}>
             {s.title}
           </h3>
@@ -214,9 +149,8 @@ export default function OnboardingTour({ show, onComplete }) {
             {s.desc}
           </p>
 
-          {/* Actions */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <button onClick={skip} style={{
+            <button onClick={finish} style={{
               background: 'none', border: 'none', fontSize: 12, color: '#9a9a90',
               cursor: 'pointer', fontFamily: "'Barlow', sans-serif", padding: '4px 0',
             }}>
@@ -224,16 +158,13 @@ export default function OnboardingTour({ show, onComplete }) {
             </button>
             <div style={{ display: 'flex', gap: 8 }}>
               {step > 0 && (
-                <button onClick={prev} style={{
+                <button onClick={() => setStep(step - 1)} style={{
                   padding: '8px 16px', fontSize: 12, borderRadius: 10, fontWeight: 600,
                   fontFamily: "'Oxanium', sans-serif",
-                  border: '1.5px solid #e0dfd8', background: '#fff', color: '#5a5a5a',
-                  cursor: 'pointer',
-                }}>
-                  ← VOLTAR
-                </button>
+                  border: '1.5px solid #e0dfd8', background: '#fff', color: '#5a5a5a', cursor: 'pointer',
+                }}>← VOLTAR</button>
               )}
-              <button onClick={next} style={{
+              <button onClick={() => step >= STEPS.length - 1 ? finish() : setStep(step + 1)} style={{
                 padding: '8px 20px', fontSize: 12, borderRadius: 10, fontWeight: 700,
                 fontFamily: "'Oxanium', sans-serif", letterSpacing: '.3px',
                 border: '2px solid #e74c3c', background: '#e74c3c', color: '#fff',
@@ -246,23 +177,20 @@ export default function OnboardingTour({ show, onComplete }) {
         </div>
       </div>
 
-      {/* Pulse animation */}
       <style>{`
         @keyframes onboarding-pulse {
-          0%, 100% { transform: scale(1); opacity: 0.6; }
-          50% { transform: scale(1.06); opacity: 0.3; }
+          0%, 100% { transform: scale(1); opacity: 0.7; }
+          50% { transform: scale(1.04); opacity: 0.3; }
         }
       `}</style>
-    </>
+    </div>
   );
 }
 
-/** Check if onboarding was completed */
 export function isOnboardingDone() {
   try { return localStorage.getItem(STORAGE_KEY) === 'true'; } catch { return false; }
 }
 
-/** Reset onboarding (for testing) */
 export function resetOnboarding() {
   try { localStorage.removeItem(STORAGE_KEY); } catch {}
 }
