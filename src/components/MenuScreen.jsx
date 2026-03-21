@@ -231,6 +231,18 @@ export default function MenuScreen({ sessionLog, bests, history, exercises, carP
           </div>
         </div>
 
+        {/* Telemetry import */}
+        <div className="animate-in animate-in-delay-3" style={{ marginBottom: 14 }}>
+          <div onClick={() => onNavigate('telemetry')} style={{ padding: '12px 16px', background: 'var(--bg-card)', border: '1.5px dashed var(--border)', borderRadius: 'var(--radius-lg)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, transition: 'border-color .15s' }}>
+            <span style={{ fontSize: 20 }}>📊</span>
+            <div style={{ flex: 1 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-display)' }}>IMPORTAR TELEMETRIA REAL</span>
+              <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>iRacing · ACC · Assetto Corsa · AMS2 · rFactor2 · Le Mans Ultimate</p>
+            </div>
+            <span style={{ fontSize: 11, color: '#2980b9', fontWeight: 600, fontFamily: 'var(--font-condensed)' }}>IMPORTAR →</span>
+          </div>
+        </div>
+
         {/* Input filter + car profile */}
         <div className="animate-in animate-in-delay-4" style={{ display: 'flex', gap: 5, marginBottom: 8, flexWrap: 'wrap' }}>
           {[

@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { ALL_EXERCISES, BRAKE_EXERCISES } from './data/exercises';
 import { CAR_PROFILES } from './data/carProfiles';
-import { parseCSV, detectBrakeZones, zoneToExercise } from './utils/telemetry';
 import { useAuth } from './lib/AuthContext';
 import { isSupabaseConfigured } from './lib/supabase';
 import { saveSessionResult, syncSessionLogs } from './lib/dataSync';
@@ -14,6 +13,7 @@ import { getDefaultPedalConfig } from './utils/gamepad';
 
 import GlobalHeader from './components/GlobalHeader';
 import MenuScreen from './components/MenuScreen';
+import TelemetryImportScreen from './components/TelemetryImportScreen';
 import ExerciseScreen from './components/ExerciseScreen';
 import ConfigScreen from './components/ConfigScreen';
 import ProgressScreen from './components/ProgressScreen';
@@ -120,6 +120,7 @@ export default function App({ onGoToLanding }) {
       case 'program_session': return activeProgram ? <PremiumGate feature={activeProgram.name} onLogin={() => nav('login')}><ProgramSessionScreen program={activeProgram} weekIdx={activeWeekIdx} sessionIdx={activeSessionIdx} onBack={() => { setInitialProgramForScreen(activeProgram); nav('programs'); }} onResult={handleResult} inputMode={gamepad.inputMode} pedalConfigs={gamepad.pedalConfigs} carProfile={carProfile} sessionLog={sessionLog} shifterConfig={gamepad.shifterConfig} /></PremiumGate> : null;
       case 'community': return <CommunityScreen onBack={back} onStartExercise={openExercise} onLogin={onGoToLanding} />;
       case 'badges': return <BadgesScreen onBack={back} sessionLog={sessionLog} />;
+      case 'telemetry': return <TelemetryImportScreen onBack={back} onExercisesCreated={(exs) => { setExercises([...ALL_EXERCISES, ...exs]); back(); }} />;
       default: return null;
     }
   };
