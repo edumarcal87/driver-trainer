@@ -4,8 +4,6 @@ import react from '@vitejs/plugin-react';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // For GitHub Pages: base: '/driver-trainer/'
-  // For Vercel: base: '/'
   base: process.env.GITHUB_ACTIONS ? '/driver-trainer/' : '/',
   server: {
     port: 3000,
@@ -14,5 +12,10 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: [],
   },
 });
