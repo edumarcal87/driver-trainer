@@ -580,202 +580,183 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
 
       {!isCombined && <Legend pedalType={pedalType} />}
 
-      {/* ── Feedback Panel ── */}
-      {showFeedback && analysis && (
-        <div style={{ marginTop: 20, animation: 'fadeInUp .5s cubic-bezier(.4,0,.2,1) both' }}>
-          <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, var(--border), transparent)', margin: '8px 0 20px' }} />
+      {/* ── Feedback Panel (new card-based 2-column layout) ── */}
+      {showFeedback && analysis && (() => {
+        const scoreColor = analysis.overall >= 80 ? 'var(--accent-throttle)' : analysis.overall >= 50 ? 'var(--accent-clutch)' : 'var(--accent-brake)';
+        const hist = (sessionLog || []).filter(e => e.exId === exercise.id && (!carProfile || carProfile.id === 'default' || (e.carProfileId || 'default') === carProfile.id));
+        const prev = hist.length > 0 && hist[0].score === analysis.overall ? hist.slice(1) : hist;
+        const bestEver = hist.length > 0 ? Math.max(...hist.map(e => e.score), analysis.overall) : analysis.overall;
+        const isNewBest = analysis.overall >= bestEver;
+        const delta = prev.length > 0 ? analysis.overall - prev[0].score : 0;
+        const deltaColor = delta > 0 ? '#27ae60' : delta < 0 ? '#e74c3c' : '#2980b9';
+        const last5 = prev.slice(0, 5);
+        const sparkScores = last5.length > 0 ? [...last5.map(e => e.score).reverse(), analysis.overall] : [analysis.overall];
+        const sparkW = 100, sparkH = 28;
 
-          {/* Grade + overall */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 20 }}>
-            <GradeDisplay grade={analysis.grade} />
-            <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 28, fontWeight: 700, fontFamily: 'var(--font-display)', color: analysis.overall >= 80 ? 'var(--accent-throttle)' : analysis.overall >= 50 ? 'var(--accent-clutch)' : 'var(--accent-brake)' }}>
-                {analysis.overall}<span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-muted)' }}>%</span>
-              </p>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-condensed)', letterSpacing: '.3px' }}>PONTUAÇÃO GERAL</p>
+        return (
+          <div style={{ marginTop: 16, animation: 'fadeInUp .5s cubic-bezier(.4,0,.2,1) both' }}>
+
+            {/* ── Action bar (first) ── */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-card)', marginBottom: 10 }}>
+              <button onClick={startRun} style={{
+                padding: '8px 20px', fontSize: 12, borderRadius: 10, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '.3px',
+                border: '1.5px solid var(--accent-throttle)', background: 'var(--accent-throttle)', color: '#fff', cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(39,174,96,0.2)',
+              }}>REPETIR</button>
+              <button onClick={() => { setShowFeedback(false); onBack(); }} style={{
+                ...btnS, padding: '8px 16px', fontSize: 12, borderRadius: 10,
+              }}>Outro exercício</button>
+              <div style={{ flex: 1 }} />
+              <button onClick={() => {
+                let trend = 0;
+                if (prev.length >= 2) {
+                  const r = prev.slice(0, Math.ceil(prev.length / 2));
+                  const o = prev.slice(Math.ceil(prev.length / 2));
+                  trend = Math.round(r.reduce((s,e)=>s+e.score,0)/r.length - o.reduce((s,e)=>s+e.score,0)/o.length);
+                }
+                shareResult({ exerciseName: exercise.name, score: analysis.overall, grade: analysis.grade, best: bestEver, attempts: hist.length, segments: analysis.segments, carProfile, trend, isNewBest });
+              }} style={{
+                ...btnS, fontSize: 11, padding: '8px 16px', borderRadius: 10,
+                color: '#8e44ad', borderColor: '#8e44ad30', background: '#f3e8f9', fontWeight: 600,
+                display: 'flex', alignItems: 'center', gap: 4,
+              }}>📤 Compartilhar</button>
             </div>
-            <button onClick={startRun} style={{
-              padding: '10px 28px', fontSize: 13, borderRadius: 10, fontWeight: 600, fontFamily: 'var(--font-display)', letterSpacing: '.5px',
-              border: '1px solid var(--accent-throttle)', background: 'var(--accent-throttle-glow)', color: 'var(--accent-throttle)', cursor: 'pointer',
-            }}>REPETIR</button>
-          </div>
 
-          {/* ── Comparison with previous attempts ── */}
-          {(() => {
-            const hist = (sessionLog || [])
-              .filter(e => e.exId === exercise.id && (!carProfile || carProfile.id === 'default' || (e.carProfileId || 'default') === carProfile.id));
-            // Exclude the most recent entry if it matches this score (just recorded)
-            const prev = hist.length > 0 && hist[0].score === analysis.overall ? hist.slice(1) : hist;
-            if (prev.length === 0) return (
-              <div style={{ padding: '10px 14px', marginBottom: 16, borderRadius: 'var(--radius)', background: '#2980b908', border: '1px solid #2980b915' }}>
-                <p style={{ fontSize: 11, color: '#2980b9', fontWeight: 600, fontFamily: 'var(--font-condensed)', letterSpacing: '.3px' }}>
-                  🎯 Primeira tentativa registrada! Complete mais vezes para ver sua evolução.
-                </p>
-              </div>
-            );
+            {/* ── Two column analysis ── */}
+            <div className="grid-2col" style={{ gap: 10 }}>
 
-            const prevScore = prev[0].score;
-            const delta = analysis.overall - prevScore;
-            const bestEver = Math.max(...hist.map(e => e.score), analysis.overall);
-            const isNewBest = analysis.overall >= bestEver;
-            const last5 = prev.slice(0, 5);
-            const avgPrev = Math.round(last5.reduce((s, e) => s + e.score, 0) / last5.length);
-            const deltaAvg = analysis.overall - avgPrev;
+              {/* ═══ LEFT COLUMN: Comparison + Stats + Tips ═══ */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
 
-            // Weekly comparison
-            const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-            const thisWeek = hist.filter(e => e.timestamp > weekAgo);
-            const lastWeek = hist.filter(e => e.timestamp <= weekAgo && e.timestamp > weekAgo - 7 * 24 * 60 * 60 * 1000);
-            let weeklyText = '';
-            if (thisWeek.length > 0 && lastWeek.length > 0) {
-              const thisAvg = Math.round(thisWeek.reduce((s, e) => s + e.score, 0) / thisWeek.length);
-              const lastAvg = Math.round(lastWeek.reduce((s, e) => s + e.score, 0) / lastWeek.length);
-              const weekDelta = thisAvg - lastAvg;
-              if (weekDelta > 0) weeklyText = `Melhorou ${weekDelta}% esta semana`;
-              else if (weekDelta < 0) weeklyText = `Caiu ${Math.abs(weekDelta)}% em relação à semana passada`;
-            }
+                {/* Comparison card */}
+                <div style={{ padding: '14px', background: 'var(--bg-card)', border: `1.5px solid ${isNewBest ? '#27ae6030' : 'var(--border)'}`, borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-card)' }}>
+                  <p style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.3px', marginBottom: 8, fontWeight: 600 }}>VS TENTATIVAS ANTERIORES</p>
+                  {isNewBest && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, padding: '4px 10px', background: '#27ae6012', borderRadius: 8, width: 'fit-content' }}>
+                      <span style={{ fontSize: 11 }}>🏆</span>
+                      <span style={{ fontSize: 9, fontWeight: 700, fontFamily: 'var(--font-display)', color: '#27ae60' }}>NOVO RECORDE!</span>
+                    </div>
+                  )}
+                  {prev.length === 0 ? (
+                    <p style={{ fontSize: 11, color: '#2980b9', fontFamily: 'var(--font-condensed)' }}>🎯 Primeira tentativa registrada!</p>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div>
+                        <span style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-display)', color: deltaColor }}>{delta > 0 ? '+' : ''}{delta}%</span>
+                        <p style={{ fontSize: 9, color: 'var(--text-muted)' }}>vs última</p>
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <svg width="100%" height={sparkH} viewBox={`0 0 ${sparkW} ${sparkH}`} style={{ overflow: 'visible' }}>
+                          {sparkScores.length >= 2 && (
+                            <polyline points={sparkScores.map((s, i) => `${(i / (sparkScores.length - 1)) * sparkW},${sparkH - (s / 100) * sparkH}`).join(' ')}
+                              fill="none" stroke={deltaColor + '60'} strokeWidth="1.5" strokeLinecap="round" />
+                          )}
+                          {sparkScores.map((s, i) => (
+                            <circle key={i}
+                              cx={sparkScores.length === 1 ? sparkW / 2 : (i / (sparkScores.length - 1)) * sparkW}
+                              cy={sparkH - (s / 100) * sparkH}
+                              r={i === sparkScores.length - 1 ? 3.5 : 2}
+                              fill={i === sparkScores.length - 1 ? deltaColor : s >= 70 ? '#27ae6080' : '#f39c1280'}
+                              stroke={i === sparkScores.length - 1 ? '#fff' : 'none'} strokeWidth="1.5"
+                            />
+                          ))}
+                        </svg>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-display)' }}>{bestEver}%</span>
+                        <p style={{ fontSize: 8, color: 'var(--text-muted)' }}>melhor</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-            // Sparkline of last 5 + current
-            const sparkScores = [...last5.map(e => e.score).reverse(), analysis.overall];
-            const sparkW = 90, sparkH = 24;
-            const sparkPts = sparkScores.map((s, i) => {
-              const x = sparkScores.length === 1 ? sparkW / 2 : (i / (sparkScores.length - 1)) * sparkW;
-              const y = sparkH - (s / 100) * sparkH;
-              return `${x.toFixed(1)},${y.toFixed(1)}`;
-            });
+                {/* Stats grid */}
+                <div style={{ padding: '12px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-card)' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
+                    <div style={{ textAlign: 'center', padding: '8px 4px', background: 'var(--bg-inset)', borderRadius: 8 }}>
+                      <p style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)', color: analysis.stats.consistency >= 70 ? '#27ae60' : '#f39c12' }}>{analysis.stats.consistency}%</p>
+                      <p style={{ fontSize: 8, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.3px' }}>CONSISTÊNCIA</p>
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '8px 4px', background: 'var(--bg-inset)', borderRadius: 8 }}>
+                      <p style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)' }}>{Math.round(analysis.stats.userPeak * 100)}%</p>
+                      <p style={{ fontSize: 8, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.3px' }}>PICO</p>
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '8px 4px', background: 'var(--bg-inset)', borderRadius: 8 }}>
+                      <p style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)', color: Math.abs(analysis.stats.peakTimingDelta) < 0.05 ? '#27ae60' : '#f39c12' }}>{analysis.stats.peakTimingDelta > 0 ? '+' : ''}{Math.round(analysis.stats.peakTimingDelta * 100)}%</p>
+                      <p style={{ fontSize: 8, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.3px' }}>TIMING</p>
+                    </div>
+                  </div>
+                </div>
 
-            const deltaColor = delta > 0 ? '#27ae60' : delta < 0 ? '#e74c3c' : '#2980b9';
-
-            return (
-              <div style={{
-                padding: '14px 16px', marginBottom: 16, borderRadius: 'var(--radius-lg)',
-                background: 'var(--bg-card)', border: `1.5px solid ${isNewBest ? '#27ae6030' : 'var(--border)'}`,
-                boxShadow: isNewBest ? '0 2px 12px rgba(39,174,96,0.08)' : 'var(--shadow-card)',
-              }}>
-                {isNewBest && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, padding: '4px 10px', background: '#27ae6012', borderRadius: 8, width: 'fit-content' }}>
-                    <span style={{ fontSize: 12 }}>🏆</span>
-                    <span style={{ fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-display)', color: '#27ae60', letterSpacing: '.3px' }}>NOVO RECORDE PESSOAL!</span>
+                {/* Per-input scores (combined only) */}
+                {isCombined && Object.keys(combinedScores).length > 0 && (
+                  <div style={{ padding: '12px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-card)' }}>
+                    <p style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.3px', marginBottom: 6, fontWeight: 600 }}>SCORE POR INPUT</p>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      {Object.entries(combinedScores).map(([key, sc]) => (
+                        <StatCard key={key} label={INPUT_LABELS[key] || key} value={sc} unit="%" color={sc >= 80 ? 'var(--accent-throttle)' : sc >= 50 ? 'var(--accent-clutch)' : 'var(--accent-brake)'} />
+                      ))}
+                    </div>
                   </div>
                 )}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                  {/* Sparkline */}
-                  <svg width={sparkW} height={sparkH} style={{ flexShrink: 0, overflow: 'visible' }}>
-                    {sparkScores.length >= 2 && (
-                      <polyline points={sparkPts.join(' ')} fill="none" stroke={deltaColor + '60'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    )}
-                    {sparkScores.map((s, i) => {
-                      const isLast = i === sparkScores.length - 1;
-                      return (
-                        <circle key={i}
-                          cx={sparkScores.length === 1 ? sparkW / 2 : (i / (sparkScores.length - 1)) * sparkW}
-                          cy={sparkH - (s / 100) * sparkH}
-                          r={isLast ? 4 : 2.5}
-                          fill={isLast ? deltaColor : s >= 70 ? '#27ae6080' : '#f39c1280'}
-                          stroke={isLast ? '#fff' : 'none'} strokeWidth={isLast ? 2 : 0}
-                        />
-                      );
-                    })}
-                  </svg>
 
-                  {/* Comparison stats */}
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-condensed)', color: deltaColor }}>
-                        {delta > 0 ? '▲' : delta < 0 ? '▼' : '●'} {delta > 0 ? '+' : ''}{delta}% vs anterior ({prevScore}%)
-                      </span>
-                      {deltaAvg !== 0 && last5.length >= 2 && (
-                        <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                          · {deltaAvg > 0 ? '+' : ''}{deltaAvg}% vs média ({avgPrev}%)
-                        </span>
-                      )}
-                    </div>
-                    {weeklyText && (
-                      <p style={{ fontSize: 10, color: deltaColor, fontFamily: 'var(--font-condensed)', letterSpacing: '.3px', marginTop: 3 }}>
-                        📊 {weeklyText}
-                      </p>
-                    )}
+                {/* Tips */}
+                <div style={{ padding: '12px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-card)' }}>
+                  <p style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.3px', marginBottom: 6, fontWeight: 600 }}>DICAS DE MELHORIA</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {analysis.tips.map((tip, i) => <TipCard key={i} type={tip.type} text={tip.text} />)}
                   </div>
                 </div>
               </div>
-            );
-          })()}
 
-          {/* Per-input scores (combined only) */}
-          {isCombined && Object.keys(combinedScores).length > 0 && (
-            <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
-              {Object.entries(combinedScores).map(([key, sc]) => (
-                <StatCard key={key} label={INPUT_LABELS[key] || key} value={sc} unit="%" color={sc >= 80 ? 'var(--accent-throttle)' : sc >= 50 ? 'var(--accent-clutch)' : 'var(--accent-brake)'} />
-              ))}
+              {/* ═══ RIGHT COLUMN: Replay + Segments ═══ */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+
+                {/* Replay chart */}
+                {!isCombined && targetPts?.length > 0 && userPts?.length > 1 && (
+                  <div style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-card)', overflow: 'hidden' }}>
+                    <ReplayChart
+                      targetPts={targetPts}
+                      userPts={userPts}
+                      bestPts={bestPtsRef.current}
+                      segments={analysis.segments}
+                      pedalType={pedalType}
+                      score={analysis.overall}
+                    />
+                  </div>
+                )}
+
+                {/* Segments — where points were lost */}
+                <div style={{ padding: '12px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-card)' }}>
+                  <p style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.3px', marginBottom: 8, fontWeight: 600 }}>ONDE PERDEU PONTOS</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {analysis.segments.map(seg => {
+                      const segColor = seg.score >= 80 ? '#27ae60' : seg.score >= 60 ? '#f39c12' : '#e74c3c';
+                      const isLow = seg.score < 60;
+                      return (
+                        <div key={seg.key} style={{ padding: '6px 8px', borderRadius: 8, border: `1px solid ${isLow ? segColor + '25' : 'var(--border)'}`, background: isLow ? segColor + '04' : 'transparent' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                            <span style={{ fontSize: 11, fontWeight: 500 }}>{seg.label}</span>
+                            <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)', color: segColor }}>{seg.score}%</span>
+                          </div>
+                          <div style={{ height: 3, background: 'var(--bg-inset)', borderRadius: 2 }}>
+                            <div style={{ width: `${seg.score}%`, height: '100%', background: segColor, borderRadius: 2 }} />
+                          </div>
+                          {isLow && (
+                            <p style={{ fontSize: 9, color: segColor, marginTop: 3 }}>
+                              {seg.bias > 0.02 ? '↑ Pressão demais' : seg.bias < -0.02 ? '↓ Pressão insuficiente' : '↔ Timing errado'}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
             </div>
-          )}
-
-          {/* Stats cards */}
-          <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
-            <StatCard label="CONSISTÊNCIA" value={analysis.stats.consistency} unit="%" color={analysis.stats.consistency >= 70 ? 'var(--accent-throttle)' : 'var(--accent-clutch)'} />
-            <StatCard label="PICO" value={Math.round(analysis.stats.userPeak * 100)} unit={`% / ${Math.round(analysis.stats.targetPeak * 100)}%`} color={analysis.stats.peakAccuracy >= 80 ? 'var(--accent-throttle)' : 'var(--accent-clutch)'} />
-            <StatCard label="TIMING" value={`${analysis.stats.peakTimingDelta > 0 ? '+' : ''}${Math.round(analysis.stats.peakTimingDelta * 100)}`} unit="%" color={Math.abs(analysis.stats.peakTimingDelta) < 0.05 ? 'var(--accent-throttle)' : 'var(--accent-clutch)'} />
           </div>
-
-          {/* Segments */}
-          <div style={{ background: 'var(--bg-panel)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', padding: '14px 16px', marginBottom: 16 }}>
-            <p style={{ fontSize: 11, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.5px', marginBottom: 10 }}>ANÁLISE POR SEGMENTO</p>
-            {analysis.segments.map(seg => <SegmentBar key={seg.key} label={`${seg.label} — ${seg.desc}`} score={seg.score} bias={seg.bias} />)}
-          </div>
-
-          {/* Tips */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-            <p style={{ fontSize: 11, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.5px', marginBottom: 2 }}>DICAS DE MELHORIA</p>
-            {analysis.tips.map((tip, i) => <TipCard key={i} type={tip.type} text={tip.text} />)}
-          </div>
-
-          {/* Replay telemetry */}
-          {!isCombined && targetPts?.length > 0 && userPts?.length > 1 && (
-            <ReplayChart
-              targetPts={targetPts}
-              userPts={userPts}
-              bestPts={bestPtsRef.current}
-              segments={analysis.segments}
-              pedalType={pedalType}
-              score={analysis.overall}
-            />
-          )}
-
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 14 }}>
-            <button onClick={startRun} style={{ padding: '8px 20px', fontSize: 12, borderRadius: 8, fontWeight: 500, border: '1px solid var(--accent-throttle)', background: 'var(--accent-throttle-glow)', color: 'var(--accent-throttle)', cursor: 'pointer' }}>Tentar de novo</button>
-            <button onClick={() => { setShowFeedback(false); onBack(); }} style={btnS}>Outro exercício</button>
-            <div style={{ flex: 1 }} />
-            <button onClick={() => {
-              const hist = (sessionLog || []).filter(e => e.exId === exercise.id);
-              const best = hist.length > 0 ? Math.max(...hist.map(e => e.score)) : analysis.overall;
-              const prev = hist.length > 1 ? hist.slice(1) : [];
-              let trend = 0;
-              if (prev.length >= 2) {
-                const r = prev.slice(0, Math.ceil(prev.length / 2));
-                const o = prev.slice(Math.ceil(prev.length / 2));
-                trend = Math.round(r.reduce((s,e)=>s+e.score,0)/r.length - o.reduce((s,e)=>s+e.score,0)/o.length);
-              }
-              shareResult({
-                exerciseName: exercise.name,
-                score: analysis.overall,
-                grade: analysis.grade,
-                best,
-                attempts: hist.length,
-                segments: analysis.segments,
-                carProfile,
-                trend,
-                isNewBest: analysis.overall >= best,
-              });
-            }} style={{
-              ...btnS, fontSize: 11, padding: '6px 14px',
-              color: '#8e44ad', borderColor: '#8e44ad30', background: '#f3e8f9',
-              fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4,
-            }}>
-              📤 Compartilhar
-            </button>
-          </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

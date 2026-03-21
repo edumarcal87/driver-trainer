@@ -27,7 +27,7 @@ export default function ReplayChart({ targetPts, userPts, bestPts, segments, ped
   const [showBest, setShowBest] = useState(false);
   const [showDiff, setShowDiff] = useState(true);
   const [hoveredSegment, setHoveredSegment] = useState(null);
-  const [speed, setSpeed] = useState(1);
+  const [speed, setSpeed] = useState(0.5);
   const afRef = useRef(null);
   const startRef = useRef(0);
 
