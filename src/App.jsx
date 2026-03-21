@@ -386,7 +386,7 @@ export default function App({ onGoToLanding }) {
   // Non-menu screens: header + screen
   if (screen !== 'menu') {
     return (
-      <div style={{ maxWidth: 1000, width: '100%' }}>
+      <div style={{ maxWidth: 1140, width: '100%' }}>
         <GlobalHeader />
         {renderScreen()}
       </div>
@@ -427,7 +427,7 @@ export default function App({ onGoToLanding }) {
   return (
     <>
       {showOnboarding && <OnboardingTour show={showOnboarding} onComplete={() => setShowOnboarding(false)} />}
-      {badgeToast && <BadgeToast badge={badgeToast} onDismiss={() => setBadgeToast(null)} />}
+      {badgeToast && <BadgeToast badge={badgeToast} onDismiss={() => setBadgeToast(null)} onNavigate={() => setScreen('badges')} />}
       <div style={{ maxWidth: 1140, width: '100%' }}>
       <div style={{ position: 'relative', zIndex: 900 }}>
         <GlobalHeader />

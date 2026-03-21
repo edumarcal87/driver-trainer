@@ -77,7 +77,7 @@ export default function GamepadDiagnostics({ onBack, pedalConfigs }) {
   const profile = WHEEL_PROFILES.find(p => p.id === selectedProfile);
 
   return (
-    <div style={{ maxWidth: 720, width: '100%' }}>
+    <div style={{ maxWidth: 1100, width: '100%' }}>
       <div className="animate-in" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1.25rem' }}>
         <button onClick={() => { onBack(); }} style={btn}>← VOLTAR</button>
         <h2 style={{ fontSize: 18, fontWeight: 600, fontFamily: 'var(--font-display)', flex: 1 }}>Diagnóstico de Gamepad</h2>

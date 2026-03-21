@@ -104,7 +104,7 @@ export default function CommunityScreen({ onBack, onStartExercise, onLogin }) {
 
   if (!isSupabaseConfigured()) {
     return (
-      <div style={{ maxWidth: 720, width: '100%' }}>
+      <div style={{ maxWidth: 1100, width: '100%' }}>
         <div className="animate-in" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1.25rem' }}>
           <button onClick={onBack} style={btn}>← VOLTAR</button>
           <h2 style={{ fontSize: 18, fontWeight: 600, fontFamily: 'var(--font-display)' }}>Comunidade</h2>
@@ -118,7 +118,7 @@ export default function CommunityScreen({ onBack, onStartExercise, onLogin }) {
   }
 
   return (
-    <div style={{ maxWidth: 720, width: '100%' }}>
+    <div style={{ maxWidth: 1100, width: '100%' }}>
       <div className="animate-in" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1.25rem' }}>
         <button onClick={onBack} style={btn}>← VOLTAR</button>
         <h2 style={{ fontSize: 18, fontWeight: 600, fontFamily: 'var(--font-display)', flex: 1 }}>Comunidade</h2>

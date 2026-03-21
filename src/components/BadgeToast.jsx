@@ -5,7 +5,7 @@ import { RARITY } from '../data/badges';
  * Shows an animated toast when a new badge is unlocked.
  * Props: badge (object), onDismiss (function)
  */
-export default function BadgeToast({ badge, onDismiss }) {
+export default function BadgeToast({ badge, onDismiss, onNavigate }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -17,6 +17,14 @@ export default function BadgeToast({ badge, onDismiss }) {
     }, 4000);
     return () => clearTimeout(timer);
   }, [badge]);
+
+  const handleClick = () => {
+    setVisible(false);
+    setTimeout(() => {
+      onDismiss?.();
+      onNavigate?.();
+    }, 300);
+  };
 
   if (!badge) return null;
   const rarity = RARITY[badge.rarity] || RARITY.common;
@@ -33,7 +41,7 @@ export default function BadgeToast({ badge, onDismiss }) {
         background: '#fff', border: `2px solid ${rarity.color}30`, borderRadius: 14,
         boxShadow: `0 8px 32px rgba(0,0,0,0.12), 0 0 0 1px ${rarity.color}10`,
         maxWidth: 320, cursor: 'pointer',
-      }} onClick={onDismiss}>
+      }} onClick={handleClick}>
         <span style={{ fontSize: 28, animation: 'badge-pop .5s cubic-bezier(.4,0,.2,1) both', animationDelay: '.2s' }}>{badge.icon}</span>
         <div>
           <p style={{ fontSize: 9, fontFamily: "'Barlow Condensed', sans-serif", color: rarity.color, fontWeight: 600, letterSpacing: '.5px' }}>
@@ -43,6 +51,7 @@ export default function BadgeToast({ badge, onDismiss }) {
             {badge.name}
           </p>
           <p style={{ fontSize: 10, color: '#5a5a5a', marginTop: 1 }}>{badge.desc}</p>
+          <p style={{ fontSize: 9, color: rarity.color, marginTop: 4, fontWeight: 600 }}>Ver conquistas →</p>
         </div>
       </div>
 

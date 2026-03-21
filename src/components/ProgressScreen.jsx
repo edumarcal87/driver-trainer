@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { analyzeSession } from '../utils/scoring';
 import { exportSessionPDF } from '../utils/pdfExport';
 import { CAR_PROFILES } from '../data/carProfiles';
+import { shareSessionResult } from '../utils/shareCard';
 import { GradeDisplay, StatCard, TipCard, SegmentBar } from './UI';
 
 const btn = { padding: '6px 14px', fontSize: 12, borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-body)' };
@@ -137,7 +138,7 @@ export default function ProgressScreen({ onBack, sessionHistory, carProfile, set
   const availableTypes = useMemo(() => { const ts = new Set(profiledHistory.map(e => e.pedal || 'brake')); return INPUT_TYPES.filter(t => t.key === 'all' || ts.has(t.key)); }, [profiledHistory]);
 
   if (!insights || sessionHistory.length === 0) {
-    return (<div style={{ maxWidth: 720, width: '100%' }}>
+    return (<div style={{ maxWidth: 1100, width: '100%' }}>
       <div className="animate-in" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1.5rem' }}>
         <button onClick={onBack} style={btn}>← VOLTAR</button><h2 style={{ fontSize: 18, fontWeight: 600, fontFamily: 'var(--font-display)' }}>Evolução da sessão</h2></div>
       <div style={{ ...card, textAlign: 'center', padding: '3rem' }}><p style={{ fontSize: 40, marginBottom: 12 }}>📊</p><p style={{ fontSize: 14, color: 'var(--text-secondary)', fontFamily: 'var(--font-display)' }}>Nenhum exercício realizado ainda</p></div></div>);
@@ -147,14 +148,32 @@ export default function ProgressScreen({ onBack, sessionHistory, carProfile, set
   const tabColor = PEDAL_HEX[activeTab] || '#2980b9';
 
   return (
-    <div style={{ maxWidth: 720, width: '100%' }}>
+    <div style={{ maxWidth: 1100, width: '100%' }}>
       <div className="animate-in" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1.25rem' }}>
         <button onClick={onBack} style={btn}>← VOLTAR</button>
         <h2 style={{ fontSize: 18, fontWeight: 600, fontFamily: 'var(--font-display)', flex: 1 }}>Evolução da sessão</h2>
         <button onClick={() => exportSessionPDF(sessionHistory, insights)} style={{
           ...btn, borderColor: '#8e44ad40', color: '#8e44ad', fontWeight: 600,
         }}>
-          📄 Exportar PDF
+          📄 PDF
+        </button>
+        <button onClick={() => {
+          const topEx = typeExTrends.sort((a, b) => b.avg - a.avg).slice(0, 5).map(e => ({ name: e.name, avg: e.avg, best: e.best, attempts: e.attempts }));
+          const profileObj = profileFilter !== 'all' ? CAR_PROFILES.find(p => p.id === profileFilter) : null;
+          shareSessionResult({
+            avg: typeAvg,
+            best: typeBest,
+            grade,
+            totalAttempts: filteredHistory.length,
+            totalExercises: typeExTrends.length,
+            topExercises: topEx,
+            carProfile: profileObj,
+            profileFilter,
+          });
+        }} style={{
+          ...btn, borderColor: '#2980b940', color: '#2980b9', fontWeight: 600,
+        }}>
+          📤 Compartilhar
         </button>
       </div>
 

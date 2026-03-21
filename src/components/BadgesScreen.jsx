@@ -21,7 +21,7 @@ export default function BadgesScreen({ onBack, sessionLog }) {
   const pct = BADGES.length > 0 ? Math.round((unlocked.length / BADGES.length) * 100) : 0;
 
   return (
-    <div style={{ maxWidth: 720, width: '100%' }}>
+    <div style={{ maxWidth: 1100, width: '100%' }}>
       {/* Header */}
       <div className="animate-in" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1.25rem' }}>
         <button onClick={onBack} style={btn}>← VOLTAR</button>

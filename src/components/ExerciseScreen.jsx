@@ -337,7 +337,7 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
   const INPUT_LABELS = { brake: 'FREIO', throttle: 'ACEL', clutch: 'EMBR', steering: 'VOLANTE', gear: 'MARCHA' };
 
   return (
-    <div style={{ maxWidth: 720, width: '100%' }}>
+    <div style={{ maxWidth: 1100, width: '100%' }}>
       {/* Tutorial overlay */}
       {showTutorial && (
         <TutorialOverlay

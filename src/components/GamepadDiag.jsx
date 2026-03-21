@@ -42,7 +42,7 @@ export default function GamepadDiag() {
   };
 
   return (
-    <div style={{ maxWidth: 700, margin: '0 auto', padding: 20, fontFamily: 'monospace', fontSize: 13 }}>
+    <div style={{ maxWidth: 1100, margin: '0 auto', padding: 20, fontFamily: 'monospace', fontSize: 13 }}>
       <h1 style={{ fontSize: 20, marginBottom: 8 }}>Gamepad Diagnostic</h1>
       
       {!gpInfo ? (

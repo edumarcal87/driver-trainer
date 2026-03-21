@@ -65,7 +65,7 @@ export default function ConfigScreen({ onBack, gpConnected, gpName, pedalConfigs
   const updateManual = (pedal, field, value) => setPedalConfigs(prev => ({ ...prev, [pedal]: { ...prev[pedal], [field]: value } }));
 
   return (
-    <div style={{ maxWidth: 720, width: '100%' }}>
+    <div style={{ maxWidth: 1100, width: '100%' }}>
       <div className="animate-in" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1.5rem' }}>
         <button onClick={onBack} style={btn}>← VOLTAR</button>
         <h2 style={{ fontSize: 18, fontWeight: 600, fontFamily: 'var(--font-display)' }}>Configuração dos pedais</h2>

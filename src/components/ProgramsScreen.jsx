@@ -44,7 +44,7 @@ export default function ProgramsScreen({ onBack, onStartSession, sessionLog, ini
   // ── Program list ──
   if (!selectedProgram) {
     return (
-      <div style={{ maxWidth: 720, width: '100%' }}>
+      <div style={{ maxWidth: 1100, width: '100%' }}>
         <div className="animate-in" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1.25rem' }}>
           <button onClick={onBack} style={btn}>← VOLTAR</button>
           <h2 style={{ fontSize: 18, fontWeight: 600, fontFamily: 'var(--font-display)', flex: 1 }}>Programas de Treino</h2>
@@ -106,7 +106,7 @@ export default function ProgramsScreen({ onBack, onStartSession, sessionLog, ini
   const current = findCurrentSession(prog, sessionLog);
 
   return (
-    <div style={{ maxWidth: 720, width: '100%' }}>
+    <div style={{ maxWidth: 1100, width: '100%' }}>
       <div className="animate-in" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1.25rem' }}>
         <button onClick={() => setSelectedProgram(null)} style={btn}>← PROGRAMAS</button>
         <div style={{ flex: 1 }}>
