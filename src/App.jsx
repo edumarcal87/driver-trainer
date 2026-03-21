@@ -362,7 +362,7 @@ export default function App({ onGoToLanding }) {
   // Non-menu screens: header + screen
   if (screen !== 'menu') {
     return (
-      <div style={{ maxWidth: 780, width: '100%' }}>
+      <div style={{ maxWidth: 1000, width: '100%' }}>
         <GlobalHeader />
         {renderScreen()}
       </div>
@@ -403,7 +403,7 @@ export default function App({ onGoToLanding }) {
   return (
     <>
       {showOnboarding && <OnboardingTour show={showOnboarding} onComplete={() => setShowOnboarding(false)} />}
-      <div style={{ maxWidth: 900, width: '100%' }}>
+      <div style={{ maxWidth: 1140, width: '100%' }}>
       <div style={{ position: 'relative', zIndex: 900 }}>
         <GlobalHeader />
       </div>
@@ -431,15 +431,15 @@ export default function App({ onGoToLanding }) {
               <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)', letterSpacing: '.3px' }}>TREINO LIVRE</span>
               <span style={{ fontSize: 8, padding: '2px 8px', borderRadius: 6, background: '#27ae6012', color: '#27ae60', fontWeight: 700, fontFamily: 'var(--font-mono)', letterSpacing: '.3px' }}>GRATUITO</span>
             </div>
-            <div className="grid-2col" style={{ gap: 6, marginBottom: 14 }}>
+            <div className="grid-3col" style={{ gap: 5, marginBottom: 14 }}>
               {EXERCISE_CATEGORIES.map(cat => {
                 const count = exercises.filter(ex => !ex.track && (ex.pedal || 'brake') === cat.key).length;
                 if (count === 0) return null;
                 return (
                   <div key={cat.key} onClick={() => { const el = document.getElementById(`cat-${cat.key}`); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
-                    style={{ padding: '10px 12px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', borderTop: `2.5px solid ${cat.color}`, cursor: 'pointer', boxShadow: 'var(--shadow-card)', transition: 'border-color .15s' }}>
-                    <span style={{ fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-display)' }}>{cat.label}</span>
-                    <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{count} exercícios</p>
+                    style={{ padding: '6px 10px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, borderLeft: `3px solid ${cat.color}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'border-color .15s' }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>{cat.label}</span>
+                    <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{count}</span>
                   </div>
                 );
               })}

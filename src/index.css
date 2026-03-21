@@ -173,7 +173,7 @@ input[type="checkbox"] {
 /* ═══ Responsive layout classes ═══ */
 .layout-main {
   display: grid;
-  grid-template-columns: 1fr 220px;
+  grid-template-columns: 1fr 240px;
   gap: 0;
 }
 .layout-left {
@@ -189,9 +189,13 @@ input[type="checkbox"] {
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
+.grid-3col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
 .grid-exercises {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 10px;
 }
 
@@ -225,9 +229,12 @@ input[type="checkbox"] {
     margin-top: 12px;
   }
 
-  /* 2-col grids → single column on small screens */
+  /* 2-col and 3-col grids → single column on small screens */
   .grid-2col {
     grid-template-columns: 1fr;
+  }
+  .grid-3col {
+    grid-template-columns: 1fr 1fr;
   }
 
   /* Exercise cards: single column */
@@ -262,7 +269,10 @@ input[type="checkbox"] {
 /* ═══ Tablet: 768px - 1024px ═══ */
 @media (min-width: 768px) and (max-width: 1024px) {
   .layout-main {
-    grid-template-columns: 1fr 200px;
+    grid-template-columns: 1fr 210px;
+  }
+  .grid-3col {
+    grid-template-columns: 1fr 1fr;
   }
   .grid-exercises {
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
