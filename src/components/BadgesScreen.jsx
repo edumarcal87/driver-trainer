@@ -87,29 +87,45 @@ export default function BadgesScreen({ onBack, sessionLog }) {
           const catConfig = BADGE_CATEGORIES[badge.category];
           return (
             <div key={badge.id} style={{
-              padding: '12px 14px', background: isUnlocked ? 'var(--bg-card)' : 'var(--bg-inset)',
-              border: `1.5px solid ${isUnlocked ? rarity.color + '30' : 'var(--border)'}`,
-              borderRadius: 'var(--radius-lg)', boxShadow: isUnlocked ? 'var(--shadow-card)' : 'none',
-              opacity: isUnlocked ? 1 : 0.55, transition: 'all .15s',
+              padding: '12px 14px',
+              background: isUnlocked ? 'var(--bg-card)' : '#f0efe8',
+              border: `1.5px solid ${isUnlocked ? rarity.color + '40' : '#e0dfd8'}`,
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: isUnlocked ? `0 2px 10px ${rarity.color}15` : 'none',
+              filter: isUnlocked ? 'none' : 'grayscale(1)',
+              opacity: isUnlocked ? 1 : 0.5,
+              transition: 'all .2s',
+              position: 'relative',
             }}>
+              {/* Unlocked glow accent */}
+              {isUnlocked && (
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: rarity.color, borderRadius: '12px 12px 0 0' }} />
+              )}
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ fontSize: 24, filter: isUnlocked ? 'none' : 'grayscale(1)', lineHeight: 1 }}>{badge.icon}</span>
+                <span style={{ fontSize: 26, lineHeight: 1 }}>{badge.icon}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-display)', color: isUnlocked ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+                  <p style={{ fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-display)', color: isUnlocked ? 'var(--text-primary)' : '#b0afa8' }}>
                     {badge.name}
                   </p>
-                  <p style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.3, marginTop: 2 }}>{badge.desc}</p>
+                  <p style={{ fontSize: 10, color: isUnlocked ? 'var(--text-muted)' : '#c0bfb8', lineHeight: 1.3, marginTop: 2 }}>{badge.desc}</p>
                   <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
-                    <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: rarity.bg, color: rarity.color, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
+                    <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: isUnlocked ? rarity.bg : '#eae9e3', color: isUnlocked ? rarity.color : '#b0afa8', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
                       {rarity.label.toUpperCase()}
                     </span>
-                    <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: catConfig?.color + '10', color: catConfig?.color, fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
+                    <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: isUnlocked ? (catConfig?.color + '10') : '#eae9e3', color: isUnlocked ? catConfig?.color : '#b0afa8', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
                       {catConfig?.label}
                     </span>
                   </div>
                 </div>
                 {isUnlocked && (
-                  <span style={{ fontSize: 12, color: '#27ae60' }}>✓</span>
+                  <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#27ae6015', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <span style={{ fontSize: 10, color: '#27ae60' }}>✓</span>
+                  </div>
+                )}
+                {!isUnlocked && (
+                  <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#e8e7e0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <span style={{ fontSize: 10, color: '#c0bfb8' }}>🔒</span>
+                  </div>
                 )}
               </div>
             </div>
