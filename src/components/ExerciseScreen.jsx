@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Chart from './Chart';
 import CombinedChart from './CombinedChart';
+import ReplayChart from './ReplayChart';
 import TutorialOverlay from './TutorialOverlay';
 import { PedalBar, DifficultyDots, Legend, GradeDisplay, StatCard, SegmentBar, TipCard } from './UI';
 import { makeCurvePoints, calcScore, analyzePerformance } from '../utils/scoring';
@@ -70,6 +71,7 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
   const runRef = useRef(false), startRef = useRef(0), afRef = useRef(null);
   // Single refs
   const userRef = useRef([]), inputRef = useRef(initVal);
+  const bestPtsRef = useRef(null); // Stores the user points from best attempt
   // Combined refs
   const userMapRef = useRef({}), inputsRef = useRef({});
   const keysRef = useRef({ up: false, down: false, left: false, right: false, shiftUp: false, shiftDown: false });
@@ -288,6 +290,9 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
         const s = calcScore(targetPts, userRef.current);
         const a = analyzePerformance(targetPts, userRef.current, exercise.name);
         setScore(s); setAnalysis(a); setShowFeedback(true);
+        // Save as best attempt if it beats current best
+        const prevBest = sessionLog.filter(e => e.exId === exercise.id).reduce((mx, e) => Math.max(mx, e.score), 0);
+        if (s >= prevBest) bestPtsRef.current = [...userRef.current];
         onResult(exercise.id, s, a);
       }
       return;
@@ -724,7 +729,19 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
             {analysis.tips.map((tip, i) => <TipCard key={i} type={tip.type} text={tip.text} />)}
           </div>
 
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {/* Replay telemetry */}
+          {!isCombined && targetPts?.length > 0 && userPts?.length > 1 && (
+            <ReplayChart
+              targetPts={targetPts}
+              userPts={userPts}
+              bestPts={bestPtsRef.current}
+              segments={analysis.segments}
+              pedalType={pedalType}
+              score={analysis.overall}
+            />
+          )}
+
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 14 }}>
             <button onClick={startRun} style={{ padding: '8px 20px', fontSize: 12, borderRadius: 8, fontWeight: 500, border: '1px solid var(--accent-throttle)', background: 'var(--accent-throttle-glow)', color: 'var(--accent-throttle)', cursor: 'pointer' }}>Tentar de novo</button>
             <button onClick={() => { setShowFeedback(false); onBack(); }} style={btnS}>Outro exercício</button>
             <div style={{ flex: 1 }} />
