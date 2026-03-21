@@ -32,7 +32,7 @@ export default function ReplayChart({ targetPts, userPts, bestPts, segments, ped
   const startRef = useRef(0);
 
   const accent = COLORS[pedalType] || COLORS.brake;
-  const W = 640, H = 220, PAD = { top: 24, right: 16, bottom: 32, left: 42 };
+  const W = 640, H = 180, PAD = { top: 20, right: 12, bottom: 28, left: 36 };
   const cw = W - PAD.left - PAD.right;
   const ch = H - PAD.top - PAD.bottom;
 
@@ -61,7 +61,7 @@ export default function ReplayChart({ targetPts, userPts, bestPts, segments, ped
     ctx.clearRect(0, 0, W, H);
 
     // Background
-    ctx.fillStyle = '#fafaf8';
+    ctx.fillStyle = '#f5f4ef';
     ctx.fillRect(PAD.left, PAD.top, cw, ch);
 
     // Grid lines
@@ -194,23 +194,23 @@ export default function ReplayChart({ targetPts, userPts, bestPts, segments, ped
   const btn = { padding: '5px 12px', fontSize: 10, borderRadius: 8, border: '1.5px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-condensed)', fontWeight: 600 };
 
   return (
-    <div style={{ marginTop: 14 }}>
+    <div>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-        <span style={{ fontSize: 11, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.5px', fontWeight: 600 }}>REPLAY DA TELEMETRIA</span>
+        <span style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.3px', fontWeight: 600 }}>REPLAY DA TELEMETRIA</span>
         <div style={{ display: 'flex', gap: 4 }}>
           <button onClick={() => { setPlayProgress(0); setPlaying(true); }} style={{ ...btn, borderColor: playing ? accent + '40' : 'var(--border)', color: playing ? accent : 'var(--text-secondary)' }}>
-            {playing ? '⏸ PAUSAR' : '▶ REPLAY'}
+            {playing ? '⏸' : '▶'} REPLAY
           </button>
-          <button onClick={() => setSpeed(speed === 1 ? 0.5 : speed === 0.5 ? 2 : 1)} style={{ ...btn, minWidth: 42 }}>
-            {speed === 1 ? '1x' : speed === 0.5 ? '0.5x' : '2x'}
+          <button onClick={() => setSpeed(speed === 0.5 ? 1 : speed === 1 ? 2 : 0.5)} style={{ ...btn, minWidth: 38 }}>
+            {speed === 0.5 ? '0.5x' : speed === 1 ? '1x' : '2x'}
           </button>
         </div>
       </div>
 
       {/* Canvas */}
-      <div style={{ border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', background: '#fafaf8' }}>
-        <canvas ref={canvasRef} style={{ width: '100%', height: 220, display: 'block' }} />
+      <div style={{ borderRadius: 10, overflow: 'hidden', background: 'var(--bg-inset)', border: '1px solid var(--border)' }}>
+        <canvas ref={canvasRef} style={{ width: '100%', height: 180, display: 'block' }} />
       </div>
 
       {/* Controls */}
@@ -235,39 +235,6 @@ export default function ReplayChart({ targetPts, userPts, bestPts, segments, ped
         </div>
       </div>
 
-      {/* Segment analysis */}
-      {segments?.length > 0 && (
-        <div style={{ marginTop: 10 }}>
-          <span style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.3px' }}>ONDE VOCÊ PERDEU PONTOS</span>
-          <div style={{ display: 'flex', gap: 4, marginTop: 6, flexWrap: 'wrap' }}>
-            {segments.map((seg, i) => {
-              const isLow = seg.score < 60;
-              const isMid = seg.score >= 60 && seg.score < 80;
-              const color = isLow ? '#e74c3c' : isMid ? '#f39c12' : '#27ae60';
-              return (
-                <div key={seg.key}
-                  onMouseEnter={() => setHoveredSegment(i)}
-                  onMouseLeave={() => setHoveredSegment(null)}
-                  style={{
-                    padding: '6px 10px', borderRadius: 8, cursor: 'pointer',
-                    border: `1.5px solid ${hoveredSegment === i ? color : 'var(--border)'}`,
-                    background: hoveredSegment === i ? color + '08' : 'var(--bg-card)',
-                    transition: 'all .15s', flex: '1 1 auto', minWidth: 80,
-                  }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                    <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-primary)' }}>{seg.label}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)', color }}>{seg.score}%</span>
-                  </div>
-                  <div style={{ height: 3, background: 'var(--bg-inset)', borderRadius: 2 }}>
-                    <div style={{ width: `${seg.score}%`, height: '100%', background: color, borderRadius: 2 }} />
-                  </div>
-                  {isLow && <p style={{ fontSize: 9, color: '#e74c3c', marginTop: 3 }}>{seg.bias === 'high' ? '↑ Pressão demais' : seg.bias === 'low' ? '↓ Pressão insuficiente' : '↔ Timing errado'}</p>}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

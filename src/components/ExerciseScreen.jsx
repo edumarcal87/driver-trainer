@@ -714,7 +714,7 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
 
                 {/* Replay chart */}
                 {!isCombined && targetPts?.length > 0 && userPts?.length > 1 && (
-                  <div style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-card)', overflow: 'hidden' }}>
+                  <div style={{ padding: '12px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-card)' }}>
                     <ReplayChart
                       targetPts={targetPts}
                       userPts={userPts}
