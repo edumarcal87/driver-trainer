@@ -15,7 +15,10 @@ import ProgramsScreen from './components/ProgramsScreen';
 import ProgramSessionScreen from './components/ProgramSessionScreen';
 import GamepadDiagnostics from './components/GamepadDiagnostics';
 import CommunityScreen from './components/CommunityScreen';
+import BadgesScreen from './components/BadgesScreen';
+import BadgeToast from './components/BadgeToast';
 import OnboardingTour, { isOnboardingDone } from './components/OnboardingTour';
+import { evaluateBadges, getStoredBadges, storeBadges } from './data/badges';
 import UserMenu from './components/UserMenu';
 import PremiumGate from './components/PremiumGate';
 import SetupWizard from './components/SetupWizard';
@@ -155,6 +158,8 @@ export default function App({ onGoToLanding }) {
   const [telemFile, setTelemFile] = useState('');
   const [sessionLog, setSessionLog] = useState(() => loadStored('sessionLog', []));
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [badgeToast, setBadgeToast] = useState(null);
+  const [badgeQueue, setBadgeQueue] = useState([]);
 
   useEffect(() => { try { localStorage.setItem('bt_pedalConfigs', JSON.stringify(pedalConfigs)); } catch {} }, [pedalConfigs]);
   useEffect(() => { try { localStorage.setItem('bt_bests', JSON.stringify(bests)); } catch {} }, [bests]);
@@ -179,6 +184,14 @@ export default function App({ onGoToLanding }) {
       return () => clearTimeout(timer);
     }
   }, [screen]);
+
+  // Badge toast queue — show one at a time
+  useEffect(() => {
+    if (!badgeToast && badgeQueue.length > 0) {
+      setBadgeToast(badgeQueue[0]);
+      setBadgeQueue(q => q.slice(1));
+    }
+  }, [badgeToast, badgeQueue]);
 
   // Ranking sidebar state (must be before any early returns)
   const [sidebarBoard, setSidebarBoard] = useState([]);
@@ -272,7 +285,17 @@ export default function App({ onGoToLanding }) {
         }
       }).catch(() => {});
     }
-  }, [exercises, carProfile, user?.id, profile]);
+
+    // Evaluate badges
+    const updatedLog = [...sessionLog, logEntry];
+    const prevBadgeIds = getStoredBadges();
+    const { newlyUnlocked } = evaluateBadges(updatedLog, prevBadgeIds);
+    if (newlyUnlocked.length > 0) {
+      const allUnlockedIds = [...prevBadgeIds, ...newlyUnlocked.map(b => b.id)];
+      storeBadges(allUnlockedIds);
+      setBadgeQueue(q => [...q, ...newlyUnlocked]);
+    }
+  }, [exercises, carProfile, user?.id, profile, sessionLog]);
 
   const handleFile = useCallback(file => {
     const r = new FileReader();
@@ -356,6 +379,7 @@ export default function App({ onGoToLanding }) {
       </PremiumGate>
     );
     if (screen === 'community') return <CommunityScreen onBack={() => setScreen('menu')} onStartExercise={(ex) => { setSelectedEx(ex); setScreen('exercise'); }} onLogin={onGoToLanding} />;
+    if (screen === 'badges') return <BadgesScreen onBack={() => setScreen('menu')} sessionLog={sessionLog} />;
     return null; // menu renders below
   };
 
@@ -403,6 +427,7 @@ export default function App({ onGoToLanding }) {
   return (
     <>
       {showOnboarding && <OnboardingTour show={showOnboarding} onComplete={() => setShowOnboarding(false)} />}
+      {badgeToast && <BadgeToast badge={badgeToast} onDismiss={() => setBadgeToast(null)} />}
       <div style={{ maxWidth: 1140, width: '100%' }}>
       <div style={{ position: 'relative', zIndex: 900 }}>
         <GlobalHeader />
@@ -421,6 +446,7 @@ export default function App({ onGoToLanding }) {
               </div>
               <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{totalAttempts}x</span>
               <button onClick={() => setScreen('progress')} style={{ ...btn, borderColor: '#8e44ad30', color: '#8e44ad', fontWeight: 600, fontSize: 10, padding: '4px 10px', marginLeft: 'auto' }}>EVOLUÇÃO</button>
+              <button onClick={() => setScreen('badges')} style={{ ...btn, borderColor: '#f1c40f40', color: '#b7950b', fontWeight: 600, fontSize: 10, padding: '4px 10px' }}>🏅 CONQUISTAS</button>
             </div>
           )}
 
