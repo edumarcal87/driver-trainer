@@ -84,6 +84,23 @@ const SIM_GUIDES = [
     ],
     columns: 'Brake, Throttle, Speed, Gear, vCar',
   },
+  {
+    id: 'f125', name: 'EA Sports F1 25', icon: '🏎️', color: '#e71c24',
+    tool: 'Sim Racing Telemetry (SRT)',
+    toolUrl: 'https://www.simracingtelemetry.com/',
+    altTool: 'Telemetry Tool (gratuito)',
+    altToolUrl: 'https://telemetrytool.com/',
+    steps: [
+      'No F1 25, vá em Configurações → Telemetria → Ative "UDP Telemetry" → On.',
+      'Configure o UDP IP Address para o IP do seu PC (127.0.0.1 se for local).',
+      'Mantenha a porta UDP padrão (20777) e Send Rate em 20Hz.',
+      'Abra o SRT (Sim Racing Telemetry) no PC e inicie a gravação. Faça voltas completas no jogo.',
+      'Após a sessão, exporte o CSV pelo SRT (Share → Export to CSV).',
+      'Alternativa gratuita: use o Telemetry Tool — suporta F1 25 nativamente com export CSV.',
+    ],
+    note: 'O F1 25 funciona via UDP (não gera arquivo local). Precisa de um app intermediário para gravar e exportar CSV. Funciona também no PS5 e Xbox (mesma rede Wi-Fi).',
+    columns: 'Brake, Throttle, Speed, Gear, RPM, LapDistance',
+  },
 ];
 
 const FAQ_ITEMS = [
@@ -227,6 +244,13 @@ export default function TelemetryImportScreen({ onBack, onExercisesCreated }) {
 
                         {/* Expected columns */}
                         <p style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 8, fontFamily: 'var(--font-mono)' }}>Colunas esperadas: {sim.columns}</p>
+
+                        {/* Special note */}
+                        {sim.note && (
+                          <div style={{ marginTop: 8, padding: '8px 10px', background: '#f39c1208', border: '1px solid #f39c1220', borderRadius: 8 }}>
+                            <p style={{ fontSize: 10, color: '#b7950b', lineHeight: 1.4 }}>💡 {sim.note}</p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

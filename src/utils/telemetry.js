@@ -17,9 +17,9 @@ export function parseCSV(text) {
     brake: ['brake', 'brake%', 'brakeinput', 'brake_input', 'brake (%)', 'brakepedal', 'brake_pct', 'brake_raw'],
     throttle: ['throttle', 'throttle%', 'throttleinput', 'throttle_input', 'throttle (%)', 'gas', 'throttle_pct'],
     steering: ['steering', 'steer', 'steeringangle', 'steering_angle', 'steer_angle', 'steerwheelangle'],
-    gear: ['gear', 'gear_number', 'gears'],
+    gear: ['gear', 'gear_number', 'gears', 'n_gear'],
     speed: ['speed', 'speed (km/h)', 'speed (mph)', 'vcar', 'groundspeed', 'velocity'],
-    dist: ['distance', 'dist', 'lapdist', 'lap_dist', 'lapdistpct', 'trackposition', 'lap distance', 'distfromstart', 'normalizedtrackpos', 'normalised_car_position'],
+    dist: ['distance', 'dist', 'lapdist', 'lap_dist', 'lapdistpct', 'trackposition', 'lap distance', 'distfromstart', 'normalizedtrackpos', 'normalised_car_position', 'lap_distance'],
     time: ['time', 'laptime', 'elapsed', 'timestamp', 'sessiontime', 'lap_time', 'sampledist'],
     lap: ['lap', 'lap_number', 'lapcount', 'lapnumber', 'current_lap'],
     rpm: ['rpm', 'rpms', 'engine_rpm', 'enginerpm'],
@@ -40,6 +40,7 @@ export function parseCSV(text) {
   else if (headerStr.includes('normalizedtrackpos')) sim = 'Assetto Corsa';
   else if (headerStr.includes('vcar') || headerStr.includes('steerwheelangle')) sim = 'rFactor2 / LMU / AMS2';
   else if (headerStr.includes('lap_distance')) sim = 'Sim Racing Telemetry';
+  else if (headerStr.includes('n_gear') || headerStr.includes('drs')) sim = 'F1 25 / EA Sports';
 
   // Detect if row 1 is a units row (non-numeric)
   let dataStart = 1;

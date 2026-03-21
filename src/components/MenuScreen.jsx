@@ -240,7 +240,7 @@ export default function MenuScreen({ sessionLog, bests, history, exercises, carP
                 <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-display)' }}>IMPORTAR TELEMETRIA REAL</span>
                 <span style={{ fontSize: 8, padding: '2px 8px', borderRadius: 6, background: '#f1c40f12', color: '#b7950b', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>PREMIUM</span>
               </div>
-              <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>iRacing · ACC · Assetto Corsa · AMS2 · rFactor2 · Le Mans Ultimate</p>
+              <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>iRacing · ACC · Assetto Corsa · AMS2 · rFactor2 · LMU · F1 25</p>
             </div>
             <span style={{ fontSize: 11, color: '#2980b9', fontWeight: 600, fontFamily: 'var(--font-condensed)' }}>IMPORTAR →</span>
           </div>
