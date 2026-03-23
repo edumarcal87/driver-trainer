@@ -158,7 +158,7 @@ export default function MenuScreen({ sessionLog, bests, history, exercises, carP
           </div>
           <div className="grid-3col" style={{ gap: 5, marginBottom: 14 }}>
             {EXERCISE_CATEGORIES.map(cat => {
-              const count = exercises.filter(ex => !ex.track && (ex.pedal || 'brake') === cat.key).length;
+              const count = exercises.filter(ex => !ex.track && !ex.fromTelemetry && (ex.pedal || 'brake') === cat.key).length;
               if (count === 0) return null;
               return (
                 <div key={cat.key} onClick={() => { const el = document.getElementById(`cat-${cat.key}`); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
@@ -168,6 +168,13 @@ export default function MenuScreen({ sessionLog, bests, history, exercises, carP
                 </div>
               );
             })}
+            {exercises.some(ex => ex.fromTelemetry) && (
+              <div onClick={() => { const el = document.getElementById('cat-telemetry'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+                style={{ padding: '6px 10px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, borderLeft: '3px solid #2980b9', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'border-color .15s' }}>
+                <span style={{ fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>📊 Telemetria Real</span>
+                <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{exercises.filter(ex => ex.fromTelemetry).length}</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -310,7 +317,7 @@ export default function MenuScreen({ sessionLog, bests, history, exercises, carP
           const telemThrottle = telemExercises.filter(ex => ex.pedal === 'throttle');
           const telemCombined = telemExercises.filter(ex => ex.pedal === 'combined');
           return (
-            <div className="animate-in" style={{ scrollMarginTop: 20, marginTop: 24 }}>
+            <div id="cat-telemetry" className="animate-in" style={{ scrollMarginTop: 20, marginTop: 24 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
                 <div style={{ width: 36, height: 36, borderRadius: 10, background: '#2980b912', border: '1.5px solid #2980b925', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ fontSize: 18 }}>📊</span>
