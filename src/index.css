@@ -47,11 +47,40 @@
   --radius-lg: 18px;
   --radius-xl: 24px;
 
-  /* Aliases for component compatibility */
   --bg-panel: var(--bg-card);
-  --bg-deep: #e8e7e0;
-  --border-hover: #cccbc4;
   --accent-target: #27ae60;
+}
+
+/* ═══ Dark Mode ═══ */
+[data-theme="dark"] {
+  --bg-page: #121214;
+  --bg-card: #1c1c1f;
+  --bg-card-hover: #242428;
+  --bg-inset: #18181b;
+  --bg-deep: #0e0e10;
+
+  --text-primary: #e8e6e0;
+  --text-secondary: #a8a6a0;
+  --text-muted: #6a6860;
+
+  --border: #2a2a2e;
+  --border-hover: #3a3a3e;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.15);
+  --shadow-card-hover: 0 2px 8px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.2);
+
+  --accent-brake-light: #3a1a16;
+  --accent-throttle-light: #142e1e;
+  --accent-clutch-light: #332510;
+  --accent-steering-light: #12253a;
+  --accent-combined-light: #2a1838;
+
+  --bg-panel: var(--bg-card);
+}
+
+[data-theme="dark"] body::before {
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(231,76,60,0.015) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(39,174,96,0.015) 0%, transparent 50%);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -74,6 +103,11 @@ body::before {
     radial-gradient(circle at 80% 80%, rgba(39,174,96,0.03) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
+}
+[data-theme="dark"] body::before {
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(231,76,60,0.06) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(39,174,96,0.04) 0%, transparent 50%);
 }
 
 #root {
@@ -118,6 +152,9 @@ input[type="checkbox"] {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb { background: #3a3a3e; }
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover { background: #5a5a5e; }
 
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(16px); }

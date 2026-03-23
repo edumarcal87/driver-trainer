@@ -4,7 +4,7 @@ import UserMenu from './UserMenu';
 
 const btn = { padding: '6px 14px', fontSize: 11, borderRadius: 10, fontWeight: 500, border: '1.5px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-condensed)', letterSpacing: '.3px' };
 
-export default function GlobalHeader({ onNavigate, gpConnected, wheelProfile, onGoToLanding }) {
+export default function GlobalHeader({ onNavigate, gpConnected, wheelProfile, onGoToLanding, isDark, onToggleTheme }) {
   return (
     <div className="global-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', position: 'relative', zIndex: 900 }}>
       <div onClick={() => onNavigate('menu')} style={{ display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer' }}>
@@ -20,9 +20,10 @@ export default function GlobalHeader({ onNavigate, gpConnected, wheelProfile, on
       </div>
       <div className="global-header-right" data-tour="header-right" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <StatusBadge connected={gpConnected} wheelName={wheelProfile?.model?.split(' / ')[0] || (gpConnected ? 'CONECTADO' : '')} />
+        <button onClick={onToggleTheme} title={isDark ? 'Modo claro' : 'Modo escuro'} style={{ ...btn, padding: '7px 10px', fontSize: 14, lineHeight: 1, borderRadius: '50%', width: 36, height: 36 }}>{isDark ? '☀️' : '🌙'}</button>
         <button onClick={() => onNavigate('diagnostics')} title="Diagnóstico de Gamepad" style={{ ...btn, padding: '7px 10px', fontSize: 14, lineHeight: 1, borderRadius: '50%', width: 36, height: 36 }}>🔧</button>
         <button onClick={() => onNavigate('config')} style={{ ...btn, padding: '7px 10px', fontSize: 16, lineHeight: 1, borderRadius: '50%', width: 36, height: 36 }}>⚙</button>
-        <UserMenu onLogin={() => onNavigate('login')} onLogout={onGoToLanding} />
+        <UserMenu onLogin={() => onNavigate('login')} onLogout={onGoToLanding} onNavigate={onNavigate} />
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import { signOut } from '../lib/auth';
 import { useAuth } from '../lib/AuthContext';
 import { getPlanLabel, isPremium } from '../lib/auth';
 
-export default function UserMenu({ onLogin, onLogout }) {
+export default function UserMenu({ onLogin, onLogout, onNavigate }) {
   const { user, profile, isLoggedIn, isPremiumUser } = useAuth();
   const [open, setOpen] = useState(false);
 
@@ -78,6 +78,14 @@ export default function UserMenu({ onLogin, onLogout }) {
                 ⭐ Upgrade para Premium
               </button>
             )}
+
+            <button onClick={() => { setOpen(false); onNavigate?.('profile'); }} style={{
+              width: '100%', padding: '10px 16px', border: 'none', background: 'transparent',
+              fontSize: 12, color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-body)',
+              textAlign: 'left', borderBottom: '1px solid var(--border)',
+            }}>
+              👤 Meu Perfil
+            </button>
 
             <button onClick={async () => { await signOut(); setOpen(false); onLogout?.(); }} style={{
               width: '100%', padding: '10px 16px', border: 'none', background: 'transparent',

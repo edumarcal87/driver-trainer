@@ -58,7 +58,7 @@ export default function LandingPage({ onEnterApp }) {
   const isVisible = (id) => visibleSections[id];
 
   return (
-    <div style={{ fontFamily: "'Barlow', sans-serif", color: '#1a1a1a', background: '#f0efe8', minHeight: '100vh', overflowX: 'hidden' }}>
+    <div style={{ fontFamily: "'Barlow', sans-serif", color: 'var(--text-primary)', background: '#f0efe8', minHeight: '100vh', overflowX: 'hidden' }}>
       {/* ── Navigation ── */}
       <nav style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
@@ -80,9 +80,9 @@ export default function LandingPage({ onEnterApp }) {
             </div>
           </div>
           <div className="landing-nav-links">
-            <a href="#features" style={{ fontSize: 12, color: '#5a5a5a', textDecoration: 'none', padding: '6px 12px', fontWeight: 500 }}>Recursos</a>
-            <a href="#tracks" style={{ fontSize: 12, color: '#5a5a5a', textDecoration: 'none', padding: '6px 12px', fontWeight: 500 }}>Circuitos</a>
-            <a href="#pricing" style={{ fontSize: 12, color: '#5a5a5a', textDecoration: 'none', padding: '6px 12px', fontWeight: 500 }}>Planos</a>
+            <a href="#features" style={{ fontSize: 12, color: 'var(--text-secondary)', textDecoration: 'none', padding: '6px 12px', fontWeight: 500 }}>Recursos</a>
+            <a href="#tracks" style={{ fontSize: 12, color: 'var(--text-secondary)', textDecoration: 'none', padding: '6px 12px', fontWeight: 500 }}>Circuitos</a>
+            <a href="#pricing" style={{ fontSize: 12, color: 'var(--text-secondary)', textDecoration: 'none', padding: '6px 12px', fontWeight: 500 }}>Planos</a>
             <button onClick={onEnterApp} style={{
               padding: '8px 20px', fontSize: 12, borderRadius: 20, fontWeight: 700,
               fontFamily: "'Oxanium', sans-serif", letterSpacing: '.3px',
@@ -129,7 +129,7 @@ export default function LandingPage({ onEnterApp }) {
           </h1>
 
           <p style={{
-            fontSize: 'clamp(14px, 2vw, 18px)', color: '#5a5a5a', maxWidth: 560, margin: '0 auto 32px',
+            fontSize: 'clamp(14px, 2vw, 18px)', color: 'var(--text-secondary)', maxWidth: 560, margin: '0 auto 32px',
             lineHeight: 1.6,
           }}>
             Exercícios de frenagem, aceleração, volante e câmbio com feedback em tempo real.
@@ -152,7 +152,7 @@ export default function LandingPage({ onEnterApp }) {
             <a href="#features" style={{
               padding: '14px 36px', fontSize: 15, borderRadius: 12, fontWeight: 600,
               fontFamily: "'Oxanium', sans-serif",
-              border: '2px solid #e0dfd8', background: '#fff', color: '#5a5a5a',
+              border: '2px solid #e0dfd8', background: 'var(--bg-card)', color: 'var(--text-secondary)',
               cursor: 'pointer', textDecoration: 'none', display: 'inline-block',
             }}>
               SAIBA MAIS ↓
@@ -168,8 +168,8 @@ export default function LandingPage({ onEnterApp }) {
               { num: '10+', label: 'Volantes suportados' },
             ].map(s => (
               <div key={s.label} style={{ textAlign: 'center' }}>
-                <span style={{ fontSize: 28, fontWeight: 700, fontFamily: "'Oxanium', sans-serif", color: '#1a1a1a' }}>{s.num}</span>
-                <p style={{ fontSize: 11, color: '#9a9a90', fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '.5px', marginTop: 2 }}>{s.label.toUpperCase()}</p>
+                <span style={{ fontSize: 28, fontWeight: 700, fontFamily: "'Oxanium', sans-serif", color: 'var(--text-primary)' }}>{s.num}</span>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '.5px', marginTop: 2 }}>{s.label.toUpperCase()}</p>
               </div>
             ))}
           </div>
@@ -191,7 +191,7 @@ export default function LandingPage({ onEnterApp }) {
         <div className="landing-features-grid">
           {FEATURES.map((f, i) => (
             <div key={i} style={{
-              padding: '24px', background: '#fff', borderRadius: 16, border: '1.5px solid #e0dfd8',
+              padding: '24px', background: 'var(--bg-card)', borderRadius: 16, border: '1.5px solid var(--border)',
               boxShadow: '0 1px 3px rgba(0,0,0,0.04)', transition: 'transform .2s, box-shadow .2s',
             }}
               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.06)'; }}
@@ -199,7 +199,7 @@ export default function LandingPage({ onEnterApp }) {
             >
               <span style={{ fontSize: 28 }}>{f.icon}</span>
               <h3 style={{ fontSize: 16, fontWeight: 700, fontFamily: "'Oxanium', sans-serif", marginTop: 12 }}>{f.title}</h3>
-              <p style={{ fontSize: 13, color: '#5a5a5a', marginTop: 6, lineHeight: 1.5 }}>{f.desc}</p>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 6, lineHeight: 1.5 }}>{f.desc}</p>
             </div>
           ))}
         </div>
@@ -207,7 +207,7 @@ export default function LandingPage({ onEnterApp }) {
 
       {/* ── Tracks ── */}
       <section id="tracks" data-animate style={{
-        padding: '80px 24px', background: '#fff',
+        padding: '80px 24px', background: 'var(--bg-card)',
         opacity: isVisible('tracks') ? 1 : 0, transform: isVisible('tracks') ? 'translateY(0)' : 'translateY(30px)',
         transition: 'all .6s cubic-bezier(.4,0,.2,1) .1s',
       }}>
@@ -217,20 +217,20 @@ export default function LandingPage({ onEnterApp }) {
             <h2 style={{ fontSize: 32, fontWeight: 700, fontFamily: "'Oxanium', sans-serif", marginTop: 8 }}>
               Pistas lendárias do automobilismo
             </h2>
-            <p style={{ fontSize: 14, color: '#5a5a5a', marginTop: 8, maxWidth: 500, margin: '8px auto 0' }}>
+            <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 8, maxWidth: 500, margin: '8px auto 0' }}>
               Cada curva baseada em telemetria real. Treine o S do Senna, Eau Rouge e Maggotts-Becketts.
             </p>
           </div>
           <div className="landing-tracks-grid">
             {TRACKS.map((t, i) => (
               <div key={i} style={{
-                padding: '28px 24px', background: '#f0efe8', borderRadius: 16, border: '1.5px solid #e0dfd8',
+                padding: '28px 24px', background: '#f0efe8', borderRadius: 16, border: '1.5px solid var(--border)',
                 textAlign: 'center', position: 'relative', overflow: 'hidden',
               }}>
                 <span style={{ fontSize: 40, display: 'block', marginBottom: 8 }}>{t.flag}</span>
                 <h3 style={{ fontSize: 18, fontWeight: 700, fontFamily: "'Oxanium', sans-serif" }}>{t.name}</h3>
                 <p style={{ fontSize: 20, fontWeight: 700, fontFamily: "'Oxanium', sans-serif", color: '#e74c3c', margin: '8px 0 4px' }}>{t.corners} cenários</p>
-                <p style={{ fontSize: 12, color: '#9a9a90' }}>{t.desc}</p>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t.desc}</p>
               </div>
             ))}
           </div>
@@ -263,7 +263,7 @@ export default function LandingPage({ onEnterApp }) {
                 fontSize: 20, fontWeight: 700, fontFamily: "'Oxanium', sans-serif", color: s.color,
               }}>{s.step}</div>
               <h3 style={{ fontSize: 16, fontWeight: 700, fontFamily: "'Oxanium', sans-serif" }}>{s.title}</h3>
-              <p style={{ fontSize: 13, color: '#5a5a5a', marginTop: 8, lineHeight: 1.5 }}>{s.desc}</p>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8, lineHeight: 1.5 }}>{s.desc}</p>
             </div>
           ))}
         </div>
@@ -271,7 +271,7 @@ export default function LandingPage({ onEnterApp }) {
 
       {/* ── Testimonials ── */}
       <section data-animate id="testimonials" style={{
-        padding: '80px 24px', background: '#fff',
+        padding: '80px 24px', background: 'var(--bg-card)',
         opacity: isVisible('testimonials') ? 1 : 0, transform: isVisible('testimonials') ? 'translateY(0)' : 'translateY(30px)',
         transition: 'all .6s cubic-bezier(.4,0,.2,1)',
       }}>
@@ -284,15 +284,15 @@ export default function LandingPage({ onEnterApp }) {
           </div>
           <div className="landing-testimonials-grid">
             {TESTIMONIALS.map((t, i) => (
-              <div key={i} style={{ padding: '24px', background: '#f0efe8', borderRadius: 16, border: '1.5px solid #e0dfd8' }}>
-                <p style={{ fontSize: 13, color: '#5a5a5a', lineHeight: 1.6, fontStyle: 'italic', marginBottom: 16 }}>"{t.text}"</p>
+              <div key={i} style={{ padding: '24px', background: '#f0efe8', borderRadius: 16, border: '1.5px solid var(--border)' }}>
+                <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, fontStyle: 'italic', marginBottom: 16 }}>"{t.text}"</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#e74c3c15', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: '#e74c3c' }}>
                     {t.name[0]}
                   </div>
                   <div>
                     <p style={{ fontSize: 13, fontWeight: 600 }}>{t.name}</p>
-                    <p style={{ fontSize: 10, color: '#9a9a90' }}>{t.car}</p>
+                    <p style={{ fontSize: 10, color: 'var(--text-muted)' }}>{t.car}</p>
                   </div>
                 </div>
               </div>
@@ -316,7 +316,7 @@ export default function LandingPage({ onEnterApp }) {
         <div className="landing-pricing-grid">
           {PLANS.map((p, i) => (
             <div key={i} style={{
-              padding: '32px 28px', background: '#fff', borderRadius: 20,
+              padding: '32px 28px', background: 'var(--bg-card)', borderRadius: 20,
               border: p.highlight ? '2px solid #f1c40f' : '1.5px solid #e0dfd8',
               boxShadow: p.highlight ? '0 8px 32px rgba(241,196,15,0.12)' : '0 1px 3px rgba(0,0,0,0.04)',
               position: 'relative',
@@ -324,18 +324,18 @@ export default function LandingPage({ onEnterApp }) {
               {p.highlight && (
                 <div style={{
                   position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)',
-                  padding: '4px 16px', borderRadius: 20, background: '#f1c40f', color: '#1a1a1a',
+                  padding: '4px 16px', borderRadius: 20, background: '#f1c40f', color: 'var(--text-primary)',
                   fontSize: 10, fontWeight: 700, fontFamily: "'Oxanium', sans-serif", letterSpacing: '.5px',
                 }}>⭐ MAIS POPULAR</div>
               )}
               <h3 style={{ fontSize: 20, fontWeight: 700, fontFamily: "'Oxanium', sans-serif", color: p.color }}>{p.name}</h3>
               <div style={{ marginTop: 8, marginBottom: 20 }}>
                 <span style={{ fontSize: 36, fontWeight: 700, fontFamily: "'Oxanium', sans-serif" }}>{p.price}</span>
-                <span style={{ fontSize: 14, color: '#9a9a90' }}>{p.period}</span>
+                <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>{p.period}</span>
               </div>
               <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {p.features.map((f, fi) => (
-                  <li key={fi} style={{ fontSize: 13, color: '#5a5a5a', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                  <li key={fi} style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                     <span style={{ color: '#27ae60', fontWeight: 700, flexShrink: 0 }}>✓</span> {f}
                   </li>
                 ))}
@@ -366,7 +366,7 @@ export default function LandingPage({ onEnterApp }) {
         <h2 style={{ fontSize: 32, fontWeight: 700, fontFamily: "'Oxanium', sans-serif", marginBottom: 12 }}>
           Pronto para treinar?
         </h2>
-        <p style={{ fontSize: 15, color: '#5a5a5a', marginBottom: 28, maxWidth: 400, margin: '0 auto 28px' }}>
+        <p style={{ fontSize: 15, color: 'var(--text-secondary)', marginBottom: 28, maxWidth: 400, margin: '0 auto 28px' }}>
           Comece gratuitamente. Sem cartão de crédito. Evolua no seu ritmo.
         </p>
         <button onClick={onEnterApp} style={{
@@ -387,7 +387,7 @@ export default function LandingPage({ onEnterApp }) {
           </div>
           <span style={{ fontSize: 13, fontWeight: 700, fontFamily: "'Oxanium', sans-serif" }}>DRIVER <span style={{ color: '#e74c3c', fontWeight: 300 }}>TRAINER</span></span>
         </div>
-        <p style={{ fontSize: 11, color: '#9a9a90' }}>© 2025 Driver Trainer. Do pedal ao pódio.</p>
+        <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>© 2025 Driver Trainer. Do pedal ao pódio.</p>
       </footer>
     </div>
   );

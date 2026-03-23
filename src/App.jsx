@@ -9,6 +9,7 @@ import { submitToLeaderboard, submitChallengeEntry, getActiveChallenges } from '
 import useGamepad from './hooks/useGamepad';
 import usePersistedState from './hooks/usePersistedState';
 import useBadges from './hooks/useBadges';
+import useTheme from './hooks/useTheme';
 import { getDefaultPedalConfig } from './utils/gamepad';
 
 import GlobalHeader from './components/GlobalHeader';
@@ -22,7 +23,9 @@ import ProgramSessionScreen from './components/ProgramSessionScreen';
 import GamepadDiagnostics from './components/GamepadDiagnostics';
 import CommunityScreen from './components/CommunityScreen';
 import BadgesScreen from './components/BadgesScreen';
+import ProfileScreen from './components/ProfileScreen';
 import BadgeToast from './components/BadgeToast';
+import PublicProfileScreen from './components/PublicProfileScreen';
 import OnboardingTour, { isOnboardingDone } from './components/OnboardingTour';
 import PremiumGate from './components/PremiumGate';
 import SetupWizard from './components/SetupWizard';
@@ -52,6 +55,7 @@ export default function App({ onGoToLanding }) {
   // ── Custom hooks ──
   const gamepad = useGamepad(initialConfigs);
   const { badgeToast, dismissToast, checkBadges } = useBadges(sessionLog);
+  const { isDark, toggleTheme } = useTheme();
 
   // ── Cloud sync ──
   React.useEffect(() => {
@@ -120,6 +124,8 @@ export default function App({ onGoToLanding }) {
       case 'program_session': return activeProgram ? <PremiumGate feature={activeProgram.name} onLogin={() => nav('login')}><ProgramSessionScreen program={activeProgram} weekIdx={activeWeekIdx} sessionIdx={activeSessionIdx} onBack={() => { setInitialProgramForScreen(activeProgram); nav('programs'); }} onResult={handleResult} inputMode={gamepad.inputMode} pedalConfigs={gamepad.pedalConfigs} carProfile={carProfile} sessionLog={sessionLog} shifterConfig={gamepad.shifterConfig} /></PremiumGate> : null;
       case 'community': return <CommunityScreen onBack={back} onStartExercise={openExercise} onLogin={onGoToLanding} />;
       case 'badges': return <BadgesScreen onBack={back} sessionLog={sessionLog} />;
+      case 'profile': return <PublicProfileScreen onBack={back} profile={profile} sessionLog={sessionLog} onNavigate={setScreen} />;
+      case 'profile': return <ProfileScreen onBack={back} sessionLog={sessionLog} />;
       case 'telemetry': return <PremiumGate feature="Importar Telemetria" onLogin={() => nav('login')}><TelemetryImportScreen onBack={back} onExercisesCreated={(exs) => { setExercises([...ALL_EXERCISES, ...exs]); back(); }} /></PremiumGate>;
       default: return null;
     }
@@ -129,7 +135,7 @@ export default function App({ onGoToLanding }) {
   if (screen !== 'menu') {
     return (
       <div style={{ maxWidth: 1140, width: '100%' }}>
-        <GlobalHeader onNavigate={setScreen} gpConnected={gamepad.gpConnected} wheelProfile={gamepad.wheelProfile} onGoToLanding={onGoToLanding} />
+        <GlobalHeader onNavigate={setScreen} gpConnected={gamepad.gpConnected} wheelProfile={gamepad.wheelProfile} onGoToLanding={onGoToLanding} isDark={isDark} onToggleTheme={toggleTheme} />
         {renderScreen()}
       </div>
     );
@@ -142,7 +148,7 @@ export default function App({ onGoToLanding }) {
       {badgeToast && <BadgeToast badge={badgeToast} onDismiss={dismissToast} onNavigate={() => setScreen('badges')} />}
       <div style={{ maxWidth: 1140, width: '100%' }}>
         <div style={{ position: 'relative', zIndex: 900 }}>
-          <GlobalHeader onNavigate={setScreen} gpConnected={gamepad.gpConnected} wheelProfile={gamepad.wheelProfile} onGoToLanding={onGoToLanding} />
+          <GlobalHeader onNavigate={setScreen} gpConnected={gamepad.gpConnected} wheelProfile={gamepad.wheelProfile} onGoToLanding={onGoToLanding} isDark={isDark} onToggleTheme={toggleTheme} />
         </div>
         <MenuScreen
           sessionLog={sessionLog} bests={bests} history={history} exercises={exercises}
