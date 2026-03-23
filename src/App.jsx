@@ -23,9 +23,8 @@ import ProgramSessionScreen from './components/ProgramSessionScreen';
 import GamepadDiagnostics from './components/GamepadDiagnostics';
 import CommunityScreen from './components/CommunityScreen';
 import BadgesScreen from './components/BadgesScreen';
-import ProfileScreen from './components/ProfileScreen';
-import BadgeToast from './components/BadgeToast';
 import PublicProfileScreen from './components/PublicProfileScreen';
+import BadgeToast from './components/BadgeToast';
 import OnboardingTour, { isOnboardingDone } from './components/OnboardingTour';
 import PremiumGate from './components/PremiumGate';
 import SetupWizard from './components/SetupWizard';
@@ -125,7 +124,6 @@ export default function App({ onGoToLanding }) {
       case 'community': return <CommunityScreen onBack={back} onStartExercise={openExercise} onLogin={onGoToLanding} />;
       case 'badges': return <BadgesScreen onBack={back} sessionLog={sessionLog} />;
       case 'profile': return <PublicProfileScreen onBack={back} profile={profile} sessionLog={sessionLog} onNavigate={setScreen} />;
-      case 'profile': return <ProfileScreen onBack={back} sessionLog={sessionLog} />;
       case 'telemetry': return <PremiumGate feature="Importar Telemetria" onLogin={() => nav('login')}><TelemetryImportScreen onBack={back} onExercisesCreated={(exs) => { setExercises([...ALL_EXERCISES, ...exs]); back(); }} /></PremiumGate>;
       default: return null;
     }
