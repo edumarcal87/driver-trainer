@@ -279,7 +279,7 @@ export default function MenuScreen({ sessionLog, bests, history, exercises, carP
           const filterAllowed = { all: true, pedals: ['brake','throttle','combined'].includes(cat.key), pedals_steering: ['brake','throttle','clutch','steering','combined'].includes(cat.key), pedals_steering_gear: true };
           if (!filterAllowed[inputFilter]) return null;
           const catExercises = exercises.filter(ex => {
-            if (ex.track) return false;
+            if (ex.track || ex.fromTelemetry) return false;
             const p = ex.pedal || 'brake';
             if (p !== cat.key) return false;
             if (p === 'combined' && ex.curves && inputFilter !== 'all') {
@@ -301,6 +301,51 @@ export default function MenuScreen({ sessionLog, bests, history, exercises, carP
             </div>
           );
         })}
+
+        {/* Telemetry exercises — separate section */}
+        {(() => {
+          const telemExercises = exercises.filter(ex => ex.fromTelemetry);
+          if (telemExercises.length === 0) return null;
+          const telemBrake = telemExercises.filter(ex => (ex.pedal || 'brake') === 'brake');
+          const telemThrottle = telemExercises.filter(ex => ex.pedal === 'throttle');
+          const telemCombined = telemExercises.filter(ex => ex.pedal === 'combined');
+          return (
+            <div className="animate-in" style={{ scrollMarginTop: 20, marginTop: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: '#2980b912', border: '1.5px solid #2980b925', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: 18 }}>📊</span>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h2 style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)', color: '#2980b9', letterSpacing: '.3px' }}>TELEMETRIA REAL</h2>
+                </div>
+                <span style={{ fontSize: 8, padding: '2px 8px', borderRadius: 6, background: '#f1c40f12', color: '#b7950b', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>PREMIUM</span>
+                <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', background: 'var(--bg-inset)', padding: '3px 10px', borderRadius: 10, border: '1px solid var(--border)' }}>
+                  {telemExercises.length} exercícios
+                </span>
+              </div>
+
+              {[
+                { label: 'FRENAGEM', color: '#e74c3c', icon: '🔴', items: telemBrake },
+                { label: 'ACELERAÇÃO', color: '#27ae60', icon: '🟢', items: telemThrottle },
+                { label: 'COMBINADAS', color: '#8e44ad', icon: '🟣', items: telemCombined },
+              ].map(group => {
+                if (group.items.length === 0) return null;
+                return (
+                  <div key={group.label} style={{ marginBottom: 10 }}>
+                    <p style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: group.color, fontWeight: 600, marginBottom: 6, letterSpacing: '.3px' }}>
+                      {group.icon} {group.label}
+                    </p>
+                    <div className="grid-exercises">
+                      {group.items.map(ex => (
+                        <ExerciseCard key={ex.id} ex={ex} best={bests[ex.id]} attempts={sessionLog.filter(s => s.exId === ex.id).length} onOpen={() => openExercise(ex)} />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
 
         {/* History */}
         {history.length > 0 && (
