@@ -110,6 +110,11 @@ export default function PublicProfileScreen({ onBack, profile, sessionLog, onNav
             {isPremium && <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 6, background: '#f1c40f18', color: '#b7950b', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>PREMIUM</span>}
           </div>
           {memberSince && <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>Membro desde {memberSince}</p>}
+          {!isPremium && (
+            <button style={{ marginTop: 8, padding: '6px 16px', fontSize: 11, borderRadius: 8, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '.3px', border: '1.5px solid #f1c40f', background: '#f1c40f', color: '#1a1a1a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(241,196,15,0.25)' }}>
+              ⭐ UPGRADE PARA PREMIUM
+            </button>
+          )}
           <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
             {unlocked.filter(b => b.rarity === 'legendary' || b.rarity === 'epic').slice(0, 5).map(b => (
               <span key={b.id} title={b.name} style={{ fontSize: 20, cursor: 'default' }}>{b.icon}</span>

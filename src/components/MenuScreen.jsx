@@ -127,7 +127,7 @@ function getNextSession(prog, sessionLog) {
 // ═══════════════════════════════════════
 // MAIN MENU SCREEN
 // ═══════════════════════════════════════
-export default function MenuScreen({ sessionLog, bests, history, exercises, carProfile, setCarProfile, inputFilter, setInputFilter, userId, onNavigate, openExercise, openPrograms }) {
+export default function MenuScreen({ sessionLog, bests, history, exercises, carProfile, setCarProfile, inputFilter, setInputFilter, userId, onNavigate, openExercise, openPrograms, dailyGoals }) {
   const totalAttempts = sessionLog.length;
   const sessionAvg = totalAttempts > 0 ? Math.round(sessionLog.reduce((s, e) => s + e.score, 0) / totalAttempts) : 0;
 
@@ -136,18 +136,42 @@ export default function MenuScreen({ sessionLog, bests, history, exercises, carP
       {/* ═══ LEFT: Main content ═══ */}
       <div className="layout-left">
 
-        {totalAttempts > 0 && (
-          <div className="animate-in session-bar" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', marginBottom: 12, boxShadow: 'var(--shadow-card)' }}>
-            <span style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.5px' }}>SESSÃO:</span>
-            <span style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)', color: sessionAvg >= 70 ? 'var(--accent-throttle)' : 'var(--accent-clutch)' }}>{sessionAvg}%</span>
-            <div style={{ flex: 1, maxWidth: 140, height: 4, background: 'var(--bg-inset)', borderRadius: 2, overflow: 'hidden', border: '1px solid var(--border)' }}>
-              <div style={{ width: `${sessionAvg}%`, height: '100%', background: sessionAvg >= 70 ? '#27ae60' : '#f39c12', borderRadius: 2 }} />
+        {/* Daily goal + session bar */}
+        <div className="animate-in" style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+          {/* Daily goal mini */}
+          {dailyGoals && (
+            <div onClick={() => onNavigate('progress')} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'var(--bg-card)', border: `1.5px solid ${dailyGoals.todayCompleted ? '#27ae6030' : 'var(--border)'}`, borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-card)', cursor: 'pointer' }}>
+              <div style={{ position: 'relative', width: 32, height: 32 }}>
+                <svg width="32" height="32" viewBox="0 0 32 32">
+                  <circle cx="16" cy="16" r="13" fill="none" stroke="var(--bg-inset)" strokeWidth="3" />
+                  <circle cx="16" cy="16" r="13" fill="none" stroke={dailyGoals.todayCompleted ? '#27ae60' : '#f39c12'} strokeWidth="3" strokeLinecap="round"
+                    strokeDasharray={`${Math.min(1, dailyGoals.todayCount / dailyGoals.dailyGoal) * 81.7} 81.7`} transform="rotate(-90 16 16)" />
+                </svg>
+                <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-display)', color: dailyGoals.todayCompleted ? '#27ae60' : 'var(--text-primary)' }}>{dailyGoals.todayCount}</span>
+              </div>
+              <div>
+                <p style={{ fontSize: 10, fontWeight: 600, fontFamily: 'var(--font-condensed)', color: dailyGoals.todayCompleted ? '#27ae60' : 'var(--text-secondary)' }}>
+                  {dailyGoals.todayCompleted ? 'META DIÁRIA ✓' : `FALTAM ${dailyGoals.todayRemaining}`}
+                </p>
+                {dailyGoals.streak > 0 && <p style={{ fontSize: 9, color: '#e74c3c', fontFamily: 'var(--font-mono)' }}>🔥 {dailyGoals.streak} dias</p>}
+              </div>
             </div>
-            <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{totalAttempts}x</span>
-            <button onClick={() => onNavigate('progress')} style={{ ...btn, borderColor: '#8e44ad30', color: '#8e44ad', fontWeight: 600, fontSize: 10, padding: '4px 10px', marginLeft: 'auto' }}>EVOLUÇÃO</button>
-            <button onClick={() => onNavigate('badges')} style={{ ...btn, borderColor: '#f1c40f40', color: '#b7950b', fontWeight: 600, fontSize: 10, padding: '4px 10px' }}>🏅 CONQUISTAS</button>
-          </div>
-        )}
+          )}
+
+          {/* Session bar */}
+          {totalAttempts > 0 && (
+            <div className="session-bar" style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-card)' }}>
+              <span style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.5px' }}>SESSÃO:</span>
+              <span style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)', color: sessionAvg >= 70 ? 'var(--accent-throttle)' : 'var(--accent-clutch)' }}>{sessionAvg}%</span>
+              <div style={{ flex: 1, maxWidth: 140, height: 4, background: 'var(--bg-inset)', borderRadius: 2, overflow: 'hidden', border: '1px solid var(--border)' }}>
+                <div style={{ width: `${sessionAvg}%`, height: '100%', background: sessionAvg >= 70 ? '#27ae60' : '#f39c12', borderRadius: 2 }} />
+              </div>
+              <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{totalAttempts}x</span>
+              <button onClick={() => onNavigate('progress')} style={{ ...btn, borderColor: '#8e44ad30', color: '#8e44ad', fontWeight: 600, fontSize: 10, padding: '4px 10px', marginLeft: 'auto' }}>EVOLUÇÃO</button>
+              <button onClick={() => onNavigate('badges')} style={{ ...btn, borderColor: '#f1c40f40', color: '#b7950b', fontWeight: 600, fontSize: 10, padding: '4px 10px' }}>🏅 CONQUISTAS</button>
+            </div>
+          )}
+        </div>
 
         {/* Treino livre chips */}
         <div className="animate-in animate-in-delay-1" data-tour="treino-livre">

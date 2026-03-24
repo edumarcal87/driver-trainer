@@ -4,6 +4,7 @@ import { exportSessionPDF } from '../utils/pdfExport';
 import { CAR_PROFILES } from '../data/carProfiles';
 import { shareSessionResult } from '../utils/shareCard';
 import { GradeDisplay, StatCard, TipCard, SegmentBar } from './UI';
+import StreakCalendar from './StreakCalendar';
 
 const btn = { padding: '6px 14px', fontSize: 12, borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-body)' };
 const card = { padding: '16px 18px', background: 'var(--bg-panel)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', marginBottom: 12 };
@@ -115,7 +116,7 @@ function generateTypeTips(entries, typeKey) {
   return tips;
 }
 
-export default function ProgressScreen({ onBack, sessionHistory, carProfile, setCarProfile }) {
+export default function ProgressScreen({ onBack, sessionHistory, carProfile, setCarProfile, dailyGoals, isDark }) {
   const [activeTab, setActiveTab] = useState('all');
   const [profileFilter, setProfileFilter] = useState('all'); // 'all' or a profile id
 
@@ -176,6 +177,13 @@ export default function ProgressScreen({ onBack, sessionHistory, carProfile, set
           📤 Compartilhar
         </button>
       </div>
+
+      {/* Streak calendar */}
+      {dailyGoals && (
+        <div className="animate-in" style={{ marginBottom: 16 }}>
+          <StreakCalendar goals={dailyGoals} isDark={isDark} />
+        </div>
+      )}
 
       {/* Car profile filter */}
       <div className="animate-in animate-in-delay-1" style={{ marginBottom: '1rem' }}>

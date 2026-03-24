@@ -9,6 +9,7 @@ import { submitToLeaderboard, submitChallengeEntry, getActiveChallenges } from '
 import useGamepad from './hooks/useGamepad';
 import usePersistedState from './hooks/usePersistedState';
 import useBadges from './hooks/useBadges';
+import useDailyGoals from './hooks/useDailyGoals';
 import useTheme from './hooks/useTheme';
 import { getDefaultPedalConfig } from './utils/gamepad';
 
@@ -55,6 +56,7 @@ export default function App({ onGoToLanding }) {
   const gamepad = useGamepad(initialConfigs);
   const { badgeToast, dismissToast, checkBadges } = useBadges(sessionLog);
   const { isDark, toggleTheme } = useTheme();
+  const dailyGoals = useDailyGoals(sessionLog);
 
   // ── Cloud sync ──
   React.useEffect(() => {
@@ -118,7 +120,7 @@ export default function App({ onGoToLanding }) {
       case 'config': return <ConfigScreen onBack={back} gpConnected={gamepad.gpConnected} gpName={gamepad.gpName} pedalConfigs={gamepad.pedalConfigs} setPedalConfigs={gamepad.setPedalConfigs} />;
       case 'diagnostics': return <GamepadDiagnostics onBack={back} pedalConfigs={gamepad.pedalConfigs} />;
       case 'exercise': return <ExerciseScreen exercise={selectedEx} onBack={back} inputMode={gamepad.inputMode} pedalConfigs={gamepad.pedalConfigs} onResult={handleResult} carProfile={carProfile} sessionLog={sessionLog} shifterConfig={gamepad.shifterConfig} />;
-      case 'progress': return <ProgressScreen sessionHistory={sessionLog} onBack={back} carProfile={carProfile} setCarProfile={setCarProfile} />;
+      case 'progress': return <ProgressScreen sessionHistory={sessionLog} onBack={back} carProfile={carProfile} setCarProfile={setCarProfile} dailyGoals={dailyGoals} isDark={isDark} />;
       case 'programs': return <PremiumGate feature="Programas de Treino" onLogin={() => nav('login')}><ProgramsScreen onBack={back} onStartSession={startProgramSession} sessionLog={sessionLog} initialProgram={initialProgramForScreen} carProfile={carProfile} setCarProfile={setCarProfile} onLogin={() => nav('login')} /></PremiumGate>;
       case 'program_session': return activeProgram ? <PremiumGate feature={activeProgram.name} onLogin={() => nav('login')}><ProgramSessionScreen program={activeProgram} weekIdx={activeWeekIdx} sessionIdx={activeSessionIdx} onBack={() => { setInitialProgramForScreen(activeProgram); nav('programs'); }} onResult={handleResult} inputMode={gamepad.inputMode} pedalConfigs={gamepad.pedalConfigs} carProfile={carProfile} sessionLog={sessionLog} shifterConfig={gamepad.shifterConfig} /></PremiumGate> : null;
       case 'community': return <CommunityScreen onBack={back} onStartExercise={openExercise} onLogin={onGoToLanding} />;
@@ -154,6 +156,7 @@ export default function App({ onGoToLanding }) {
           inputFilter={inputFilter} setInputFilter={setInputFilter}
           userId={user?.id} onNavigate={setScreen}
           openExercise={openExercise} openPrograms={openPrograms}
+          dailyGoals={dailyGoals}
         />
         <div style={{ marginTop: '1.5rem', padding: '12px 0', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
