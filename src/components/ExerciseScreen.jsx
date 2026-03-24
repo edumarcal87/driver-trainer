@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Chart from './Chart';
 import CombinedChart from './CombinedChart';
 import ReplayChart from './ReplayChart';
+import CornerVideoCard from './CornerVideoCard';
 import TutorialOverlay from './TutorialOverlay';
 import { PedalBar, DifficultyDots, Legend, GradeDisplay, StatCard, SegmentBar, TipCard } from './UI';
 import { makeCurvePoints, calcScore, analyzePerformance } from '../utils/scoring';
@@ -752,6 +753,11 @@ export default function ExerciseScreen({ exercise, onBack, inputMode, pedalConfi
                     })}
                   </div>
                 </div>
+
+                {/* Corner video tutorial */}
+                {exercise.track && (
+                  <CornerVideoCard exerciseId={exercise.id} isPremium={true} />
+                )}
               </div>
             </div>
           </div>
