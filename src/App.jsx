@@ -122,14 +122,16 @@ export default function App({ onGoToLanding }) {
     checkBadges([...sessionLog, logEntry]);
   }, [exercises, carProfile, user?.id, profile, sessionLog, checkBadges, bests]);
 
+  // ── Navigation helpers (must be top-level hooks) ──
+  const nav = useCallback((s) => { setScreen(s); trackScreenView(s); }, []);
+  const back = useCallback(() => { nav('menu'); }, [nav]);
+  const trackedToggleTheme = useCallback(() => { toggleTheme(); trackThemeChange(isDark ? 'light' : 'dark'); }, [toggleTheme, isDark]);
+
   // ── Wizard ──
   if (screen === 'wizard') return <SetupWizard onComplete={() => setScreen('menu')} gpConnected={gamepad.gpConnected} gpName={gamepad.gpName} pedalConfigs={gamepad.pedalConfigs} setPedalConfigs={gamepad.setPedalConfigs} />;
 
   // ── Screen router ──
   const renderScreen = () => {
-    const nav = useCallback((s) => { setScreen(s); trackScreenView(s); }, []);
-    const back = useCallback(() => { nav('menu'); }, [nav]);
-    const trackedToggleTheme = useCallback(() => { toggleTheme(); trackThemeChange(isDark ? 'light' : 'dark'); }, [toggleTheme, isDark]);
     switch (screen) {
       case 'config': return <ConfigScreen onBack={back} gpConnected={gamepad.gpConnected} gpName={gamepad.gpName} pedalConfigs={gamepad.pedalConfigs} setPedalConfigs={gamepad.setPedalConfigs} />;
       case 'diagnostics': return <GamepadDiagnostics onBack={back} pedalConfigs={gamepad.pedalConfigs} />;
