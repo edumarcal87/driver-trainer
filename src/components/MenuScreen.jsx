@@ -5,6 +5,7 @@ import { CAR_PROFILES } from '../data/carProfiles';
 import { BrakeIcon, ThrottleIcon, ClutchIcon, SteeringIcon } from './SetupWizard';
 import { DifficultyDots, LevelBadge, ScoreRing } from './UI';
 import RankingSidebar from './RankingSidebar';
+import AdaptiveRecommendations from './AdaptiveRecommendations';
 
 const btn = { padding: '7px 16px', fontSize: 12, borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 500, boxShadow: '0 1px 2px rgba(0,0,0,0.04)' };
 const CAT_HEX = { brake: '#e74c3c', throttle: '#27ae60', clutch: '#f39c12', steering: '#2980b9', combined: '#8e44ad', sequential: '#00bcd4', hpattern: '#5c6bc0' };
@@ -172,6 +173,11 @@ export default function MenuScreen({ sessionLog, bests, history, exercises, carP
             </div>
           )}
         </div>
+
+        {/* Adaptive AI recommendations */}
+        {sessionLog.length >= 3 && (
+          <AdaptiveRecommendations sessionLog={sessionLog} exercises={exercises} onOpenExercise={openExercise} />
+        )}
 
         {/* Treino livre chips */}
         <div className="animate-in animate-in-delay-1" data-tour="treino-livre">
