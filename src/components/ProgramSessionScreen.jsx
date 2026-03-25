@@ -17,13 +17,18 @@ export default function ProgramSessionScreen({ program, weekIdx, sessionIdx, onB
   const currentEx = exercises[currentExIdx];
 
   const handleExResult = useCallback((exId, score, analysis) => {
-    if (exerciseCompletedRef.current) return; // prevent duplicate
+    if (exerciseCompletedRef.current) return;
     exerciseCompletedRef.current = true;
     onResult(exId, score, analysis);
     const passed = score >= session.minScore;
-    setResults(prev => [...prev, { exId, score, passed }]);
-    setPhase('result');
+    setResults(prev => [...prev, { exId, score, passed, analysis }]);
+    // Don't change phase — let ExerciseScreen show its own result view
+    // User clicks "Continuar" in ExerciseScreen to advance
   }, [session.minScore, onResult]);
+
+  const handleContinueFromExercise = useCallback(() => {
+    setPhase('result');
+  }, []);
 
   const handleNext = useCallback(() => {
     exerciseCompletedRef.current = false;
@@ -53,7 +58,6 @@ export default function ProgramSessionScreen({ program, weekIdx, sessionIdx, onB
       <ExerciseScreen
         exercise={currentEx}
         onBack={() => {
-          // Back from exercise WITHOUT result → go to intro if no results yet, otherwise show last result or intro
           if (results.length > 0) {
             setPhase('result');
           } else {
@@ -66,6 +70,9 @@ export default function ProgramSessionScreen({ program, weekIdx, sessionIdx, onB
         carProfile={carProfile}
         sessionLog={sessionLog}
         shifterConfig={shifterConfig}
+        programMode={true}
+        onContinueProgram={handleContinueFromExercise}
+        programInfo={{ current: currentExIdx + 1, total: exercises.length, programName: program.name, color: program.color }}
       />
     );
   }
@@ -130,15 +137,15 @@ export default function ProgramSessionScreen({ program, weekIdx, sessionIdx, onB
   // ── Result after each exercise ──
   if (phase === 'result') {
     const lastResult = results[results.length - 1];
-    // Safety: if no results, go back to intro
-    if (!lastResult) {
-      setPhase('intro');
-      return null;
-    }
+    if (!lastResult) { setPhase('intro'); return null; }
     const isLast = currentExIdx >= exercises.length - 1;
+    const an = lastResult.analysis;
+    const grade = an?.grade || (lastResult.score >= 90 ? 'S' : lastResult.score >= 75 ? 'A' : lastResult.score >= 60 ? 'B' : lastResult.score >= 40 ? 'C' : 'D');
+    const gradeColors = { S: '#f1c40f', A: '#27ae60', B: '#2ecc71', C: '#f39c12', D: '#e74c3c' };
+
     return (
-      <div style={{ maxWidth: 520, width: '100%', margin: '0 auto' }}>
-        <div className="animate-in" style={{ textAlign: 'center', marginTop: 40, marginBottom: 24 }}>
+      <div style={{ maxWidth: 720, width: '100%', margin: '0 auto' }}>
+        <div className="animate-in" style={{ textAlign: 'center', marginTop: 24, marginBottom: 16 }}>
           <p style={{ fontSize: 11, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '1px' }}>
             EXERCÍCIO {currentExIdx + 1} DE {exercises.length}
           </p>
@@ -146,21 +153,75 @@ export default function ProgramSessionScreen({ program, weekIdx, sessionIdx, onB
 
         <div className="animate-in animate-in-delay-1" style={{
           background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)',
-          boxShadow: 'var(--shadow-card)', padding: '28px', textAlign: 'center',
+          boxShadow: 'var(--shadow-card)', padding: '24px',
         }}>
-          <ScoreRing score={lastResult.score} size={80} />
-          <p style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-display)', marginTop: 12 }}>
-            {currentEx?.name || 'Exercício'}
-          </p>
-          <p style={{
-            fontSize: 14, fontWeight: 600, marginTop: 8,
-            color: lastResult.passed ? '#27ae60' : '#e74c3c',
-          }}>
-            {lastResult.passed ? '✓ Aprovado!' : `✗ Mínimo: ${session.minScore}%`}
-          </p>
+          {/* Score + Grade */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+            <ScoreRing score={lastResult.score} size={72} />
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-display)' }}>{currentEx?.name || 'Exercício'}</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                <span style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-display)', color: gradeColors[grade] || '#888' }}>{grade}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: lastResult.passed ? '#27ae60' : '#e74c3c' }}>
+                  {lastResult.passed ? '✓ Aprovado!' : `✗ Mínimo: ${session.minScore}%`}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Segments */}
+          {an?.segments && an.segments.length > 0 && (
+            <div style={{ marginBottom: 14 }}>
+              <p style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.3px', marginBottom: 6, fontWeight: 600 }}>DESEMPENHO POR SEGMENTO</p>
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(an.segments.length, 4)}, 1fr)`, gap: 6 }}>
+                {an.segments.map(seg => {
+                  const sc = seg.score >= 80 ? '#27ae60' : seg.score >= 60 ? '#f39c12' : '#e74c3c';
+                  return (
+                    <div key={seg.key} style={{ padding: '8px', background: 'var(--bg-inset)', borderRadius: 8, textAlign: 'center' }}>
+                      <p style={{ fontSize: 9, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', marginBottom: 2 }}>{seg.label}</p>
+                      <p style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-display)', color: sc }}>{seg.score}%</p>
+                      <div style={{ height: 3, background: 'var(--bg-deep)', borderRadius: 2, marginTop: 4 }}>
+                        <div style={{ width: `${seg.score}%`, height: '100%', background: sc, borderRadius: 2 }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Stats row */}
+          {an?.stats && (
+            <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
+              {[
+                { label: 'Consistência', value: `${an.stats.consistency}%`, color: an.stats.consistency >= 70 ? '#27ae60' : '#f39c12' },
+                { label: 'Pico do Piloto', value: `${Math.round((an.stats.userPeak || 0) * 100)}%`, color: '#2980b9' },
+                { label: 'Pico Ideal', value: `${Math.round((an.stats.targetPeak || 0) * 100)}%`, color: 'var(--text-muted)' },
+              ].map(s => (
+                <div key={s.label} style={{ flex: 1, padding: '8px', background: 'var(--bg-inset)', borderRadius: 8, textAlign: 'center', minWidth: 80 }}>
+                  <p style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', color: s.color }}>{s.value}</p>
+                  <p style={{ fontSize: 8, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)' }}>{s.label}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Tips */}
+          {an?.tips && an.tips.length > 0 && (
+            <div style={{ marginBottom: 14 }}>
+              <p style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.3px', marginBottom: 6, fontWeight: 600 }}>DICAS DE MELHORIA</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {an.tips.slice(0, 3).map((tip, i) => (
+                  <div key={i} style={{ padding: '6px 10px', background: 'var(--bg-inset)', borderRadius: 8, fontSize: 11, color: 'var(--text-secondary)', borderLeft: `3px solid ${tip.type === 'praise' ? '#27ae60' : tip.type === 'warn' ? '#f39c12' : '#2980b9'}` }}>
+                    {tip.text}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Progress dots */}
-          <div style={{ display: 'flex', gap: 6, justifyContent: 'center', margin: '16px 0' }}>
+          <div style={{ display: 'flex', gap: 6, justifyContent: 'center', margin: '12px 0' }}>
             {exercises.map((_, i) => {
               const r = results[i];
               return (
@@ -173,6 +234,7 @@ export default function ProgramSessionScreen({ program, weekIdx, sessionIdx, onB
             })}
           </div>
 
+          {/* Action buttons */}
           <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 16 }}>
             {!lastResult.passed && (
               <button onClick={handleRetry} style={{
