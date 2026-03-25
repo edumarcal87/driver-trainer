@@ -4,7 +4,7 @@ import { CAR_PROFILES } from './data/carProfiles';
 import { useAuth } from './lib/AuthContext';
 import { isSupabaseConfigured } from './lib/supabase';
 import { saveSessionResult, syncSessionLogs } from './lib/dataSync';
-import { submitToLeaderboard, submitChallengeEntry, getActiveChallenges } from './lib/community';
+import { submitToLeaderboard, submitChallengeEntry, getActiveChallenges, publishActivity } from './lib/community';
 
 import useGamepad from './hooks/useGamepad';
 import usePersistedState from './hooks/usePersistedState';
@@ -55,7 +55,13 @@ export default function App({ onGoToLanding }) {
 
   // ── Custom hooks ──
   const gamepad = useGamepad(initialConfigs);
-  const { badgeToast, dismissToast, checkBadges } = useBadges(sessionLog);
+  const onBadgeUnlock = useCallback((badge) => {
+    trackBadgeUnlock(badge.id, badge.name, badge.rarity);
+    if (user?.id) {
+      publishActivity(user.id, profile?.display_name, profile?.avatar_url, 'badge_unlock', { badge_id: badge.id, badge_name: badge.name, badge_icon: badge.icon, rarity: badge.rarity }).catch(() => {});
+    }
+  }, [user?.id, profile]);
+  const { badgeToast, dismissToast, checkBadges } = useBadges(sessionLog, onBadgeUnlock);
   const { isDark, toggleTheme } = useTheme();
   const dailyGoals = useDailyGoals(sessionLog);
 
@@ -118,6 +124,19 @@ export default function App({ onGoToLanding }) {
       getActiveChallenges().then(chs => {
         for (const ch of chs) if (ch.exercise_id === exId) submitChallengeEntry(ch.id, user.id, sc, carProfile?.id || 'default', profile?.display_name, profile?.avatar_url).catch(() => {});
       }).catch(() => {});
+
+      // Publish to activity feed
+      if (isNewBest && sc >= 80) {
+        publishActivity(user.id, profile?.display_name, profile?.avatar_url, 'new_record', { exercise_name: ex?.name, score: sc, grade: analysis?.grade }).catch(() => {});
+      } else if (sc >= 70) {
+        publishActivity(user.id, profile?.display_name, profile?.avatar_url, 'exercise_complete', { exercise_name: ex?.name, score: sc, grade: analysis?.grade }).catch(() => {});
+      }
+
+      // Milestone: every 50 exercises
+      const newCount = sessionLog.length + 1;
+      if (newCount > 0 && newCount % 50 === 0) {
+        publishActivity(user.id, profile?.display_name, profile?.avatar_url, 'milestone', { message: `completou ${newCount} exercícios!` }).catch(() => {});
+      }
     }
     checkBadges([...sessionLog, logEntry]);
   }, [exercises, carProfile, user?.id, profile, sessionLog, checkBadges, bests]);

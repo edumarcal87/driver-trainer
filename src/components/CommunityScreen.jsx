@@ -5,6 +5,7 @@ import { useAuth } from '../lib/AuthContext';
 import { getLeaderboard, getUserRank, getActiveChallenges, getChallengeLeaderboard } from '../lib/community';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { PremiumLockButton } from './PremiumGate';
+import ActivityFeed from './ActivityFeed';
 
 const btn = { padding: '6px 14px', fontSize: 12, borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-body)' };
 const card = { padding: '16px 18px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-card)', marginBottom: 12 };
@@ -54,7 +55,7 @@ function RankRow({ entry, isCurrentUser }) {
 
 export default function CommunityScreen({ onBack, onStartExercise, onLogin }) {
   const { user, profile, isPremiumUser } = useAuth();
-  const [tab, setTab] = useState('leaderboard');
+  const [tab, setTab] = useState('feed');
   const [selectedExercise, setSelectedExercise] = useState('b_trail');
   const [selectedCarProfile, setSelectedCarProfile] = useState('all');
   const [leaderboardData, setLeaderboardData] = useState([]);
@@ -127,6 +128,7 @@ export default function CommunityScreen({ onBack, onStartExercise, onLogin }) {
       {/* Tabs */}
       <div className="animate-in" style={{ display: 'flex', gap: 6, marginBottom: '1rem' }}>
         {[
+          { key: 'feed', label: '📡 Feed' },
           { key: 'leaderboard', label: '🏆 Ranking Global' },
           { key: 'challenge', label: '⚡ Desafio Semanal' },
         ].map(t => (
@@ -141,6 +143,13 @@ export default function CommunityScreen({ onBack, onStartExercise, onLogin }) {
           </button>
         ))}
       </div>
+
+      {/* ═══ FEED TAB ═══ */}
+      {tab === 'feed' && (
+        <div className="animate-in" style={{ ...card }}>
+          <ActivityFeed limit={30} />
+        </div>
+      )}
 
       {/* ═══ LEADERBOARD TAB ═══ */}
       {tab === 'leaderboard' && (

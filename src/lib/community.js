@@ -91,3 +91,50 @@ export async function getPublicProfile(userId) {
   const { count } = await supabase.from('session_logs').select('*', { count: 'exact', head: true }).eq('user_id', userId);
   return { ...profile, topScores: topScores || [], totalSessions: count || 0 };
 }
+
+// ════════════════════════════════════
+// ACTIVITY FEED (realtime social feed)
+// ════════════════════════════════════
+
+/**
+ * Publishes an activity event to the feed.
+ * Types: exercise_complete, new_record, badge_unlock, milestone, program_complete
+ */
+export async function publishActivity(userId, displayName, avatarUrl, type, data = {}) {
+  if (!isSupabaseConfigured() || !userId) return;
+  await supabase.from('activity_feed').insert({
+    user_id: userId,
+    display_name: displayName || 'Piloto',
+    avatar_url: avatarUrl || null,
+    type,
+    data,
+    created_at: new Date().toISOString(),
+  });
+}
+
+/**
+ * Fetches the latest feed entries.
+ */
+export async function getActivityFeed(limit = 30) {
+  if (!isSupabaseConfigured()) return [];
+  const { data } = await supabase.from('activity_feed')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  return data || [];
+}
+
+/**
+ * Subscribes to realtime feed updates.
+ * Returns an unsubscribe function.
+ */
+export function subscribeToFeed(onNewActivity) {
+  if (!isSupabaseConfigured()) return () => {};
+  const channel = supabase
+    .channel('activity_feed_realtime')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_feed' }, (payload) => {
+      onNewActivity(payload.new);
+    })
+    .subscribe();
+  return () => { supabase.removeChannel(channel); };
+}

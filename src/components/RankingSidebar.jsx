@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ALL_EXERCISES } from '../data/exercises';
 import { getLeaderboard, getUserRank, getActiveChallenges } from '../lib/community';
+import ActivityFeed from './ActivityFeed';
 
 const SIDEBAR_EXERCISES = ['b_trail', 'x_heel_toe', 'b_threshold', 'x_full_corner', 'ilg_t12_juncao'];
 
@@ -94,7 +95,12 @@ export default function RankingSidebar({ userId, sessionLogLength, onNavigate })
         </div>
       )}
 
-      <button onClick={() => onNavigate('community')} style={{ width: '100%', fontSize: 10, padding: '8px', borderRadius: 8, border: '1.5px solid #f1c40f30', background: '#f1c40f08', color: '#b7950b', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-display)', textAlign: 'center' }}>VER RANKING COMPLETO →</button>
+      {/* Compact activity feed */}
+      <div className="animate-in animate-in-delay-3" style={{ marginBottom: 10, background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 10, padding: '10px' }}>
+        <ActivityFeed compact={true} limit={10} />
+      </div>
+
+      <button onClick={() => onNavigate('community')} style={{ width: '100%', fontSize: 10, padding: '8px', borderRadius: 8, border: '1.5px solid #f1c40f30', background: '#f1c40f08', color: '#b7950b', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-display)', textAlign: 'center' }}>VER COMUNIDADE →</button>
     </div>
   );
 }

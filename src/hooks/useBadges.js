@@ -4,7 +4,7 @@ import { evaluateBadges, getStoredBadges, storeBadges } from '../data/badges';
 /**
  * Hook that manages badge evaluation and toast queue.
  */
-export default function useBadges(sessionLog) {
+export default function useBadges(sessionLog, onBadgeUnlock) {
   const [badgeToast, setBadgeToast] = useState(null);
   const [badgeQueue, setBadgeQueue] = useState([]);
 
@@ -23,8 +23,12 @@ export default function useBadges(sessionLog) {
       const allUnlockedIds = [...prevBadgeIds, ...newlyUnlocked.map(b => b.id)];
       storeBadges(allUnlockedIds);
       setBadgeQueue(q => [...q, ...newlyUnlocked]);
+      // Notify parent for feed publishing
+      if (onBadgeUnlock) {
+        for (const b of newlyUnlocked) onBadgeUnlock(b);
+      }
     }
-  }, []);
+  }, [onBadgeUnlock]);
 
   const dismissToast = useCallback(() => setBadgeToast(null), []);
 
