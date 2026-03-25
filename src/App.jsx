@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { ALL_EXERCISES, BRAKE_EXERCISES } from './data/exercises';
 import { CAR_PROFILES } from './data/carProfiles';
 import { useAuth } from './lib/AuthContext';
@@ -58,6 +58,11 @@ export default function App({ onGoToLanding }) {
   const { badgeToast, dismissToast, checkBadges } = useBadges(sessionLog);
   const { isDark, toggleTheme } = useTheme();
   const dailyGoals = useDailyGoals(sessionLog);
+
+  // ── Track screen views via dataLayer ──
+  useEffect(() => {
+    trackScreenView(screen);
+  }, [screen]);
 
   // ── Cloud sync ──
   React.useEffect(() => {
@@ -122,8 +127,9 @@ export default function App({ onGoToLanding }) {
 
   // ── Screen router ──
   const renderScreen = () => {
-    const nav = (s) => { setScreen(s); trackScreenView(s); };
-    const back = () => { nav('menu'); };
+    const nav = useCallback((s) => { setScreen(s); trackScreenView(s); }, []);
+    const back = useCallback(() => { nav('menu'); }, [nav]);
+    const trackedToggleTheme = useCallback(() => { toggleTheme(); trackThemeChange(isDark ? 'light' : 'dark'); }, [toggleTheme, isDark]);
     switch (screen) {
       case 'config': return <ConfigScreen onBack={back} gpConnected={gamepad.gpConnected} gpName={gamepad.gpName} pedalConfigs={gamepad.pedalConfigs} setPedalConfigs={gamepad.setPedalConfigs} />;
       case 'diagnostics': return <GamepadDiagnostics onBack={back} pedalConfigs={gamepad.pedalConfigs} />;
@@ -133,7 +139,7 @@ export default function App({ onGoToLanding }) {
       case 'program_session': return activeProgram ? <PremiumGate feature={activeProgram.name} onLogin={() => nav('login')}><ProgramSessionScreen program={activeProgram} weekIdx={activeWeekIdx} sessionIdx={activeSessionIdx} onBack={() => { setInitialProgramForScreen(activeProgram); nav('programs'); }} onResult={handleResult} inputMode={gamepad.inputMode} pedalConfigs={gamepad.pedalConfigs} carProfile={carProfile} sessionLog={sessionLog} shifterConfig={gamepad.shifterConfig} /></PremiumGate> : null;
       case 'community': return <CommunityScreen onBack={back} onStartExercise={openExercise} onLogin={onGoToLanding} />;
       case 'badges': return <BadgesScreen onBack={back} sessionLog={sessionLog} />;
-      case 'profile': return <PublicProfileScreen onBack={back} profile={profile} sessionLog={sessionLog} onNavigate={(s) => { setScreen(s); trackScreenView(s); }} />;
+      case 'profile': return <PublicProfileScreen onBack={back} profile={profile} sessionLog={sessionLog} onNavigate={nav} />;
       case 'telemetry': return <PremiumGate feature="Importar Telemetria" onLogin={() => nav('login')}><TelemetryImportScreen onBack={back} onExercisesCreated={(exs) => { setExercises([...ALL_EXERCISES, ...exs]); back(); }} /></PremiumGate>;
       default: return null;
     }
@@ -143,7 +149,7 @@ export default function App({ onGoToLanding }) {
   if (screen !== 'menu') {
     return (
       <div style={{ maxWidth: 1140, width: '100%' }}>
-        <GlobalHeader onNavigate={(s) => { setScreen(s); trackScreenView(s); }} gpConnected={gamepad.gpConnected} wheelProfile={gamepad.wheelProfile} onGoToLanding={onGoToLanding} isDark={isDark} onToggleTheme={() => { toggleTheme(); trackThemeChange(isDark ? 'light' : 'dark'); }} />
+        <GlobalHeader onNavigate={nav} gpConnected={gamepad.gpConnected} wheelProfile={gamepad.wheelProfile} onGoToLanding={onGoToLanding} isDark={isDark} onToggleTheme={trackedToggleTheme} />
         {renderScreen()}
       </div>
     );
@@ -153,16 +159,16 @@ export default function App({ onGoToLanding }) {
   return (
     <>
       {showOnboarding && <OnboardingTour show={showOnboarding} onComplete={() => setShowOnboarding(false)} />}
-      {badgeToast && <BadgeToast badge={badgeToast} onDismiss={dismissToast} onNavigate={() => setScreen('badges')} />}
+      {badgeToast && <BadgeToast badge={badgeToast} onDismiss={dismissToast} onNavigate={() => nav('badges')} />}
       <div style={{ maxWidth: 1140, width: '100%' }}>
         <div style={{ position: 'relative', zIndex: 900 }}>
-          <GlobalHeader onNavigate={(s) => { setScreen(s); trackScreenView(s); }} gpConnected={gamepad.gpConnected} wheelProfile={gamepad.wheelProfile} onGoToLanding={onGoToLanding} isDark={isDark} onToggleTheme={() => { toggleTheme(); trackThemeChange(isDark ? 'light' : 'dark'); }} />
+          <GlobalHeader onNavigate={nav} gpConnected={gamepad.gpConnected} wheelProfile={gamepad.wheelProfile} onGoToLanding={onGoToLanding} isDark={isDark} onToggleTheme={trackedToggleTheme} />
         </div>
         <MenuScreen
           sessionLog={sessionLog} bests={bests} history={history} exercises={exercises}
           carProfile={carProfile} setCarProfile={setCarProfile}
           inputFilter={inputFilter} setInputFilter={setInputFilter}
-          userId={user?.id} onNavigate={(s) => { setScreen(s); trackScreenView(s); }}
+          userId={user?.id} onNavigate={nav}
           openExercise={openExercise} openPrograms={openPrograms}
           dailyGoals={dailyGoals}
         />

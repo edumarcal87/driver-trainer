@@ -11,6 +11,7 @@ export default function ProgramSessionScreen({ program, weekIdx, sessionIdx, onB
   const [currentExIdx, setCurrentExIdx] = useState(0);
   const [results, setResults] = useState([]); // [{ exId, score, passed }]
   const [phase, setPhase] = useState('intro'); // intro | exercise | result | complete
+  const [showDetails, setShowDetails] = useState(false);
   const exerciseCompletedRef = useRef(false); // prevent double-fire
 
   const exercises = session.exercises.map(id => ALL_EXERCISES.find(e => e.id === id)).filter(Boolean);
@@ -32,6 +33,7 @@ export default function ProgramSessionScreen({ program, weekIdx, sessionIdx, onB
 
   const handleNext = useCallback(() => {
     exerciseCompletedRef.current = false;
+    setShowDetails(false);
     if (currentExIdx < exercises.length - 1) {
       setCurrentExIdx(prev => prev + 1);
       setPhase('exercise');
@@ -42,7 +44,7 @@ export default function ProgramSessionScreen({ program, weekIdx, sessionIdx, onB
 
   const handleRetry = useCallback(() => {
     exerciseCompletedRef.current = false;
-    // Remove last result and go back to exercise
+    setShowDetails(false);
     setResults(prev => prev.slice(0, -1));
     setPhase('exercise');
   }, []);
@@ -143,85 +145,39 @@ export default function ProgramSessionScreen({ program, weekIdx, sessionIdx, onB
     const grade = an?.grade || (lastResult.score >= 90 ? 'S' : lastResult.score >= 75 ? 'A' : lastResult.score >= 60 ? 'B' : lastResult.score >= 40 ? 'C' : 'D');
     const gradeColors = { S: '#f1c40f', A: '#27ae60', B: '#2ecc71', C: '#f39c12', D: '#e74c3c' };
 
+    // showDetails toggles between modal summary and full details view
+    const isDetailed = showDetails;
+
     return (
       <div style={{ maxWidth: 720, width: '100%', margin: '0 auto' }}>
-        <div className="animate-in" style={{ textAlign: 'center', marginTop: 24, marginBottom: 16 }}>
-          <p style={{ fontSize: 11, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '1px' }}>
+
+        {/* ── MODAL (always visible) ── */}
+        <div className="animate-in" style={{
+          background: 'var(--bg-card)', border: `2px solid ${lastResult.passed ? '#27ae60' : '#e74c3c'}20`,
+          borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-card)', padding: '28px', textAlign: 'center',
+          marginTop: 32,
+        }}>
+          {/* Header */}
+          <p style={{ fontSize: 11, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '1px', marginBottom: 12 }}>
             EXERCÍCIO {currentExIdx + 1} DE {exercises.length}
           </p>
-        </div>
 
-        <div className="animate-in animate-in-delay-1" style={{
-          background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)',
-          boxShadow: 'var(--shadow-card)', padding: '24px',
-        }}>
           {/* Score + Grade */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 12 }}>
             <ScoreRing score={lastResult.score} size={72} />
-            <div style={{ flex: 1 }}>
+            <div style={{ textAlign: 'left' }}>
               <p style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-display)' }}>{currentEx?.name || 'Exercício'}</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-                <span style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-display)', color: gradeColors[grade] || '#888' }}>{grade}</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: lastResult.passed ? '#27ae60' : '#e74c3c' }}>
+                <span style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)', color: gradeColors[grade] || '#888' }}>{grade}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: lastResult.passed ? '#27ae60' : '#e74c3c' }}>
                   {lastResult.passed ? '✓ Aprovado!' : `✗ Mínimo: ${session.minScore}%`}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Segments */}
-          {an?.segments && an.segments.length > 0 && (
-            <div style={{ marginBottom: 14 }}>
-              <p style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.3px', marginBottom: 6, fontWeight: 600 }}>DESEMPENHO POR SEGMENTO</p>
-              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(an.segments.length, 4)}, 1fr)`, gap: 6 }}>
-                {an.segments.map(seg => {
-                  const sc = seg.score >= 80 ? '#27ae60' : seg.score >= 60 ? '#f39c12' : '#e74c3c';
-                  return (
-                    <div key={seg.key} style={{ padding: '8px', background: 'var(--bg-inset)', borderRadius: 8, textAlign: 'center' }}>
-                      <p style={{ fontSize: 9, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', marginBottom: 2 }}>{seg.label}</p>
-                      <p style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-display)', color: sc }}>{seg.score}%</p>
-                      <div style={{ height: 3, background: 'var(--bg-deep)', borderRadius: 2, marginTop: 4 }}>
-                        <div style={{ width: `${seg.score}%`, height: '100%', background: sc, borderRadius: 2 }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Stats row */}
-          {an?.stats && (
-            <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
-              {[
-                { label: 'Consistência', value: `${an.stats.consistency}%`, color: an.stats.consistency >= 70 ? '#27ae60' : '#f39c12' },
-                { label: 'Pico do Piloto', value: `${Math.round((an.stats.userPeak || 0) * 100)}%`, color: '#2980b9' },
-                { label: 'Pico Ideal', value: `${Math.round((an.stats.targetPeak || 0) * 100)}%`, color: 'var(--text-muted)' },
-              ].map(s => (
-                <div key={s.label} style={{ flex: 1, padding: '8px', background: 'var(--bg-inset)', borderRadius: 8, textAlign: 'center', minWidth: 80 }}>
-                  <p style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', color: s.color }}>{s.value}</p>
-                  <p style={{ fontSize: 8, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)' }}>{s.label}</p>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Tips */}
-          {an?.tips && an.tips.length > 0 && (
-            <div style={{ marginBottom: 14 }}>
-              <p style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.3px', marginBottom: 6, fontWeight: 600 }}>DICAS DE MELHORIA</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                {an.tips.slice(0, 3).map((tip, i) => (
-                  <div key={i} style={{ padding: '6px 10px', background: 'var(--bg-inset)', borderRadius: 8, fontSize: 11, color: 'var(--text-secondary)', borderLeft: `3px solid ${tip.type === 'praise' ? '#27ae60' : tip.type === 'warn' ? '#f39c12' : '#2980b9'}` }}>
-                    {tip.text}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Progress dots */}
-          <div style={{ display: 'flex', gap: 6, justifyContent: 'center', margin: '12px 0' }}>
+          <div style={{ display: 'flex', gap: 6, justifyContent: 'center', margin: '12px 0 16px' }}>
             {exercises.map((_, i) => {
               const r = results[i];
               return (
@@ -234,8 +190,8 @@ export default function ProgramSessionScreen({ program, weekIdx, sessionIdx, onB
             })}
           </div>
 
-          {/* Action buttons */}
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 16 }}>
+          {/* Primary action buttons */}
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
             {!lastResult.passed && (
               <button onClick={handleRetry} style={{
                 padding: '10px 24px', fontSize: 13, borderRadius: 12, fontWeight: 700, fontFamily: 'var(--font-display)',
@@ -247,7 +203,8 @@ export default function ProgramSessionScreen({ program, weekIdx, sessionIdx, onB
             {lastResult.passed && !isLast && (
               <button onClick={handleNext} style={{
                 padding: '10px 28px', fontSize: 13, borderRadius: 12, fontWeight: 700, fontFamily: 'var(--font-display)',
-                border: `1.5px solid ${program.color}`, background: program.color + '12', color: program.color, cursor: 'pointer',
+                border: `1.5px solid ${program.color}`, background: program.color, color: '#fff', cursor: 'pointer',
+                boxShadow: `0 2px 8px ${program.color}30`,
               }}>
                 PRÓXIMO EXERCÍCIO →
               </button>
@@ -255,14 +212,108 @@ export default function ProgramSessionScreen({ program, weekIdx, sessionIdx, onB
             {lastResult.passed && isLast && (
               <button onClick={() => setPhase('complete')} style={{
                 padding: '10px 28px', fontSize: 13, borderRadius: 12, fontWeight: 700, fontFamily: 'var(--font-display)',
-                border: '1.5px solid #27ae60', background: '#e6f5ec', color: '#27ae60', cursor: 'pointer',
+                border: '1.5px solid #27ae60', background: '#27ae60', color: '#fff', cursor: 'pointer',
+                boxShadow: '0 2px 8px #27ae6030',
               }}>
-                VER RESULTADO
+                VER RESULTADO FINAL
               </button>
             )}
-            <button onClick={onBack} style={btn}>SAIR DA SESSÃO</button>
+            <button onClick={() => setShowDetails(!showDetails)} style={{
+              padding: '10px 20px', fontSize: 12, borderRadius: 12, fontWeight: 600, fontFamily: 'var(--font-condensed)',
+              border: '1.5px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-secondary)', cursor: 'pointer',
+            }}>
+              {showDetails ? 'ESCONDER DETALHES' : 'VER DETALHES'}
+            </button>
+            <button onClick={onBack} style={{ ...btn, fontSize: 11, padding: '8px 14px' }}>SAIR</button>
           </div>
         </div>
+
+        {/* ── DETAILED RESULTS (expandable) ── */}
+        {isDetailed && an && (
+          <div className="animate-in" style={{
+            background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)',
+            boxShadow: 'var(--shadow-card)', padding: '20px', marginTop: 12,
+          }}>
+            {/* Segments */}
+            {an.segments && an.segments.length > 0 && (
+              <div style={{ marginBottom: 14 }}>
+                <p style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.3px', marginBottom: 6, fontWeight: 600 }}>DESEMPENHO POR SEGMENTO</p>
+                <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(an.segments.length, 4)}, 1fr)`, gap: 6 }}>
+                  {an.segments.map(seg => {
+                    const sc = seg.score >= 80 ? '#27ae60' : seg.score >= 60 ? '#f39c12' : '#e74c3c';
+                    return (
+                      <div key={seg.key} style={{ padding: '8px', background: 'var(--bg-inset)', borderRadius: 8, textAlign: 'center' }}>
+                        <p style={{ fontSize: 9, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', marginBottom: 2 }}>{seg.label}</p>
+                        <p style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-display)', color: sc }}>{seg.score}%</p>
+                        <div style={{ height: 3, background: 'var(--bg-deep)', borderRadius: 2, marginTop: 4 }}>
+                          <div style={{ width: `${seg.score}%`, height: '100%', background: sc, borderRadius: 2 }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Stats */}
+            {an.stats && (
+              <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
+                {[
+                  { label: 'Consistência', value: `${an.stats.consistency}%`, color: an.stats.consistency >= 70 ? '#27ae60' : '#f39c12' },
+                  { label: 'Pico do Piloto', value: `${Math.round((an.stats.userPeak || 0) * 100)}%`, color: '#2980b9' },
+                  { label: 'Pico Ideal', value: `${Math.round((an.stats.targetPeak || 0) * 100)}%`, color: 'var(--text-muted)' },
+                ].map(s => (
+                  <div key={s.label} style={{ flex: 1, padding: '8px', background: 'var(--bg-inset)', borderRadius: 8, textAlign: 'center', minWidth: 80 }}>
+                    <p style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', color: s.color }}>{s.value}</p>
+                    <p style={{ fontSize: 8, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)' }}>{s.label}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Tips */}
+            {an.tips && an.tips.length > 0 && (
+              <div style={{ marginBottom: 14 }}>
+                <p style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.3px', marginBottom: 6, fontWeight: 600 }}>DICAS DE MELHORIA</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {an.tips.slice(0, 3).map((tip, i) => (
+                    <div key={i} style={{ padding: '6px 10px', background: 'var(--bg-inset)', borderRadius: 8, fontSize: 11, color: 'var(--text-secondary)', borderLeft: `3px solid ${tip.type === 'praise' ? '#27ae60' : tip.type === 'warn' ? '#f39c12' : '#2980b9'}` }}>
+                      {tip.text}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Bottom action — next exercise */}
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', paddingTop: 10, borderTop: '1px solid var(--border)' }}>
+              {!lastResult.passed && (
+                <button onClick={handleRetry} style={{
+                  padding: '10px 24px', fontSize: 13, borderRadius: 12, fontWeight: 700, fontFamily: 'var(--font-display)',
+                  border: '1.5px solid #e74c3c', background: '#fde8e6', color: '#e74c3c', cursor: 'pointer',
+                }}>
+                  TENTAR DE NOVO
+                </button>
+              )}
+              {lastResult.passed && !isLast && (
+                <button onClick={handleNext} style={{
+                  padding: '10px 28px', fontSize: 13, borderRadius: 12, fontWeight: 700, fontFamily: 'var(--font-display)',
+                  border: `1.5px solid ${program.color}`, background: program.color, color: '#fff', cursor: 'pointer',
+                }}>
+                  PRÓXIMO EXERCÍCIO →
+                </button>
+              )}
+              {lastResult.passed && isLast && (
+                <button onClick={() => setPhase('complete')} style={{
+                  padding: '10px 28px', fontSize: 13, borderRadius: 12, fontWeight: 700, fontFamily: 'var(--font-display)',
+                  border: '1.5px solid #27ae60', background: '#27ae60', color: '#fff', cursor: 'pointer',
+                }}>
+                  VER RESULTADO FINAL
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     );
   }

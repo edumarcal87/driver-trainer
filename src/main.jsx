@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import { AuthProvider, useAuth } from './lib/AuthContext.jsx';
-import { initGTM } from './lib/analytics.js';
 import LandingPage from './components/LandingPage.jsx';
 import LoginScreen from './components/LoginScreen.jsx';
 import App from './App.jsx';
 import './index.css';
-
-// Initialize GTM on app load
-initGTM();
 
 function Root() {
   const { isLoggedIn, loading } = useAuth();
