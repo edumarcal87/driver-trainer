@@ -10,8 +10,9 @@ export default function ProgramSessionScreen({ program, weekIdx, sessionIdx, onB
   const session = week.sessions[sessionIdx];
   const [currentExIdx, setCurrentExIdx] = useState(0);
   const [results, setResults] = useState([]); // [{ exId, score, passed }]
-  const [phase, setPhase] = useState('intro'); // intro | exercise | result | complete
+  const [phase, setPhase] = useState('intro'); // intro | exercise | complete
   const [showDetails, setShowDetails] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const exerciseCompletedRef = useRef(false); // prevent double-fire
 
   const exercises = session.exercises.map(id => ALL_EXERCISES.find(e => e.id === id)).filter(Boolean);
@@ -23,17 +24,13 @@ export default function ProgramSessionScreen({ program, weekIdx, sessionIdx, onB
     onResult(exId, score, analysis);
     const passed = score >= session.minScore;
     setResults(prev => [...prev, { exId, score, passed, analysis }]);
-    // Don't change phase — let ExerciseScreen show its own result view
-    // User clicks "Continuar" in ExerciseScreen to advance
+    setShowModal(true);
   }, [session.minScore, onResult]);
-
-  const handleContinueFromExercise = useCallback(() => {
-    setPhase('result');
-  }, []);
 
   const handleNext = useCallback(() => {
     exerciseCompletedRef.current = false;
     setShowDetails(false);
+    setShowModal(false);
     if (currentExIdx < exercises.length - 1) {
       setCurrentExIdx(prev => prev + 1);
       setPhase('exercise');
@@ -45,37 +42,142 @@ export default function ProgramSessionScreen({ program, weekIdx, sessionIdx, onB
   const handleRetry = useCallback(() => {
     exerciseCompletedRef.current = false;
     setShowDetails(false);
+    setShowModal(false);
     setResults(prev => prev.slice(0, -1));
     setPhase('exercise');
   }, []);
 
   const startExercise = useCallback(() => {
     exerciseCompletedRef.current = false;
+    setShowModal(false);
     setPhase('exercise');
   }, []);
 
-  // ── Exercise phase ──
+  // ── Last result for modal ──
+  const lastResult = results[results.length - 1];
+  const isLast = currentExIdx >= exercises.length - 1;
+
+  // ── Exercise phase (with overlay modal) ──
   if (phase === 'exercise' && currentEx) {
+    const an = lastResult?.analysis;
+    const grade = an?.grade || (lastResult?.score >= 90 ? 'S' : lastResult?.score >= 75 ? 'A' : lastResult?.score >= 60 ? 'B' : lastResult?.score >= 40 ? 'C' : 'D');
+    const gradeColors = { S: '#f1c40f', A: '#27ae60', B: '#2ecc71', C: '#f39c12', D: '#e74c3c' };
+
     return (
-      <ExerciseScreen
-        exercise={currentEx}
-        onBack={() => {
-          if (results.length > 0) {
-            setPhase('result');
-          } else {
-            setPhase('intro');
-          }
-        }}
-        inputMode={inputMode}
-        pedalConfigs={pedalConfigs}
-        onResult={handleExResult}
-        carProfile={carProfile}
-        sessionLog={sessionLog}
-        shifterConfig={shifterConfig}
-        programMode={true}
-        onContinueProgram={handleContinueFromExercise}
-        programInfo={{ current: currentExIdx + 1, total: exercises.length, programName: program.name, color: program.color }}
-      />
+      <div style={{ position: 'relative' }}>
+        <ExerciseScreen
+          exercise={currentEx}
+          onBack={() => { setShowModal(false); if (results.length > 0) setPhase('intro'); else setPhase('intro'); }}
+          inputMode={inputMode}
+          pedalConfigs={pedalConfigs}
+          onResult={handleExResult}
+          carProfile={carProfile}
+          sessionLog={sessionLog}
+          shifterConfig={shifterConfig}
+        />
+
+        {/* ── MODAL OVERLAY — appears when exercise completes ── */}
+        {showModal && lastResult && (
+          <>
+            <div onClick={() => setShowModal(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 9000, backdropFilter: 'blur(4px)' }} />
+            <div style={{ position: 'fixed', inset: 0, zIndex: 9001, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+              <div className="animate-in" style={{ maxWidth: 480, width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', border: `2px solid ${lastResult.passed ? '#27ae6030' : '#e74c3c30'}`, borderRadius: 'var(--radius-xl)', boxShadow: '0 16px 48px rgba(0,0,0,0.25)', padding: '28px' }}>
+
+                <p style={{ fontSize: 11, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '1px', textAlign: 'center', marginBottom: 12 }}>
+                  EXERCÍCIO {currentExIdx + 1} DE {exercises.length}
+                </p>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 12 }}>
+                  <ScoreRing score={lastResult.score} size={72} />
+                  <div style={{ textAlign: 'left' }}>
+                    <p style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-display)' }}>{currentEx?.name || 'Exercício'}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                      <span style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)', color: gradeColors[grade] || '#888' }}>{grade}</span>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: lastResult.passed ? '#27ae60' : '#e74c3c' }}>
+                        {lastResult.passed ? '✓ Aprovado!' : `✗ Mínimo: ${session.minScore}%`}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Progress dots */}
+                <div style={{ display: 'flex', gap: 6, justifyContent: 'center', margin: '12px 0 16px' }}>
+                  {exercises.map((_, i) => {
+                    const r = results[i];
+                    return (
+                      <div key={i} style={{
+                        width: 32, height: 6, borderRadius: 3,
+                        background: r ? (r.passed ? '#27ae60' : '#e74c3c') : i === currentExIdx + 1 ? program.color + '40' : 'var(--bg-inset)',
+                        border: `1px solid ${r ? (r.passed ? '#27ae6030' : '#e74c3c30') : 'var(--border)'}`,
+                      }} />
+                    );
+                  })}
+                </div>
+
+                {/* Expandable details */}
+                {showDetails && an && (
+                  <div style={{ marginBottom: 14, padding: '14px', background: 'var(--bg-inset)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)' }}>
+                    {an.segments?.length > 0 && (
+                      <div style={{ marginBottom: 12 }}>
+                        <p style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', marginBottom: 6, fontWeight: 600 }}>SEGMENTOS</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(an.segments.length, 4)}, 1fr)`, gap: 6 }}>
+                          {an.segments.map(seg => {
+                            const sc = seg.score >= 80 ? '#27ae60' : seg.score >= 60 ? '#f39c12' : '#e74c3c';
+                            return (
+                              <div key={seg.key} style={{ padding: '8px', background: 'var(--bg-card)', borderRadius: 8, textAlign: 'center' }}>
+                                <p style={{ fontSize: 9, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', marginBottom: 2 }}>{seg.label}</p>
+                                <p style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-display)', color: sc }}>{seg.score}%</p>
+                                <div style={{ height: 3, background: 'var(--bg-deep)', borderRadius: 2, marginTop: 4 }}>
+                                  <div style={{ width: `${seg.score}%`, height: '100%', background: sc, borderRadius: 2 }} />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                    {an.tips?.length > 0 && (
+                      <div>
+                        <p style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', marginBottom: 4, fontWeight: 600 }}>DICAS</p>
+                        {an.tips.slice(0, 3).map((tip, i) => (
+                          <div key={i} style={{ padding: '5px 8px', background: 'var(--bg-card)', borderRadius: 6, fontSize: 10, color: 'var(--text-secondary)', borderLeft: `3px solid ${tip.type === 'praise' ? '#27ae60' : tip.type === 'warn' ? '#f39c12' : '#2980b9'}`, marginBottom: 3 }}>
+                            {tip.text}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Action buttons */}
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+                  {!lastResult.passed && (
+                    <button onClick={handleRetry} style={{ padding: '10px 24px', fontSize: 13, borderRadius: 12, fontWeight: 700, fontFamily: 'var(--font-display)', border: '1.5px solid #e74c3c', background: '#e74c3c', color: '#fff', cursor: 'pointer' }}>
+                      TENTAR DE NOVO
+                    </button>
+                  )}
+                  {lastResult.passed && !isLast && (
+                    <button onClick={handleNext} style={{ padding: '10px 28px', fontSize: 13, borderRadius: 12, fontWeight: 700, fontFamily: 'var(--font-display)', border: `1.5px solid ${program.color}`, background: program.color, color: '#fff', cursor: 'pointer', boxShadow: `0 2px 8px ${program.color}30` }}>
+                      PRÓXIMO EXERCÍCIO →
+                    </button>
+                  )}
+                  {lastResult.passed && isLast && (
+                    <button onClick={() => { setShowModal(false); setPhase('complete'); }} style={{ padding: '10px 28px', fontSize: 13, borderRadius: 12, fontWeight: 700, fontFamily: 'var(--font-display)', border: '1.5px solid #27ae60', background: '#27ae60', color: '#fff', cursor: 'pointer' }}>
+                      VER RESULTADO FINAL
+                    </button>
+                  )}
+                  <button onClick={() => setShowDetails(!showDetails)} style={{ padding: '10px 18px', fontSize: 11, borderRadius: 12, fontWeight: 600, fontFamily: 'var(--font-condensed)', border: '1.5px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                    {showDetails ? 'ESCONDER' : 'VER DETALHES'}
+                  </button>
+                  <button onClick={() => { setShowModal(false); onBack(); }} style={{ padding: '10px 14px', fontSize: 11, borderRadius: 12, fontWeight: 500, fontFamily: 'var(--font-condensed)', border: '1.5px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                    SAIR
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
     );
   }
 
@@ -132,188 +234,6 @@ export default function ProgramSessionScreen({ program, weekIdx, sessionIdx, onB
             <button onClick={onBack} style={btn}>VOLTAR</button>
           </div>
         </div>
-      </div>
-    );
-  }
-
-  // ── Result after each exercise ──
-  if (phase === 'result') {
-    const lastResult = results[results.length - 1];
-    if (!lastResult) { setPhase('intro'); return null; }
-    const isLast = currentExIdx >= exercises.length - 1;
-    const an = lastResult.analysis;
-    const grade = an?.grade || (lastResult.score >= 90 ? 'S' : lastResult.score >= 75 ? 'A' : lastResult.score >= 60 ? 'B' : lastResult.score >= 40 ? 'C' : 'D');
-    const gradeColors = { S: '#f1c40f', A: '#27ae60', B: '#2ecc71', C: '#f39c12', D: '#e74c3c' };
-
-    // showDetails toggles between modal summary and full details view
-    const isDetailed = showDetails;
-
-    return (
-      <div style={{ maxWidth: 720, width: '100%', margin: '0 auto' }}>
-
-        {/* ── MODAL (always visible) ── */}
-        <div className="animate-in" style={{
-          background: 'var(--bg-card)', border: `2px solid ${lastResult.passed ? '#27ae60' : '#e74c3c'}20`,
-          borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-card)', padding: '28px', textAlign: 'center',
-          marginTop: 32,
-        }}>
-          {/* Header */}
-          <p style={{ fontSize: 11, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '1px', marginBottom: 12 }}>
-            EXERCÍCIO {currentExIdx + 1} DE {exercises.length}
-          </p>
-
-          {/* Score + Grade */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 12 }}>
-            <ScoreRing score={lastResult.score} size={72} />
-            <div style={{ textAlign: 'left' }}>
-              <p style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-display)' }}>{currentEx?.name || 'Exercício'}</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-                <span style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)', color: gradeColors[grade] || '#888' }}>{grade}</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: lastResult.passed ? '#27ae60' : '#e74c3c' }}>
-                  {lastResult.passed ? '✓ Aprovado!' : `✗ Mínimo: ${session.minScore}%`}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Progress dots */}
-          <div style={{ display: 'flex', gap: 6, justifyContent: 'center', margin: '12px 0 16px' }}>
-            {exercises.map((_, i) => {
-              const r = results[i];
-              return (
-                <div key={i} style={{
-                  width: 32, height: 6, borderRadius: 3,
-                  background: r ? (r.passed ? '#27ae60' : '#e74c3c') : i === currentExIdx + 1 ? program.color + '40' : 'var(--bg-inset)',
-                  border: `1px solid ${r ? (r.passed ? '#27ae6030' : '#e74c3c30') : 'var(--border)'}`,
-                }} />
-              );
-            })}
-          </div>
-
-          {/* Primary action buttons */}
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
-            {!lastResult.passed && (
-              <button onClick={handleRetry} style={{
-                padding: '10px 24px', fontSize: 13, borderRadius: 12, fontWeight: 700, fontFamily: 'var(--font-display)',
-                border: '1.5px solid #e74c3c', background: '#fde8e6', color: '#e74c3c', cursor: 'pointer',
-              }}>
-                TENTAR DE NOVO
-              </button>
-            )}
-            {lastResult.passed && !isLast && (
-              <button onClick={handleNext} style={{
-                padding: '10px 28px', fontSize: 13, borderRadius: 12, fontWeight: 700, fontFamily: 'var(--font-display)',
-                border: `1.5px solid ${program.color}`, background: program.color, color: '#fff', cursor: 'pointer',
-                boxShadow: `0 2px 8px ${program.color}30`,
-              }}>
-                PRÓXIMO EXERCÍCIO →
-              </button>
-            )}
-            {lastResult.passed && isLast && (
-              <button onClick={() => setPhase('complete')} style={{
-                padding: '10px 28px', fontSize: 13, borderRadius: 12, fontWeight: 700, fontFamily: 'var(--font-display)',
-                border: '1.5px solid #27ae60', background: '#27ae60', color: '#fff', cursor: 'pointer',
-                boxShadow: '0 2px 8px #27ae6030',
-              }}>
-                VER RESULTADO FINAL
-              </button>
-            )}
-            <button onClick={() => setShowDetails(!showDetails)} style={{
-              padding: '10px 20px', fontSize: 12, borderRadius: 12, fontWeight: 600, fontFamily: 'var(--font-condensed)',
-              border: '1.5px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-secondary)', cursor: 'pointer',
-            }}>
-              {showDetails ? 'ESCONDER DETALHES' : 'VER DETALHES'}
-            </button>
-            <button onClick={onBack} style={{ ...btn, fontSize: 11, padding: '8px 14px' }}>SAIR</button>
-          </div>
-        </div>
-
-        {/* ── DETAILED RESULTS (expandable) ── */}
-        {isDetailed && an && (
-          <div className="animate-in" style={{
-            background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)',
-            boxShadow: 'var(--shadow-card)', padding: '20px', marginTop: 12,
-          }}>
-            {/* Segments */}
-            {an.segments && an.segments.length > 0 && (
-              <div style={{ marginBottom: 14 }}>
-                <p style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.3px', marginBottom: 6, fontWeight: 600 }}>DESEMPENHO POR SEGMENTO</p>
-                <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(an.segments.length, 4)}, 1fr)`, gap: 6 }}>
-                  {an.segments.map(seg => {
-                    const sc = seg.score >= 80 ? '#27ae60' : seg.score >= 60 ? '#f39c12' : '#e74c3c';
-                    return (
-                      <div key={seg.key} style={{ padding: '8px', background: 'var(--bg-inset)', borderRadius: 8, textAlign: 'center' }}>
-                        <p style={{ fontSize: 9, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', marginBottom: 2 }}>{seg.label}</p>
-                        <p style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-display)', color: sc }}>{seg.score}%</p>
-                        <div style={{ height: 3, background: 'var(--bg-deep)', borderRadius: 2, marginTop: 4 }}>
-                          <div style={{ width: `${seg.score}%`, height: '100%', background: sc, borderRadius: 2 }} />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Stats */}
-            {an.stats && (
-              <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
-                {[
-                  { label: 'Consistência', value: `${an.stats.consistency}%`, color: an.stats.consistency >= 70 ? '#27ae60' : '#f39c12' },
-                  { label: 'Pico do Piloto', value: `${Math.round((an.stats.userPeak || 0) * 100)}%`, color: '#2980b9' },
-                  { label: 'Pico Ideal', value: `${Math.round((an.stats.targetPeak || 0) * 100)}%`, color: 'var(--text-muted)' },
-                ].map(s => (
-                  <div key={s.label} style={{ flex: 1, padding: '8px', background: 'var(--bg-inset)', borderRadius: 8, textAlign: 'center', minWidth: 80 }}>
-                    <p style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', color: s.color }}>{s.value}</p>
-                    <p style={{ fontSize: 8, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)' }}>{s.label}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Tips */}
-            {an.tips && an.tips.length > 0 && (
-              <div style={{ marginBottom: 14 }}>
-                <p style={{ fontSize: 10, fontFamily: 'var(--font-condensed)', color: 'var(--text-muted)', letterSpacing: '.3px', marginBottom: 6, fontWeight: 600 }}>DICAS DE MELHORIA</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  {an.tips.slice(0, 3).map((tip, i) => (
-                    <div key={i} style={{ padding: '6px 10px', background: 'var(--bg-inset)', borderRadius: 8, fontSize: 11, color: 'var(--text-secondary)', borderLeft: `3px solid ${tip.type === 'praise' ? '#27ae60' : tip.type === 'warn' ? '#f39c12' : '#2980b9'}` }}>
-                      {tip.text}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Bottom action — next exercise */}
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', paddingTop: 10, borderTop: '1px solid var(--border)' }}>
-              {!lastResult.passed && (
-                <button onClick={handleRetry} style={{
-                  padding: '10px 24px', fontSize: 13, borderRadius: 12, fontWeight: 700, fontFamily: 'var(--font-display)',
-                  border: '1.5px solid #e74c3c', background: '#fde8e6', color: '#e74c3c', cursor: 'pointer',
-                }}>
-                  TENTAR DE NOVO
-                </button>
-              )}
-              {lastResult.passed && !isLast && (
-                <button onClick={handleNext} style={{
-                  padding: '10px 28px', fontSize: 13, borderRadius: 12, fontWeight: 700, fontFamily: 'var(--font-display)',
-                  border: `1.5px solid ${program.color}`, background: program.color, color: '#fff', cursor: 'pointer',
-                }}>
-                  PRÓXIMO EXERCÍCIO →
-                </button>
-              )}
-              {lastResult.passed && isLast && (
-                <button onClick={() => setPhase('complete')} style={{
-                  padding: '10px 28px', fontSize: 13, borderRadius: 12, fontWeight: 700, fontFamily: 'var(--font-display)',
-                  border: '1.5px solid #27ae60', background: '#27ae60', color: '#fff', cursor: 'pointer',
-                }}>
-                  VER RESULTADO FINAL
-                </button>
-              )}
-            </div>
-          </div>
-        )}
       </div>
     );
   }
