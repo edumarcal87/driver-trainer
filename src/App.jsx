@@ -30,7 +30,6 @@ import BadgeToast from './components/BadgeToast';
 import OnboardingTour, { isOnboardingDone } from './components/OnboardingTour';
 import PremiumGate from './components/PremiumGate';
 import SetupWizard from './components/SetupWizard';
-import { trackScreenView, trackExerciseStart, trackExerciseComplete, trackClick } from './utils/analytics';
 
 export default function App({ onGoToLanding }) {
   const { user, profile } = useAuth();
