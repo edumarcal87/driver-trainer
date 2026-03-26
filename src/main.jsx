@@ -3,15 +3,22 @@ import ReactDOM from 'react-dom/client';
 import { AuthProvider, useAuth } from './lib/AuthContext.jsx';
 import LandingPage from './components/LandingPage.jsx';
 import LoginScreen from './components/LoginScreen.jsx';
+import SubscriptionConfirmation from './components/SubscriptionConfirmation.jsx';
 import App from './App.jsx';
 import './index.css';
 
 function Root() {
   const { isLoggedIn, loading } = useAuth();
   const [view, setView] = useState(() => {
-    // Detect OAuth callback (Supabase adds tokens to URL hash/query)
+    const path = window.location.pathname;
     const hash = window.location.hash;
     const search = window.location.search;
+
+    // Subscription confirmation page
+    if (path === '/confirmacao-assinatura' || path === '/confirmacao-assinatura/') {
+      return 'subscription_confirmation';
+    }
+    // OAuth callback
     if (hash.includes('access_token') || search.includes('code=') || hash.includes('type=recovery')) {
       return 'app';
     }
@@ -27,13 +34,20 @@ function Root() {
 
   const enterApp = () => {
     setView('app');
+    window.history.pushState({}, '', '/');
     window.scrollTo(0, 0);
   };
 
   const goToLanding = () => {
     setView('landing');
+    window.history.pushState({}, '', '/');
     window.scrollTo(0, 0);
   };
+
+  // Subscription confirmation page
+  if (view === 'subscription_confirmation') {
+    return <SubscriptionConfirmation onGoToApp={enterApp} />;
+  }
 
   // Show loading while auth initializes (only when coming from OAuth redirect)
   if (loading && view === 'app') {
