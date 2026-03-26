@@ -26,7 +26,7 @@ function SteeringIcon({ size = 28, color = '#2980b9' }) {
 
 export { BrakeIcon, ThrottleIcon, ClutchIcon, SteeringIcon };
 
-export default function SetupWizard({ onComplete, gpConnected, gpName, pedalConfigs, setPedalConfigs }) {
+export default function SetupWizard({ onComplete, gpConnected, gpName, pedalConfigs, setPedalConfigs, userName }) {
   const [step, setStep] = useState(-1); // -1 = welcome, 0-3 = detecting, 4 = verify
   const [phase, setPhase] = useState('idle'); // idle | waiting | done
   const [axes, setAxes] = useState([]);
@@ -229,7 +229,7 @@ export default function SetupWizard({ onComplete, gpConnected, gpName, pedalConf
         </div>
 
         <div className="animate-in animate-in-delay-1" style={{ ...card, textAlign: 'center', padding: '32px 28px' }}>
-          <p style={{ fontSize: 16, fontWeight: 600, fontFamily: 'var(--font-display)', marginBottom: 8 }}>Bem-vindo!</p>
+          <p style={{ fontSize: 16, fontWeight: 600, fontFamily: 'var(--font-display)', marginBottom: 8 }}>Bem-vindo{userName ? `, ${userName.split(' ')[0]}` : ''}!</p>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 20 }}>
             Vamos configurar seus controles antes de começar.
             {gpConnected
