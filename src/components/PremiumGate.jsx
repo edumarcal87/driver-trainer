@@ -8,7 +8,7 @@ import { useAuth } from '../lib/AuthContext';
  * Usage in screens: call usePremiumCheck() to know if user can start.
  * Usage as wrapper: <PremiumGate> shows banner + children fully visible.
  */
-export default function PremiumGate({ children, feature, onLogin }) {
+export default function PremiumGate({ children, feature, onLogin, onUpgrade }) {
   const { isLoggedIn, isPremiumUser } = useAuth();
 
   if (isPremiumUser) return children;
@@ -40,11 +40,11 @@ export default function PremiumGate({ children, feature, onLogin }) {
             ENTRAR
           </button>
         ) : (
-          <button style={{
+          <button onClick={onUpgrade} style={{
             padding: '8px 18px', fontSize: 11, borderRadius: 10, fontWeight: 700,
             fontFamily: 'var(--font-display)', letterSpacing: '.3px',
-            border: '1.5px solid #f1c40f', background: '#f1c40f15', color: '#b7950b',
-            cursor: 'pointer', flexShrink: 0,
+            border: '1.5px solid #f1c40f', background: '#f1c40f', color: '#1a1a1a',
+            cursor: 'pointer', flexShrink: 0, boxShadow: '0 2px 8px rgba(241,196,15,0.25)',
           }}>
             ⭐ UPGRADE
           </button>
@@ -69,7 +69,7 @@ export function usePremiumCheck() {
 /**
  * Small lock badge for session buttons.
  */
-export function PremiumLockButton({ onClick, onLogin, children, style }) {
+export function PremiumLockButton({ onClick, onLogin, onUpgrade, children, style }) {
   const { isPremiumUser, isLoggedIn } = useAuth();
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -104,9 +104,9 @@ export function PremiumLockButton({ onClick, onLogin, children, style }) {
                 cursor: 'pointer', fontFamily: 'var(--font-display)',
               }}>ENTRAR</button>
             ) : (
-              <button style={{
+              <button onClick={() => { setShowTooltip(false); onUpgrade?.(); }} style={{
                 padding: '6px 16px', fontSize: 11, borderRadius: 8, fontWeight: 700,
-                border: '1.5px solid #f1c40f', background: '#f1c40f15', color: '#b7950b',
+                border: '1.5px solid #f1c40f', background: '#f1c40f', color: '#1a1a1a',
                 cursor: 'pointer', fontFamily: 'var(--font-display)',
               }}>⭐ UPGRADE</button>
             )}

@@ -157,13 +157,13 @@ export default function App({ onGoToLanding }) {
       case 'diagnostics': return <GamepadDiagnostics onBack={back} pedalConfigs={gamepad.pedalConfigs} />;
       case 'exercise': return <ExerciseScreen exercise={selectedEx} onBack={back} inputMode={gamepad.inputMode} pedalConfigs={gamepad.pedalConfigs} onResult={handleResult} carProfile={carProfile} sessionLog={sessionLog} shifterConfig={gamepad.shifterConfig} />;
       case 'progress': return <ProgressScreen sessionHistory={sessionLog} onBack={back} carProfile={carProfile} setCarProfile={setCarProfile} dailyGoals={dailyGoals} isDark={isDark} />;
-      case 'programs': return <PremiumGate feature="Programas de Treino" onLogin={() => nav('login')}><ProgramsScreen onBack={back} onStartSession={startProgramSession} sessionLog={sessionLog} initialProgram={initialProgramForScreen} carProfile={carProfile} setCarProfile={setCarProfile} onLogin={() => nav('login')} /></PremiumGate>;
-      case 'program_session': return activeProgram ? <PremiumGate feature={activeProgram.name} onLogin={() => nav('login')}><ProgramSessionScreen program={activeProgram} weekIdx={activeWeekIdx} sessionIdx={activeSessionIdx} onBack={() => { setInitialProgramForScreen(activeProgram); nav('programs'); }} onResult={handleResult} inputMode={gamepad.inputMode} pedalConfigs={gamepad.pedalConfigs} carProfile={carProfile} sessionLog={sessionLog} shifterConfig={gamepad.shifterConfig} /></PremiumGate> : null;
+      case 'programs': return <PremiumGate feature="Programas de Treino" onLogin={() => nav('login')} onUpgrade={() => nav('upgrade')}><ProgramsScreen onBack={back} onStartSession={startProgramSession} sessionLog={sessionLog} initialProgram={initialProgramForScreen} carProfile={carProfile} setCarProfile={setCarProfile} onLogin={() => nav('login')} /></PremiumGate>;
+      case 'program_session': return activeProgram ? <PremiumGate feature={activeProgram.name} onLogin={() => nav('login')} onUpgrade={() => nav('upgrade')}><ProgramSessionScreen program={activeProgram} weekIdx={activeWeekIdx} sessionIdx={activeSessionIdx} onBack={() => { setInitialProgramForScreen(activeProgram); nav('programs'); }} onResult={handleResult} inputMode={gamepad.inputMode} pedalConfigs={gamepad.pedalConfigs} carProfile={carProfile} sessionLog={sessionLog} shifterConfig={gamepad.shifterConfig} /></PremiumGate> : null;
       case 'community': return <CommunityScreen onBack={back} onStartExercise={openExercise} onLogin={onGoToLanding} />;
       case 'badges': return <BadgesScreen onBack={back} sessionLog={sessionLog} />;
       case 'profile': return <PublicProfileScreen onBack={back} profile={profile} sessionLog={sessionLog} onNavigate={nav} />;
       case 'upgrade': return <UpgradeScreen onBack={back} />;
-      case 'telemetry': return <PremiumGate feature="Importar Telemetria" onLogin={() => nav('login')}><TelemetryImportScreen onBack={back} onExercisesCreated={(exs) => { setExercises([...ALL_EXERCISES, ...exs]); back(); }} /></PremiumGate>;
+      case 'telemetry': return <PremiumGate feature="Importar Telemetria" onLogin={() => nav('login')} onUpgrade={() => nav('upgrade')}><TelemetryImportScreen onBack={back} onExercisesCreated={(exs) => { setExercises([...ALL_EXERCISES, ...exs]); back(); }} /></PremiumGate>;
       default: return null;
     }
   };
