@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './lib/AuthContext.jsx';
 import LandingPage from './components/LandingPage.jsx';
 import LoginScreen from './components/LoginScreen.jsx';
 import SubscriptionConfirmation from './components/SubscriptionConfirmation.jsx';
+import { PrivacyPolicy, TermsOfService } from './components/LegalPages.jsx';
 import App from './App.jsx';
 import './index.css';
 
@@ -17,6 +18,13 @@ function Root() {
     // Subscription confirmation page
     if (path === '/confirmacao-assinatura' || path === '/confirmacao-assinatura/') {
       return 'subscription_confirmation';
+    }
+    // Legal pages
+    if (path === '/privacidade' || path === '/privacidade/') {
+      return 'privacy';
+    }
+    if (path === '/termos' || path === '/termos/') {
+      return 'terms';
     }
     // OAuth callback
     if (hash.includes('access_token') || search.includes('code=') || hash.includes('type=recovery')) {
@@ -47,6 +55,14 @@ function Root() {
   // Subscription confirmation page
   if (view === 'subscription_confirmation') {
     return <SubscriptionConfirmation onGoToApp={enterApp} />;
+  }
+
+  // Legal pages
+  if (view === 'privacy') {
+    return <PrivacyPolicy onBack={goToLanding} />;
+  }
+  if (view === 'terms') {
+    return <TermsOfService onBack={goToLanding} />;
   }
 
   // Show loading while auth initializes (only when coming from OAuth redirect)
