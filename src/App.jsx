@@ -148,7 +148,7 @@ export default function App({ onGoToLanding }) {
   const trackedToggleTheme = useCallback(() => { toggleTheme(); trackThemeChange(isDark ? 'light' : 'dark'); }, [toggleTheme, isDark]);
 
   // ── Wizard ──
-  if (screen === 'wizard') return <SetupWizard onComplete={() => setScreen('menu')} gpConnected={gamepad.gpConnected} gpName={gamepad.gpName} pedalConfigs={gamepad.pedalConfigs} setPedalConfigs={gamepad.setPedalConfigs} />;
+  if (screen === 'wizard') return <SetupWizard onComplete={() => setScreen('menu')} gpConnected={gamepad.gpConnected} gpName={gamepad.gpName} pedalConfigs={gamepad.pedalConfigs} setPedalConfigs={gamepad.setPedalConfigs} userName={profile?.display_name} />;
 
   // ── Screen router ──
   const renderScreen = () => {
