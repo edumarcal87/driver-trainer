@@ -380,14 +380,18 @@ export default function LandingPage({ onEnterApp }) {
       </section>
 
       {/* ── Footer ── */}
-      <footer style={{ padding: '32px 24px', borderTop: '1px solid #e0dfd8', textAlign: 'center' }}>
+      <footer style={{ padding: '32px 24px', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 12 }}>
           <div style={{ width: 28, height: 28, borderRadius: 8, border: '1.5px solid #e74c3c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="16" height="16" viewBox="0 0 56 56"><path d="M8 44 Q10 20, 18 14 Q24 10, 30 22 Q34 30, 38 28 Q42 26, 44 14" fill="none" stroke="#e74c3c" strokeWidth="3" strokeLinecap="round"/></svg>
           </div>
           <span style={{ fontSize: 13, fontWeight: 700, fontFamily: "'Oxanium', sans-serif" }}>DRIVER <span style={{ color: '#e74c3c', fontWeight: 300 }}>TRAINER</span></span>
         </div>
-        <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>© 2025 Driver Trainer. Do pedal ao pódio.</p>
+        <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginBottom: 10 }}>
+          <a href="/privacidade" style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none' }}>Política de Privacidade</a>
+          <a href="/termos" style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none' }}>Termos de Uso</a>
+        </div>
+        <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>© 2026 Driver Trainer. Do pedal ao pódio.</p>
       </footer>
     </div>
   );
