@@ -111,7 +111,7 @@ export default function PublicProfileScreen({ onBack, profile, sessionLog, onNav
           </div>
           {memberSince && <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>Membro desde {memberSince}</p>}
           {!isPremium && (
-            <button style={{ marginTop: 8, padding: '6px 16px', fontSize: 11, borderRadius: 8, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '.3px', border: '1.5px solid #f1c40f', background: '#f1c40f', color: '#1a1a1a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(241,196,15,0.25)' }}>
+            <button onClick={() => onNavigate?.('upgrade')} style={{ marginTop: 8, padding: '6px 16px', fontSize: 11, borderRadius: 8, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '.3px', border: '1.5px solid #f1c40f', background: '#f1c40f', color: '#1a1a1a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(241,196,15,0.25)' }}>
               ⭐ UPGRADE PARA PREMIUM
             </button>
           )}

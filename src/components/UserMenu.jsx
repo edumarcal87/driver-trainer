@@ -70,7 +70,7 @@ export default function UserMenu({ onLogin, onLogout, onNavigate }) {
             </div>
 
             {!isPremiumUser && (
-              <button style={{
+              <button onClick={() => { setOpen(false); onNavigate?.('upgrade'); }} style={{
                 width: '100%', padding: '10px 16px', border: 'none', background: '#f1c40f08',
                 fontSize: 12, fontWeight: 600, color: '#b7950b', cursor: 'pointer', fontFamily: 'var(--font-body)',
                 textAlign: 'left', borderBottom: '1px solid var(--border)',

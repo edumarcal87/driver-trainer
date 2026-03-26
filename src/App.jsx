@@ -29,6 +29,7 @@ import PublicProfileScreen from './components/PublicProfileScreen';
 import BadgeToast from './components/BadgeToast';
 import OnboardingTour, { isOnboardingDone } from './components/OnboardingTour';
 import PremiumGate from './components/PremiumGate';
+import UpgradeScreen from './components/UpgradeScreen';
 import SetupWizard from './components/SetupWizard';
 
 export default function App({ onGoToLanding }) {
@@ -161,6 +162,7 @@ export default function App({ onGoToLanding }) {
       case 'community': return <CommunityScreen onBack={back} onStartExercise={openExercise} onLogin={onGoToLanding} />;
       case 'badges': return <BadgesScreen onBack={back} sessionLog={sessionLog} />;
       case 'profile': return <PublicProfileScreen onBack={back} profile={profile} sessionLog={sessionLog} onNavigate={nav} />;
+      case 'upgrade': return <UpgradeScreen onBack={back} />;
       case 'telemetry': return <PremiumGate feature="Importar Telemetria" onLogin={() => nav('login')}><TelemetryImportScreen onBack={back} onExercisesCreated={(exs) => { setExercises([...ALL_EXERCISES, ...exs]); back(); }} /></PremiumGate>;
       default: return null;
     }
