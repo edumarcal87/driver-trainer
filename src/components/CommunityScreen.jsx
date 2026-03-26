@@ -53,7 +53,7 @@ function RankRow({ entry, isCurrentUser }) {
   );
 }
 
-export default function CommunityScreen({ onBack, onStartExercise, onLogin }) {
+export default function CommunityScreen({ onBack, onStartExercise, onLogin, onUpgrade }) {
   const { user, profile, isPremiumUser } = useAuth();
   const [tab, setTab] = useState('feed');
   const [selectedExercise, setSelectedExercise] = useState('b_trail');
@@ -310,6 +310,7 @@ export default function CommunityScreen({ onBack, onStartExercise, onLogin }) {
                       if (ex) onStartExercise(ex);
                     }}
                     onLogin={onLogin}
+                    onUpgrade={onUpgrade}
                     style={{
                       padding: '10px 28px', fontSize: 13, borderRadius: 10, fontWeight: 700,
                       fontFamily: 'var(--font-display)', letterSpacing: '.3px',

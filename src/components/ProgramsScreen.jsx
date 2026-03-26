@@ -37,7 +37,7 @@ function findCurrentSession(program, sessionLog) {
   return null; // All complete
 }
 
-export default function ProgramsScreen({ onBack, onStartSession, sessionLog, initialProgram, carProfile, setCarProfile, onLogin }) {
+export default function ProgramsScreen({ onBack, onStartSession, sessionLog, initialProgram, carProfile, setCarProfile, onLogin, onUpgrade }) {
   const [selectedProgram, setSelectedProgram] = useState(initialProgram || null);
   const [programFilter, setProgramFilter] = useState('all'); // all | pedals | pedals_steering | pedals_steering_gear
 
@@ -278,7 +278,7 @@ export default function ProgramsScreen({ onBack, onStartSession, sessionLog, ini
                     </div>
 
                     {isUnlocked && !allPassed && (
-                      <PremiumLockButton onClick={() => onStartSession(prog, wi, si)} onLogin={onLogin} style={{
+                      <PremiumLockButton onClick={() => onStartSession(prog, wi, si)} onLogin={onLogin} onUpgrade={onUpgrade} style={{
                         padding: '8px 20px', fontSize: 12, borderRadius: 10, fontWeight: 700, fontFamily: 'var(--font-display)',
                         border: `1.5px solid ${prog.color}`, background: prog.color + '12', color: prog.color, cursor: 'pointer',
                         boxShadow: `0 1px 4px ${prog.color}15`, width: '100%',
@@ -289,7 +289,7 @@ export default function ProgramsScreen({ onBack, onStartSession, sessionLog, ini
                     {allPassed && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: '#27ae60', fontWeight: 600 }}>✓ COMPLETA</span>
-                        <PremiumLockButton onClick={() => onStartSession(prog, wi, si)} onLogin={onLogin} style={{
+                        <PremiumLockButton onClick={() => onStartSession(prog, wi, si)} onLogin={onLogin} onUpgrade={onUpgrade} style={{
                           padding: '7px 18px', fontSize: 11, borderRadius: 10, fontWeight: 700, fontFamily: 'var(--font-display)',
                           border: `1.5px solid ${prog.color}40`, background: prog.color + '08', color: prog.color, cursor: 'pointer',
                           marginLeft: 'auto', boxShadow: `0 1px 3px ${prog.color}10`,
