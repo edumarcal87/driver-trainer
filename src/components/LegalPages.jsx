@@ -84,7 +84,7 @@ export function PrivacyPolicy({ onBack }) {
 
       <h2 style={h2Style}>8. Menores de idade</h2>
       <p style={pStyle}>
-        A Driver Trainer não se destina a menores de 13 anos. Não coletamos intencionalmente dados de menores de 13 anos. Se tomarmos conhecimento de que coletamos dados de um menor, tomaremos medidas para excluir essas informações.
+        A Driver Trainer não se destina a menores de 18 anos. Não coletamos intencionalmente dados de menores de 18 anos. Se tomarmos conhecimento de que coletamos dados de um menor, tomaremos medidas para excluir essas informações.
       </p>
 
       <h2 style={h2Style}>9. Alterações nesta política</h2>
