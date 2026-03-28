@@ -2,11 +2,17 @@ import React, { useState, useEffect } from 'react';
 
 const FEATURES = [
   { icon: '🎯', title: '50+ Exercícios', desc: 'Frenagem, aceleração, volante, embreagem e câmbio — do básico ao avançado.' },
-  { icon: '🏁', title: '4 Circuitos Reais', desc: 'Interlagos, Spa, Monza e Silverstone com cenários baseados em telemetria.' },
-  { icon: '🏎️', title: 'Perfis de Carro', desc: 'GT3, Fórmula e Turismo — a mesma curva se adapta ao seu carro.' },
-  { icon: '📊', title: 'Análise Detalhada', desc: 'Score por segmento, tendências, comparação e coaching em tempo real.' },
+  { icon: '🧠', title: 'Treino Adaptativo com IA', desc: 'A IA analisa seu histórico e sugere o exercício ideal para seus pontos fracos.' },
+  { icon: '🏁', title: '4 Circuitos Reais', desc: 'Interlagos, Spa, Monza e Silverstone — 34 cenários baseados em telemetria.' },
+  { icon: '📊', title: 'Análise Detalhada', desc: 'Score por segmento, replay da telemetria, dicas de melhoria e coaching em tempo real.' },
+  { icon: '📋', title: 'Programas Estruturados', desc: '11 programas de treino guiados com sessões progressivas e score mínimo.' },
+  { icon: '📡', title: 'Feed Social ao Vivo', desc: 'Veja a atividade da comunidade em tempo real — records, badges e milestones.' },
+  { icon: '🏆', title: 'Ranking e Desafios', desc: 'Ranking global por exercício, desafios semanais e 35 badges para desbloquear.' },
+  { icon: '📈', title: 'Telemetria Real', desc: 'Importe dados de iRacing, ACC, AMS2 e mais 4 simuladores para treinar.' },
   { icon: '🎮', title: 'Multi-Volante', desc: 'Logitech, Thrustmaster, Fanatec, MOZA e Simagic — detecção automática.' },
-  { icon: '📤', title: 'Compartilhe', desc: 'Gere cards visuais do seu resultado e compartilhe com a comunidade.' },
+  { icon: '🏎️', title: 'Perfis de Carro', desc: 'GT3, Fórmula e Turismo — o mesmo exercício se adapta ao seu carro.' },
+  { icon: '🔥', title: 'Metas e Streaks', desc: 'Meta diária de exercícios, streak calendar e acompanhamento semanal.' },
+  { icon: '🌙', title: 'Dark Mode', desc: 'Tema claro e escuro — se adapta ao seu ambiente de treino.' },
 ];
 
 const TRACKS = [
@@ -19,12 +25,13 @@ const TRACKS = [
 const PLANS = [
   {
     name: 'Gratuito', price: 'R$ 0', period: '', color: '#2980b9', highlight: false,
-    features: ['Treino livre completo', '50+ exercícios', 'Todos os inputs (pedais, volante, câmbio)', 'Perfis de carro', 'Análise de performance', 'Suporte multi-volante'],
+    features: ['Treino livre completo', '50+ exercícios interativos', 'Todos os inputs (pedais, volante, câmbio)', 'Perfis de carro (GT3, Fórmula, Turismo)', 'Análise detalhada por segmento', 'Ranking global e 35 badges', 'Streak calendar e metas diárias', 'Suporte multi-volante', 'Dark mode'],
     cta: 'COMEÇAR GRÁTIS',
   },
   {
     name: 'Premium', price: 'R$ 19,90', period: '/mês', color: '#f1c40f', highlight: true,
-    features: ['Tudo do plano Gratuito', '11 programas de treino guiados', '4 circuitos reais (34 cenários)', 'Meia volta e volta completa', 'Sync na nuvem', 'Novos circuitos assim que lançarem'],
+    annualPrice: 'ou R$ 149,90/ano (R$ 12,49/mês)',
+    features: ['Tudo do plano Gratuito', '11 programas de treino guiados', '4 circuitos reais (34 cenários)', 'Importação de telemetria real (7 sims)', 'Exercícios adaptativos com IA', 'Vídeo tutoriais por curva', 'Desafios semanais da comunidade', 'Feed social em tempo real', 'Novos circuitos assim que lançarem'],
     cta: 'ASSINAR PREMIUM',
   },
 ];
@@ -133,7 +140,7 @@ export default function LandingPage({ onEnterApp }) {
             lineHeight: 1.6,
           }}>
             Exercícios de frenagem, aceleração, volante e câmbio com feedback em tempo real.
-            Cenários de pistas reais. Suporte a todos os principais volantes do mercado.
+            Cenários de pistas reais. Treino adaptativo com IA. Suporte a todos os principais volantes do mercado.
           </p>
 
           <div className="landing-hero-btns">
@@ -165,7 +172,8 @@ export default function LandingPage({ onEnterApp }) {
               { num: '50+', label: 'Exercícios' },
               { num: '34', label: 'Cenários de pista' },
               { num: '4', label: 'Circuitos reais' },
-              { num: '10+', label: 'Volantes suportados' },
+              { num: '35', label: 'Badges' },
+              { num: '7', label: 'Sims suportados' },
             ].map(s => (
               <div key={s.label} style={{ textAlign: 'center' }}>
                 <span style={{ fontSize: 28, fontWeight: 700, fontFamily: "'Oxanium', sans-serif", color: 'var(--text-primary)' }}>{s.num}</span>
@@ -251,9 +259,9 @@ export default function LandingPage({ onEnterApp }) {
         </div>
         <div className="landing-steps-grid">
           {[
-            { step: '01', title: 'Conecte seu volante', desc: 'Plug and play. O app detecta automaticamente G29, T300, Fanatec e outros. Ou use o teclado para começar.', color: '#e74c3c' },
-            { step: '02', title: 'Escolha o exercício', desc: 'Treino livre, programas guiados ou cenários de pistas reais. Filtre por tipo de input e perfil de carro.', color: '#27ae60' },
-            { step: '03', title: 'Siga a curva-alvo', desc: 'Acompanhe a curva no gráfico em tempo real. Receba feedback instantâneo, score detalhado e dicas de melhoria.', color: '#2980b9' },
+            { step: '01', title: 'Conecte seu volante', desc: 'Plug and play. O app detecta automaticamente Logitech, Thrustmaster, Fanatec, MOZA e Simagic. Ou use o teclado para começar.', color: '#e74c3c' },
+            { step: '02', title: 'Escolha como treinar', desc: 'Treino livre, programas guiados, cenários de pistas reais ou deixe a IA sugerir o exercício ideal baseado nos seus pontos fracos.', color: '#27ae60' },
+            { step: '03', title: 'Evolua com dados', desc: 'Score por segmento, replay da telemetria, dicas personalizadas, ranking global, badges, streak calendar e feed da comunidade.', color: '#2980b9' },
           ].map((s, i) => (
             <div key={i} style={{ textAlign: 'center', padding: '32px 24px' }}>
               <div style={{
@@ -332,6 +340,9 @@ export default function LandingPage({ onEnterApp }) {
               <div style={{ marginTop: 8, marginBottom: 20 }}>
                 <span style={{ fontSize: 36, fontWeight: 700, fontFamily: "'Oxanium', sans-serif" }}>{p.price}</span>
                 <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>{p.period}</span>
+                {p.annualPrice && (
+                  <p style={{ fontSize: 12, color: '#27ae60', fontWeight: 600, marginTop: 4 }}>{p.annualPrice}</p>
+                )}
               </div>
               <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {p.features.map((f, fi) => (
@@ -387,9 +398,15 @@ export default function LandingPage({ onEnterApp }) {
           </div>
           <span style={{ fontSize: 13, fontWeight: 700, fontFamily: "'Oxanium', sans-serif" }}>DRIVER <span style={{ color: '#e74c3c', fontWeight: 300 }}>TRAINER</span></span>
         </div>
-        <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginBottom: 10 }}>
-          <a href="/privacidade" style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none' }}>Política de Privacidade</a>
-          <a href="/termos" style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none' }}>Termos de Uso</a>
+        <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginBottom: 10, alignItems: 'center' }}>
+          <a href="https://www.instagram.com/drivertrainer.br/" target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+            @drivertrainer.br
+          </a>
+          <span style={{ color: 'var(--border)' }}>·</span>
+          <a href="/privacidade" style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none' }}>Privacidade</a>
+          <span style={{ color: 'var(--border)' }}>·</span>
+          <a href="/termos" style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none' }}>Termos</a>
         </div>
         <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>© 2026 Driver Trainer. Do pedal ao pódio.</p>
       </footer>
